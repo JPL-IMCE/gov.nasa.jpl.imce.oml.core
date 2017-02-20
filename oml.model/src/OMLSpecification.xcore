@@ -13,15 +13,19 @@ distributed under the License is distributed on an \"AS IS\" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-", featureDelegation="None",
+", bundleManifest="false",
+   childCreationExtenders="true",
+   complianceLevel="8.0",
+   featureDelegation="None",
    modelPluginVariables="org.eclipse.xtext.xbase.lib org.eclipse.emf.ecore.xcore.lib org.eclipse.emf.cdo",
    rootExtendsClass="org.eclipse.emf.internal.cdo.CDOObjectImpl",
    rootExtendsInterface="org.eclipse.emf.cdo.CDOObject",
-   childCreationExtenders="true", 
-   pluginKey="OML", 
-   modelName="OML", prefix="OML",
+   modelDirectory="oml.model/build/xcore/main", 
+   modelName="OML",
    modelPluginID="oml.model",
-   modelDirectory="/oml.model/build/xcore/main")
+   nsPrefix="oml",
+   nsURI="http://imce.jpl.nasa.gov/oml",
+   pluginKey="OML")
    
 package gov.nasa.jpl.oml
 
