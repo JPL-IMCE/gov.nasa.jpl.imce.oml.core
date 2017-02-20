@@ -1,0 +1,19 @@
+dependencies {
+	
+	// This works by resolving it from maven central..
+	testCompile 'junit:junit:4.12'
+	
+	compile project(':oml.model')
+	testCompile project(':oml.dsl')
+	testCompile 'org.eclipse.xtext:org.eclipse.xtext.testing'
+	testCompile 'com.itemis.xtext:com.itemis.xtext.testing'
+}
+
+configurations {
+	compile.transitive = true
+	testCompile.transitive = true
+}
+
+//this is an eclipse plugin project
+eclipseClasspath.enabled=false
+cleanEclipseClasspath.enabled=false
