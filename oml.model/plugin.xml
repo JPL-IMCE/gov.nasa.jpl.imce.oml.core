@@ -25,9 +25,9 @@
 
    <extension point="org.eclipse.emf.ecore.generated_package">
       <package
-            uri="jpl.imce.oml.specification.ecore"
-            class="jpl.imce.oml.specification.ecore.OMLPackage"
-            genModel="model/OMLSpecification.xcore"/>
+            uri="http://imce.jpl.nasa.gov/oml"
+            class="gov.nasa.jpl.imce.oml.OMLPackage"
+            genModel="src/OMLSpecification.xcore"/>
    </extension>
    
 </plugin>

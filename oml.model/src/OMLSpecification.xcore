@@ -1,3 +1,4 @@
+@Ecore(nsPrefix="oml", nsURI="http://imce.jpl.nasa.gov/oml")
 @GenModel(copyrightText="
 Copyright 2016 California Institute of Technology (\"Caltech\").
 U.S. Government sponsorship acknowledged.
@@ -14,20 +15,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ", bundleManifest="false",
-   childCreationExtenders="true",
    complianceLevel="8.0",
-   featureDelegation="None",
-   modelPluginVariables="org.eclipse.xtext.xbase.lib org.eclipse.emf.ecore.xcore.lib org.eclipse.emf.cdo",
-   rootExtendsClass="org.eclipse.emf.internal.cdo.CDOObjectImpl",
-   rootExtendsInterface="org.eclipse.emf.cdo.CDOObject",
-   modelDirectory="oml.model/build/xcore/main", 
-   modelName="OML",
-   modelPluginID="oml.model",
-   nsPrefix="oml",
-   nsURI="http://imce.jpl.nasa.gov/oml",
-   pluginKey="OML")
+   modelDirectory="oml.model/build/xcore/main")
    
-package gov.nasa.jpl.oml
+package gov.nasa.jpl.imce.oml
 
 /* 
  * If present, the value of the 'kind' key specifies a Scala immutable collection.
@@ -1273,11 +1264,11 @@ class ConceptDesignationTerminologyAxiom extends TerminologyBoxAxiom {
 	val namespace = \"ConceptDesignationTerminologyAxiom(designationTerminologyGraph=\" + tbox.uuid + \",designatedConcept=\"+designatedConcept.uuid+\")\"
 	com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace)")
 	@Override
-	op UUID[1] calculateUUID() { 
+	op UUID[1] calculateUUID() {
 		val namespace = "ConceptDesignationTerminologyAxiom(designationTerminologyGraph=" + tbox.uuid + ",designatedConcept="+designatedConcept.uuid+")"
 		com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace).toString
 	}
-	
+
 	@NotSchema
 	@Scala(code="tbox match { case g: TerminologyGraph => g }")
 	op TerminologyGraph[1] designationTerminologyGraph() {
