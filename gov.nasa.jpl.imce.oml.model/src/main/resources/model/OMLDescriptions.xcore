@@ -1,0 +1,522 @@
+@Ecore(nsPrefix="omld", nsURI="http://imce.jpl.nasa.gov/oml/descriptions")
+@GenModel(copyrightText="
+Copyright 2016 California Institute of Technology (\"Caltech\").
+U.S. Government sponsorship acknowledged.
+
+Licensed under the Apache License, Version 2.0 (the \"License\");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an \"AS IS\" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+", bundleManifest="false",
+   childCreationExtenders="true",
+   complianceLevel="8.0",
+   featureDelegation="None",
+   modelPluginVariables="org.eclipse.xtext.xbase.lib org.eclipse.emf.ecore.xcore.lib org.eclipse.emf.cdo",
+   rootExtendsClass="org.eclipse.emf.internal.cdo.CDOObjectImpl",
+   rootExtendsInterface="org.eclipse.emf.cdo.CDOObject",
+   modelDirectory="gov.nasa.jpl.imce.oml.model/build/xcore/main/",
+   modelName="OMLD")
+  
+// If commented, it is possible to build cleanly with 'gradle :generateXtext'
+// If uncommented, 'gradle :generateXtext' will have several java.io.IOExceptions like these:
+// The path '.../plugin.properties' is unmapped
+// The path '.../build.properties' is unmapped
+// The path '.../plugin.xml' is unmapped
+// @GenModel(modelPluginID="oml.model")
+ 
+package gov.nasa.jpl.imce.oml.model.descriptions
+
+import gov.nasa.jpl.imce.oml.model.common.AnnotationPropertyTable
+import gov.nasa.jpl.imce.oml.model.common.Collection
+import gov.nasa.jpl.imce.oml.model.common.CopyConstructor
+import gov.nasa.jpl.imce.oml.model.common.Element
+import gov.nasa.jpl.imce.oml.model.common.Glossary
+import gov.nasa.jpl.imce.oml.model.common.IRI
+import gov.nasa.jpl.imce.oml.model.common.LocalName
+import gov.nasa.jpl.imce.oml.model.common.Module
+import gov.nasa.jpl.imce.oml.model.common.NotFunctionalAPI
+import gov.nasa.jpl.imce.oml.model.common.NotSchema
+import gov.nasa.jpl.imce.oml.model.common.Override
+import gov.nasa.jpl.imce.oml.model.common.Resource
+import gov.nasa.jpl.imce.oml.model.common.Scala
+import gov.nasa.jpl.imce.oml.model.common.ModuleElement
+import gov.nasa.jpl.imce.oml.model.common.UUID
+import gov.nasa.jpl.imce.oml.model.terminologies.Concept
+import gov.nasa.jpl.imce.oml.model.terminologies.ConceptualEntity
+import gov.nasa.jpl.imce.oml.model.terminologies.DataRelationshipToScalar
+import gov.nasa.jpl.imce.oml.model.terminologies.DataRelationshipToStructure
+import gov.nasa.jpl.imce.oml.model.terminologies.EntityScalarDataProperty
+import gov.nasa.jpl.imce.oml.model.terminologies.EntityStructuredDataProperty
+import gov.nasa.jpl.imce.oml.model.terminologies.ReifiedRelationship
+import gov.nasa.jpl.imce.oml.model.terminologies.Structure
+import gov.nasa.jpl.imce.oml.model.terminologies.UnreifiedRelationship
+import gov.nasa.jpl.imce.oml.model.terminologies.TerminologyBox
+
+/*
+ * OML DescriptionKind specifies semantic constraints that apply to
+ * an OML DescriptionBox as follows:
+ * - Final: the description is intended to be well-formed with all essential information (e.g., values of `isIdentityCriteria` data properties)
+ * - Partial: the description may lack some essential information (e.g., values of `isIdentityCriteria` data properties)
+ */
+@Glossary
+enum DescriptionKind {
+	Final
+	Partial
+}
+
+/*
+ * An OML DescriptionBox maps to an [OWL2-DL Ontology]
+ * about [OWL2-DL NamedIndividuals] mapped from OML TerminologyInstanceAssertion(s).
+ */
+@Glossary
+class DescriptionBox extends Module {
+	
+	@NotSchema
+	@Scala(code="copy(annotations = this.annotations ++ resolver.convertToAnnotations(a))")
+	@Override
+	op DescriptionBox[1] withAnnotations
+	(@Collection(kind="SortedSet") AnnotationPropertyTable[] a)
+	
+	@NotSchema
+	@Scala(code="resolver.groupAnnotationsByProperty(annotations)")
+	@Collection(kind="SortedSet")
+	@Override
+	op AnnotationPropertyTable[] annotationsByProperty()	
+	
+	DescriptionKind[1] kind
+	
+	@CopyConstructor
+	@Collection(kind="SortedSet")
+	contains DescriptionBoxExtendsClosedWorldDefinitions[] closedWorldDefinitions opposite descriptionBox
+	
+	@CopyConstructor
+	@Collection(kind="SortedSet")
+	contains DescriptionBoxRefinement[] descriptionBoxRefinements opposite refiningDescriptionBox
+	
+	@CopyConstructor
+	@Collection(kind="SortedSet")
+	contains ConceptInstance[] conceptInstances opposite descriptionBox
+	
+	@CopyConstructor
+	@Collection(kind="SortedSet")
+	contains ReifiedRelationshipInstance[] reifiedRelationshipInstances opposite descriptionBox
+	
+	@CopyConstructor
+	@Collection(kind="SortedSet")
+	contains ReifiedRelationshipInstanceDomain[] reifiedRelationshipInstanceDomains opposite descriptionBox
+	
+	@CopyConstructor
+	@Collection(kind="SortedSet")
+	contains ReifiedRelationshipInstanceRange[] reifiedRelationshipInstanceRanges opposite descriptionBox
+	
+	@CopyConstructor
+	@Collection(kind="SortedSet")
+	contains UnreifiedRelationshipInstanceTuple[] unreifiedRelationshipInstanceTuples opposite descriptionBox
+	
+	@NotSchema
+	@Scala(code="scala.collection.immutable.SortedSet.empty[resolver.api.Element] ++ 
+	conceptInstances ++
+	reifiedRelationshipInstances ++ 
+	reifiedRelationshipInstanceDomains ++ 
+	reifiedRelationshipInstanceRanges ++ 
+	unreifiedRelationshipInstanceTuples + 
+	this")
+	@Collection(kind="SortedSet")
+	@Override
+	op Element[] everything()
+}
+
+/*
+ * An OML DescriptionBoxRelationship is a directed binary relationship
+ * from an OML DescriptionBox source to an OML Module target.
+ */
+@Glossary
+abstract class DescriptionBoxRelationship extends ModuleElement {
+	
+	@NotSchema
+	op DescriptionBox[1] descriptionDomain()
+	
+	@NotSchema
+	op Module[1] targetModule()
+}
+
+/*
+ * An OML DescriptionBoxExtendsClosedWorldDefinition specifies
+ * an OML DescriptionBoxRelationship from an OML DescriptionBox 
+ * to an OML TerminologyBox such that an OML SingletonInstance defined in the
+ * former can be an instance of an OML Term defined in the latter.
+ */
+@Glossary
+class DescriptionBoxExtendsClosedWorldDefinitions extends DescriptionBoxRelationship {
+	
+	@Scala(code="
+	val namespace = \"DescriptionBoxExtendsClosedWorldDefinitions(descriptionBox=\" + descriptionBox.uuid + \",closedWorldDefinitions=\"+closedWorldDefinitions.uuid+\")\"
+	com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace)")
+	@NotSchema
+	@Override
+	op UUID[1] calculateUUID() { 
+		val namespace = "DescriptionBoxExtendsClosedWorldDefinitions(descriptionBox=" + descriptionBox.uuid + ",closedWorldDefinitions="+closedWorldDefinitions.uuid+")"
+		com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace).toString
+	}
+	
+	container DescriptionBox[1] descriptionBox opposite closedWorldDefinitions
+	
+	@NotSchema
+	op DescriptionBox[1] descriptionDomain() { descriptionBox }
+	
+	refers TerminologyBox[1] closedWorldDefinitions
+	
+	@NotSchema
+	op Module[1] targetModule() { closedWorldDefinitions }
+}
+
+/*
+ * An OML DescriptionBoxRefinement is an OML DescriptionBoxRelationship
+ * from an OML DescriptionBox to another OML DescriptionBox where
+ * the former refines the descriptions of the latter.
+ */
+@Glossary
+class DescriptionBoxRefinement extends DescriptionBoxRelationship {
+	
+	@Scala(code="
+	val namespace = \"DescriptionBoxRefinement(refiningDescriptionBox=\" + refiningDescriptionBox.uuid + \",refinedDescriptionBox=\"+refinedDescriptionBox.uuid+\")\"
+	com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace)")
+	@NotSchema
+	@Override
+	op UUID[1] calculateUUID() { 
+		val namespace = "DescriptionBoxRefinement(refiningDescriptionBox=" + refiningDescriptionBox.uuid + ",refinedDescriptionBox="+refinedDescriptionBox.uuid+")"
+		com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace).toString
+	}
+	
+	container DescriptionBox[1] refiningDescriptionBox opposite descriptionBoxRefinements
+	
+	@NotSchema
+	op DescriptionBox[1] descriptionDomain() { refiningDescriptionBox }
+	
+	refers DescriptionBox[1] refinedDescriptionBox
+	
+	@NotSchema
+	op Module[1] targetModule() { refinedDescriptionBox }
+}
+
+/*
+ * An OML TerminologyInstanceAssertion is a logical OML TerminologyThing defined in an OML TerminologyDescription.
+ */
+@Glossary
+abstract class TerminologyInstanceAssertion extends ModuleElement, Resource {
+	@NotSchema
+	op DescriptionBox[1] descriptionBox()
+	
+	@Override
+	id LocalName[1] name
+	
+	@NotFunctionalAPI
+	@NotSchema
+	op LocalName[1] name() { getName() }
+	
+	@Scala(code="descriptionBox.iri + \"#\" + name")
+	@NotSchema
+	@Override
+	op IRI[1] iri() { descriptionBox.iri() + "#" + name() }
+	
+	/*
+	 * The UUID of a Term is a Version5 namespace UUID based on the term's IRI.
+	 */
+	@Scala(code="com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(iri())")
+	@NotSchema 
+	@Override
+	op UUID[1] calculateUUID() { 
+		com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(iri().toString).toString
+	}
+}
+
+/*
+ * An OML SingletonInstance defines an instance of either an OML ConceptualEntity or of an OML Structure.
+ */
+@Glossary
+abstract class SingletonInstance extends TerminologyInstanceAssertion {
+	
+	@CopyConstructor
+	@Collection(kind="SortedSet")
+	contains ScalarDataPropertyValue[] scalarDataPropertyValues opposite singletonInstance
+	
+	@CopyConstructor
+	@Collection(kind="SortedSet")
+	contains StructuredDataPropertyValue[] structuredDataPropertyValues opposite singletonInstance
+}
+
+/*
+ * An OML ScalarDataPropertyValue defines a tuple for representing the atomic String value
+ * of an OML DataRelationshipToScalar for a particular OML SingletonInstance.
+ */
+@Glossary
+class ScalarDataPropertyValue extends TerminologyInstanceAssertion {
+	
+	@Scala(code="
+	val namespace = \"ScalarDataPropertyValue(singletonInstance=\" + singletonInstance.uuid + \",scalarDataProperty=\"+scalarDataProperty.calculateUUID()+\")\"
+	com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace)")
+	@NotSchema
+	@Override
+	op UUID[1] calculateUUID() { 
+		val namespace = "ScalarDataPropertyValue(singletonInstance=" + singletonInstance.uuid + ",scalarDataProperty="+scalarDataProperty.calculateUUID()+")"
+		com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace).toString
+	}
+	
+	@Scala(code="singletonInstance.descriptionBox()")
+	@NotSchema
+	op DescriptionBox[1] descriptionBox() { singletonInstance.descriptionBox() }
+	
+	container SingletonInstance[1] singletonInstance opposite scalarDataPropertyValues
+	refers DataRelationshipToScalar[1] scalarDataProperty
+	String[1] scalarPropertyValue
+}
+
+/*
+ * 
+ * An OML StructuredDataPropertyValue defines a tuple for representing the structured tuple value
+ * of an OML DataRelationshipToStructure for a particular OML SingletonInstance.
+ */
+@Glossary
+class StructuredDataPropertyValue extends TerminologyInstanceAssertion {
+	
+	@Scala(code="
+	val namespace = \"StructuredDataPropertyValue(singletonInstance=\" + singletonInstance.uuid + \",structuredDataProperty=\"+structuredDataProperty.calculateUUID()+ \",structuredPropertyTuple=\"+structuredPropertyTuple.uuid+\")\"
+	com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace)")
+	@NotSchema
+	@Override
+	op UUID[1] calculateUUID() { 
+		val namespace = "StructuredDataPropertyValue(singletonInstance=" + singletonInstance.uuid + ",structuredDataProperty="+structuredDataProperty.calculateUUID() + ",structuredPropertyTuple="+structuredPropertyTuple.uuid+")"
+		com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace).toString
+	}
+	
+	@Scala(code="singletonInstance.descriptionBox()")
+	@NotSchema
+	op DescriptionBox[1] descriptionBox() { singletonInstance.descriptionBox() }
+	
+	container SingletonInstance[1] singletonInstance opposite structuredDataPropertyValues
+	refers DataRelationshipToStructure[1] structuredDataProperty
+	contains DataStructureTuple[1] structuredPropertyTuple opposite structuredDataPropertyValue
+}
+
+/*
+ * An OML DataStructureTuple defines an structured tuple instance of an OML Structure.
+ */
+@Glossary
+class DataStructureTuple extends SingletonInstance {
+	
+	@Scala(code="
+	val namespace = \"DataStructureTuple(structuredDataPropertyValue=\" + structuredDataPropertyValue.uuid + \",dataStructureType=\"+dataStructureType.uuid+\")\"
+	com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace)")
+	@NotSchema
+	@Override
+	op UUID[1] calculateUUID() { 
+		val namespace = "DataStructureTuple(structuredDataPropertyValue=" + structuredDataPropertyValue.uuid + ",dataStructureType="+dataStructureType.uuid+")"
+		com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace).toString
+	}
+	
+	@Scala(code="structuredDataPropertyValue.descriptionBox()")
+	@NotSchema
+	op DescriptionBox[1] descriptionBox() { structuredDataPropertyValue.descriptionBox() }
+	
+	container StructuredDataPropertyValue[1] structuredDataPropertyValue opposite structuredPropertyTuple
+	
+	refers Structure[1] dataStructureType
+}
+
+/*
+ * An OML ConceptualEntitySingletonInstance defines an instance of an OML ConceptualEntity.
+ * An OML ConceptualEntitySingletonInstance maps to an [OWL2 NamedIndividual].
+ * The semantics depends on the kind of OML ConceptualEntity classifier:
+ * - If the OML ConceptualEntity is the domain for at least at least 
+ *   one OML DataRelationshipFromEntity with `isIdentityCriteria=true`,
+ *   then the [OWL2-DL] mapping includes an [OWL2 Key Axiom]
+ *   forcing that all distinctly named OML ConceptualEntitySingletonInstance 
+ *   must have different values for each OML DataRelationshipFromEntity with `isIdentityCriteria=true`.
+ * - otherwise, distinctly named OML ConceptualEntitySingletonInstance 
+ *   represent semantically different instances.
+ */
+@Glossary
+abstract class ConceptualEntitySingletonInstance extends SingletonInstance {
+	
+	@NotSchema
+	op ConceptualEntity[1] conceptualEntitySingletonClassifier()
+	
+	@NotSchema
+	@Scala(code="scalarDataPropertyValues.filter{ v =>
+	  v.scalarDataProperty match {
+	    case ep: EntityScalarDataProperty =>
+		  ep.isIdentityCriteria
+	    case _ =>
+	      false
+	  }}")
+	@Collection(kind="SortedSet")
+	op ScalarDataPropertyValue[] identifyingScalarValues() {
+		scalarDataPropertyValues
+		.filter[v | 
+			val p = v.scalarDataProperty 
+			switch p {
+			EntityScalarDataProperty:
+				p.isIdentityCriteria
+			default:
+				false
+			}]
+		.asEList
+		
+	}
+	
+	@NotSchema
+	@Scala(code="structuredDataPropertyValues.filter{ v =>
+	  v.structuredDataProperty match {
+	    case ep: EntityStructuredDataProperty =>
+		  ep.isIdentityCriteria
+	    case _ =>
+	      false
+	  }}")
+	@Collection(kind="SortedSet")
+	op StructuredDataPropertyValue[] identifyingStructuredTuples() { 
+		structuredDataPropertyValues
+		.filter[v | 
+			val p = v.structuredDataProperty 
+			switch p {
+			EntityStructuredDataProperty:
+				p.isIdentityCriteria
+			default:
+				false
+			}]
+		.asEList
+	}
+}
+
+/*
+ * An OML ConceptInstance is an OML ConceptualEntitySingletonInstance classified by an OML Concept.
+ */
+@Glossary
+class ConceptInstance extends ConceptualEntitySingletonInstance {
+	
+	@Scala(code="
+	val namespace = \"ConceptInstance(descriptionBox=\" + descriptionBox.uuid + \",singletonConceptClassifier=\"+singletonConceptClassifier.uuid+\")\"
+	com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace)")
+	@NotSchema
+	@Override
+	op UUID[1] calculateUUID() { 
+		val namespace = "ConceptInstance(descriptionBox=" + descriptionBox().uuid + ",singletonConceptClassifier="+singletonConceptClassifier.uuid+")"
+		com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace).toString
+	}
+	
+	container DescriptionBox[1] descriptionBox opposite conceptInstances
+	
+	refers Concept[1] singletonConceptClassifier
+	
+	@NotSchema
+	@Override
+	op ConceptualEntity[1] conceptualEntitySingletonClassifier() { singletonConceptClassifier }
+}
+
+/*
+ * An OML ReifiedRelationshipInstance is an OML ConceptualEntitySingletonInstance  classified by an OML ReifiedRelationship.
+ */
+@Glossary
+class ReifiedRelationshipInstance extends ConceptualEntitySingletonInstance {
+	
+	@Scala(code="
+	val namespace = \"ReifiedRelationshipInstance(descriptionBox=\" + descriptionBox.uuid + \",singletonReifiedRelationshipClassifier=\"+singletonReifiedRelationshipClassifier.uuid+\")\"
+	com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace)")
+	@NotSchema
+	@Override
+	op UUID[1] calculateUUID() { 
+		val namespace = "ReifiedRelationshipInstance(descriptionBox=" + descriptionBox().uuid + ",singletonReifiedRelationshipClassifier="+singletonReifiedRelationshipClassifier.uuid+")"
+		com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace).toString
+	}
+	
+	container DescriptionBox[1] descriptionBox opposite reifiedRelationshipInstances
+	
+	refers ReifiedRelationship[1] singletonReifiedRelationshipClassifier
+	
+	@NotSchema
+	@Override
+	op ConceptualEntity[1] conceptualEntitySingletonClassifier() { singletonReifiedRelationshipClassifier }
+}
+
+/*
+ * An OML ReifiedRelationshipInstanceDomain specifies which OML ConceptualEntitySingletonInstance
+ * plays the role of the domain for an OML ReifiedRelationshipInstance.
+ * An OML ReifiedRelationshipInstanceDomain has no intrinsic identity; instead,
+ * an OML ReifiedRelationshipInstanceDomain is semantically equivalent 
+ * to another OML ReifiedRelationshipInstanceDomain referencing the same property and domain.
+ */
+@Glossary
+class ReifiedRelationshipInstanceDomain extends TerminologyInstanceAssertion {
+	
+	@Scala(code="
+	val namespace = \"ReifiedRelationshipInstanceDomain(descriptionBox=\" + descriptionBox.uuid + \",reifiedRelationshipInstance=\"+reifiedRelationshipInstance.uuid+ \",domain=\"+domain.uuid+\")\"
+	com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace)")
+	@NotSchema
+	@Override
+	op UUID[1] calculateUUID() { 
+		val namespace = "ReifiedRelationshipInstanceDomain(descriptionBox=" + descriptionBox().uuid + ",reifiedRelationshipInstance="+reifiedRelationshipInstance.uuid + ",domain="+domain.uuid+")"
+		com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace).toString
+	}
+	
+	container DescriptionBox[1] descriptionBox opposite reifiedRelationshipInstanceDomains
+	refers ReifiedRelationshipInstance[1] reifiedRelationshipInstance
+	refers ConceptualEntitySingletonInstance[1] domain
+}
+
+/*
+ * An OML ReifiedRelationshipInstanceRange specifies which OML ConceptualEntitySingletonInstance
+ * plays the role of the range for an OML ReifiedRelationshipInstance.
+ * An OML ReifiedRelationshipInstanceRange has no intrinsic identity; instead,
+ * an OML ReifiedRelationshipInstanceRange is semantically equivalent 
+ * to another OML ReifiedRelationshipInstanceRange referencing the same property and range.
+ */
+@Glossary
+class ReifiedRelationshipInstanceRange extends TerminologyInstanceAssertion {
+	
+	@Scala(code="
+	val namespace = \"ReifiedRelationshipInstanceRange(descriptionBox=\" + descriptionBox.uuid + \",reifiedRelationshipInstance=\"+reifiedRelationshipInstance.uuid+ \",range=\"+range.uuid+\")\"
+	com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace)")
+	@NotSchema
+	@Override
+	op UUID[1] calculateUUID() { 
+		val namespace = "ReifiedRelationshipInstanceRange(descriptionBox=" + descriptionBox().uuid + ",reifiedRelationshipInstance="+reifiedRelationshipInstance.uuid + ",range="+range.uuid+")"
+		com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace).toString
+	}
+	
+	container DescriptionBox[1] descriptionBox opposite reifiedRelationshipInstanceRanges
+	refers ReifiedRelationshipInstance[1] reifiedRelationshipInstance
+	refers ConceptualEntitySingletonInstance[1] range
+}
+
+/*
+ * An OML UnreifiedRelationshipInstanceTuple specifies a triple involving
+ * a reference to an OML ConceptualEntitySingletonInstance playing the role of the domain
+ * of an OML UnreifiedRelationship whose range is played by a reference to an OML ConceptualEntitySingletonInstance.
+ * An OML UnreifiedRelationshipInstanceTuple has no intrinsic identity; instead,
+ * an OML UnreifiedRelationshipInstanceTuple is semantically equivalent 
+ * to another OML UnreifiedRelationshipInstanceTuple referencing the same domain, property and range.
+ */
+@Glossary
+class UnreifiedRelationshipInstanceTuple extends TerminologyInstanceAssertion {
+	
+	@Scala(code="
+	val namespace = \"UnreifiedRelationshipInstanceTuple(descriptionBox=\" + descriptionBox.uuid + \",unreifiedRelationship=\"+unreifiedRelationship.uuid+ \",domain=\"+domain.uuid+ \",range=\"+range.uuid+\")\"
+	com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace)")
+	@NotSchema
+	@Override
+	op UUID[1] calculateUUID() { 
+		val namespace = "UnreifiedRelationshipInstanceTuple(descriptionBox=" + descriptionBox().uuid + ",unreifiedRelationship="+unreifiedRelationship.uuid + ",domain="+domain.uuid + ",range="+range.uuid+")"
+		com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace).toString
+	}
+	
+	container DescriptionBox[1] descriptionBox opposite unreifiedRelationshipInstanceTuples
+	refers UnreifiedRelationship[1] unreifiedRelationship
+	refers ConceptualEntitySingletonInstance[1] domain
+	refers ConceptualEntitySingletonInstance[1] range
+}

@@ -1,0 +1,99 @@
+
+dependencies {
+	
+	testCompile 'junit:junit:4.12'
+	
+	compile project(':gov.nasa.jpl.imce.oml.model')
+	testCompile project(':gov.nasa.jpl.imce.oml.dsl')
+    testCompile 'org.eclipse.xtext:org.eclipse.xtext.testing:+'
+    testCompile 'org.eclipse.emf:org.eclipse.emf.mwe.utils:+'
+
+    testCompile 'org.eclipse.xtext:org.eclipse.xtext.xbase.junit:+'
+
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
+
+    // how to use this in gradle?
+    //testCompile 'com.itemis.xtext:com.itemis.xtext.testing'
+}
+
+configurations {
+	compile.transitive = true
+	testCompile.transitive = true
+}
+
+sourceSets {
+	main {
+		output.classesDir = 'build/classes/main/'
+        java.srcDirs = []
+        resources.srcDirs = []
+	}
+	test {
+		output.classesDir = 'build/classes/test/'
+		java.srcDirs = ['src', 'src-gen', 'xtend-gen']
+        resources.srcDirs = ['resources', 'src', 'src-gen']
+		xtendOutputDir = 'xtend-gen'
+	}
+}
+
+ext.eclipseManifest = manifest {
+    attributes(
+            "Manifest-Version": "1.0",
+            "Bundle-ManifestVersion": "2",
+            "Bundle-Name": "%pluginName",
+            "Bundle-SymbolicName": "${project.name};singleton:=true",
+            "Bundle-Version": "${project.version}",
+            "Bundle-ClassPath": ".",
+            "Bundle-Vendor": "%providerName",
+            "Bundle-Localization": "plugin",
+            "Bundle-RequiredExecutionEnvironment": "JavaSE-1.8",
+            "Bundle-ActivationPolicy": "lazy",
+            "Export-Package": '''com.itemis.xtext.testing,
+ gov.nasa.jpl.imce.oml.dsl.tests''',
+            "Import-Package": '''org.hamcrest.core,
+            org.junit.runner.manipulation;version="4.5.0",
+            org.junit.runner.notification;version="4.5.0",
+            org.junit.runner;version="4.5.0",
+            org.junit.runners.model;version="4.5.0",
+            org.junit.runners;version="4.5.0",
+            org.junit;version="4.5.0'''
+    )
+}
+
+jar {
+    manifestContentCharset = 'UTF-8'
+    manifest = eclipseManifest
+}
+
+eclipse {
+	pathVariables 'GRADLE_HOME': gradle.gradleUserHomeDir
+	project {
+		natures 'org.eclipse.jdt.core.javanature', 'org.eclipse.xtext.ui.shared.xtextNature'
+		buildCommand 'org.eclipse.jdt.core.javabuilder'
+		buildCommand 'org.eclipse.xtext.ui.shared.xtextBuilder'
+	}
+	classpath {
+		defaultOutputDir file('build/classes/test/')
+	}
+}
+
+tasks.clean.doLast {
+    file('src-gen').deleteDir()
+    file('xtend-gen').deleteDir()
+}
+
+clean.dependsOn(cleanEclipse)
+
+tasks.cleanEclipse.doLast {
+    file('META-INF').deleteDir()
+}
+
+tasks.eclipse.doLast {
+    eclipseManifest.writeTo('META-INF/MANIFEST.MF')
+}
+
+tasks.clean.doLast {
+	file('src-gen').deleteDir()
+	file('xtend-gen').deleteDir()
+}
+
+clean.dependsOn(cleanEclipse)

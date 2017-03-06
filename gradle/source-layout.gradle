@@ -1,12 +1,3 @@
 sourceSets.all {
-	resources.exclude '**/*.g', '**/*.xtext', '**/*.mwe2', '**/*.xtend', '**/*._trace'
-}
-
-jar {
-	from('model') {
-		into('model')
-	}
-	manifest {
-		attributes 'Bundle-SymbolicName': project.name
-	}
+	resources.exclude '**/*.g', '**/*.xcore', '**/*.xtext', '**/*.mwe2', '**/*.xtend', '**/*._trace'
 }

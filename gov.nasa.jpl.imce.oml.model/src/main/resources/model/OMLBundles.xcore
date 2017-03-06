@@ -1,0 +1,258 @@
+@Ecore(nsPrefix="omlb", nsURI="http://imce.jpl.nasa.gov/oml/bundles")
+@GenModel(copyrightText="
+Copyright 2016 California Institute of Technology (\"Caltech\").
+U.S. Government sponsorship acknowledged.
+
+Licensed under the Apache License, Version 2.0 (the \"License\");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an \"AS IS\" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+", bundleManifest="false",
+   childCreationExtenders="true",
+   complianceLevel="8.0",
+   featureDelegation="None",
+   modelPluginVariables="org.eclipse.xtext.xbase.lib org.eclipse.emf.ecore.xcore.lib org.eclipse.emf.cdo",
+   rootExtendsClass="org.eclipse.emf.internal.cdo.CDOObjectImpl",
+   rootExtendsInterface="org.eclipse.emf.cdo.CDOObject",
+   modelDirectory="gov.nasa.jpl.imce.oml.model/build/xcore/main/",
+   modelName="OMLB")
+  
+// If commented, it is possible to build cleanly with 'gradle :generateXtext'
+// If uncommented, 'gradle :generateXtext' will have several java.io.IOExceptions like these:
+// The path '.../plugin.properties' is unmapped
+// The path '.../build.properties' is unmapped
+// The path '.../plugin.xml' is unmapped
+// @GenModel(modelPluginID="oml.model")
+   
+package gov.nasa.jpl.imce.oml.model.bundles
+
+import gov.nasa.jpl.imce.oml.model.common.AnnotationPropertyTable
+import gov.nasa.jpl.imce.oml.model.common.Collection
+import gov.nasa.jpl.imce.oml.model.common.CopyConstructor
+import gov.nasa.jpl.imce.oml.model.common.Element
+import gov.nasa.jpl.imce.oml.model.common.FunctionalInterface
+import gov.nasa.jpl.imce.oml.model.common.Glossary
+import gov.nasa.jpl.imce.oml.model.common.NotSchema
+import gov.nasa.jpl.imce.oml.model.common.Override
+import gov.nasa.jpl.imce.oml.model.common.Scala
+import gov.nasa.jpl.imce.oml.model.common.ModuleElement
+import gov.nasa.jpl.imce.oml.model.common.UUID
+import gov.nasa.jpl.imce.oml.model.terminologies.Concept
+import gov.nasa.jpl.imce.oml.model.terminologies.TerminologyAxiom
+import gov.nasa.jpl.imce.oml.model.terminologies.TerminologyBox
+import gov.nasa.jpl.imce.oml.model.terminologies.TerminologyBoxAxiom
+import gov.nasa.jpl.imce.oml.model.terminologies.TerminologyBoxStatement
+
+
+/*
+ * An OML Bundle is an OML TerminologyBox that is 
+ * an acyclic logical aggregate of other OML TerminologyBox(es)
+ * and that logically assert OML TerminologyBundleStatement(s).
+ */
+@Glossary
+class Bundle extends TerminologyBox {
+		
+	@NotSchema
+	@Scala(code="copy(annotations = this.annotations ++ resolver.convertToAnnotations(a))")
+	@Override
+	op Bundle[1] withAnnotations
+	(@Collection(kind="SortedSet") AnnotationPropertyTable[] a)
+	
+	@NotSchema
+	@Scala(code="resolver.groupAnnotationsByProperty(annotations)")
+	@Collection(kind="SortedSet")
+	@Override
+	op AnnotationPropertyTable[] annotationsByProperty()	
+	
+	/*
+	 * The TerminologyBundleStatements asserted in this Bundle
+	 */
+	@NotSchema
+	@Collection(kind="SortedSet")
+	contains TerminologyBundleStatement[] bundleStatements opposite bundle
+	
+	/*
+	 * The BundledTerminologyAxioms asserted in this Bundle
+	 */
+	@NotSchema
+	@Collection(kind="SortedSet")
+	contains TerminologyBundleAxiom[] bundleAxioms opposite bundle
+			
+	@NotSchema
+	@Scala(code="copy(bundleStatements = this.bundleStatements ++ s)")
+	op Bundle[1] withBundleStatements
+	(@Collection(kind="SortedSet") TerminologyBundleStatement[] s)
+	
+	@NotSchema
+	@Scala(code="copy(boxAxioms = this.boxAxioms ++ s)")
+	@Override
+	op Bundle[1] withBoxAxioms
+	(@Collection(kind="SortedSet") TerminologyBoxAxiom[] s)
+	
+	@NotSchema
+	@Scala(code="copy(boxStatements = this.boxStatements ++ s)")
+	@Override
+	op Bundle[1] withBoxStatements
+	(@Collection(kind="SortedSet") TerminologyBoxStatement[] s)
+
+	@NotSchema
+	@Scala(code="super.everything() ++ bundleStatements + this")
+	@Collection(kind="SortedSet")
+	@Override
+	op Element[] everything()
+}
+
+/*
+ * An OML TerminologyBundleStatement is a logical axiom about an OML TerminologyThing
+ * in an OML Bundle.
+ */
+@Glossary
+abstract class TerminologyBundleStatement extends ModuleElement {
+	
+	container Bundle[1] bundle opposite bundleStatements
+}
+
+/*
+ * An OML TerminologyBundleAxiom is a TerminologyAxiom that asserts a logical statement in an OML Bundle.
+ */
+@Glossary
+abstract class TerminologyBundleAxiom extends TerminologyAxiom {
+
+	@CopyConstructor
+	container Bundle[1] bundle opposite bundleAxioms
+
+}
+
+/*
+ * An OML ConceptTreeDisjunction represents the root & non-leaf nodes of a concept taxonomy:
+ * - Root node is a RootConceptTaxonomyAxiom.
+ * - Non-leaf nodes are AnonymousConceptTaxonomyAxioms.
+ */
+@Glossary
+abstract class ConceptTreeDisjunction {
+
+	@FunctionalInterface
+	op UUID[1] calculateUUID()
+}
+
+/*
+ * An OML DisjointUnionOfConceptsAxiom(s) represents non-leaf & leaf nodes of a concept taxonomy:
+ * - Each non-leaf node is an OML AnonymousConceptTaxonomyAxiom.
+ * - Each leaf nodes is an OML SpecificDisjointConceptAxiom.
+ */
+@Glossary
+abstract class DisjointUnionOfConceptsAxiom extends TerminologyBundleStatement {
+	
+	/*
+	 * The parent of this node in a disjoint concept taxonomy tree.
+	 */
+	refers ConceptTreeDisjunction[1] disjointTaxonomyParent
+}
+
+/*
+ * An OML SpecificDisjointConceptAxiom specifies a leaf in a taxonomy tree.
+ */
+@Glossary
+class SpecificDisjointConceptAxiom extends DisjointUnionOfConceptsAxiom {
+	
+	@NotSchema
+	@Scala(code="
+	val namespace = \"SpecificDisjointConceptAxiom(bundle=\" + bundle.uuid + \",disjointLeaf=\"+disjointLeaf.uuid+\")\"
+	com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace)")
+	@Override
+	op UUID[1] calculateUUID() { 
+		val namespace = "SpecificDisjointConceptAxiom(bundle=" + bundle.uuid + ",disjointLeaf="+disjointLeaf.uuid+")"
+		com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace).toString
+	}
+	
+	/*
+	 * A Concept that is a disjoint leaf in a taxonomy tree.
+	 */
+	 refers Concept[1] disjointLeaf
+}
+
+/*
+ * An OML AnonymousConceptTaxonomyAxiom is an anonymous taxonomy tree of DisjointUnionOfEntityAxioms.
+ */
+@Glossary
+class AnonymousConceptTaxonomyAxiom extends DisjointUnionOfConceptsAxiom, ConceptTreeDisjunction {
+	
+	@NotSchema
+	@Scala(code="
+	val namespace = \"AnonymousConceptTaxonomyAxiom(bundle=\" + bundle.uuid + \",disjointTaxonomyParent=\"+disjointTaxonomyParent.calculateUUID()+\")\"
+	com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace)")
+	@Override
+	op UUID[1] calculateUUID() { 
+		val namespace = "AnonymousConceptTaxonomyAxiom(bundle=" + bundle.uuid + ",disjointTaxonomyParent="+disjointTaxonomyParent.calculateUUID()+")"
+		com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace).toString
+	}
+	
+}
+
+/*
+ * An OML RootConceptTaxonomyAxiom asserts that, in the scope of a Bundle, a particular Entity
+ * is the root of a taxonomy of specializations of that Entity.
+ */
+@Glossary
+class RootConceptTaxonomyAxiom extends TerminologyBundleStatement, ConceptTreeDisjunction {
+	
+	@NotSchema
+	@Scala(code="
+	val namespace = \"RootConceptTaxonomyAxiom(bundle=\" + bundle.uuid + \",root=\"+root.uuid+\")\"
+	com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace)")
+	@Override
+	op UUID[1] calculateUUID() { 
+		val namespace = "RootConceptTaxonomyAxiom(bundle=" + bundle.uuid + ",root="+root.uuid+")"
+		com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace).toString
+	}
+	
+	/*
+	 * The Concept that is at the root of a taxonomy of disjunctions.
+	 */
+	refers Concept[1] root
+	
+}
+
+/*
+ * An OML BundledTerminologyAxiom identifies an OML TerminologyBox that an OML Bundle aggregates.
+ * An OML BundledTerminologyAxiom allows an OML Bundle to
+ * make references (via OML TerminologyStatement(s)) to OML TerminologyThing(s)
+ * within the transitive closure of a bundledTerminology.
+ */
+@Glossary
+class BundledTerminologyAxiom extends TerminologyBundleAxiom {
+
+	@NotSchema
+	@Scala(code="
+	val namespace = \"BundledTerminologyAxiom(bundle=\" + bundle.uuid + \",bundledTerminology=\"+bundledTerminology.uuid+\")\"
+	com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace)")
+	@Override
+	op UUID[1] calculateUUID() { 
+		val namespace = "BundledTerminologyAxiom(bundle=" + bundle.uuid + ",bundledTerminology="+bundledTerminology.uuid+")"
+		com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace).toString
+	}
+	
+	@CopyConstructor
+	refers TerminologyBox[1] bundledTerminology
+	
+	/*
+	 * The bundle is the source
+	 */
+	@NotSchema
+	@Override
+	op TerminologyBox[1] source() { bundle }
+	
+	/*
+	 * The bundledTerminology is the target
+	 */
+	@NotSchema
+	@Override
+	op TerminologyBox[1] target() { bundledTerminology }
+}

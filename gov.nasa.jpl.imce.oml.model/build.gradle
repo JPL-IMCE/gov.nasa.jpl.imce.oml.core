@@ -1,0 +1,202 @@
+dependencies {
+    compile 'org.eclipse.platform:org.eclipse.core.runtime:+'
+    compile 'org.eclipse.platform:org.eclipse.core.resources:+'
+    compile 'org.eclipse.emf:org.eclipse.emf.codegen:+'
+    compile 'org.eclipse.emf:org.eclipse.emf.codegen.ecore:+'
+    compile 'org.eclipse.emf:org.eclipse.emf.codegen.ecore.xtext:+'
+    compile "org.eclipse.xtext:org.eclipse.xtext.xbase:${xtextVersion}"
+    compile "org.eclipse.xtext:org.eclipse.xtext.ecore:${xtextVersion}"
+    compile "org.eclipse.xtext:org.eclipse.xtext.util:${xtextVersion}"
+    compile "org.eclipse.xtext:org.eclipse.xtext.xbase:${xtextVersion}"
+    compile "org.eclipse.xtext:org.eclipse.xtext.common.types:${xtextVersion}"
+    compile 'org.eclipse.emf:org.eclipse.emf.ecore.xcore.lib:+'
+    compile 'org.eclipse.emf:org.eclipse.emf.ecore.xcore:+'
+    compile 'com.fasterxml.uuid:java-uuid-generator:+'
+
+    // See https://github.com/ghillairet/cdo-maven
+    compile 'org.eclipselabs:cdo.p2:4.6.0.v20170210-0100:repackaged@jar'
+    compile 'org.eclipselabs:net4j.p2:4.6.0.v20170210-0100:repackaged@jar'
+
+    xtextLanguages "org.eclipse.emf:org.eclipse.emf.mwe2.launch:2.8.3"
+    xtextLanguages "org.eclipse.emf:org.eclipse.emf.mwe2.runtime:2.8.3"
+    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+}
+
+configurations {
+    mwe2 {
+        extendsFrom compile
+    }
+    xtextLanguages {
+        extendsFrom compile
+    }
+    compile.transitive = true
+    testCompile.transitive = true
+}
+
+ext.eclipseManifest = manifest {
+    attributes(
+        "Manifest-Version": "1.0",
+        "Bundle-ManifestVersion": "2",
+        "Bundle-Name": "%pluginName",
+        "Bundle-SymbolicName": "${project.name};singleton:=true",
+        "Bundle-Version": "${project.version}",
+        "Bundle-ClassPath": ".",
+        "Bundle-Vendor": "%providerName",
+        "Bundle-Localization": "plugin",
+        "Bundle-RequiredExecutionEnvironment": "JavaSE-1.8",
+        "Export-Package": '''gov.nasa.jpl.imce.oml.provenance.oti,
+ gov.nasa.jpl.imce.oml.provenance.oti.impl, 
+ gov.nasa.jpl.imce.oml.provenance.oti.util, 
+ gov.nasa.jpl.imce.oml.model.common, 
+ gov.nasa.jpl.imce.oml.model.common.impl, 
+ gov.nasa.jpl.imce.oml.model.common.util, 
+ gov.nasa.jpl.imce.oml.model.bundles, 
+ gov.nasa.jpl.imce.oml.model.bundles.impl, 
+ gov.nasa.jpl.imce.oml.model.bundles.util, 
+ gov.nasa.jpl.imce.oml.model.terminologies, 
+ gov.nasa.jpl.imce.oml.model.terminologies.impl, 
+ gov.nasa.jpl.imce.oml.model.terminologies.util, 
+ gov.nasa.jpl.imce.oml.model.graphs,
+ gov.nasa.jpl.imce.oml.model.graphs.impl, 
+ gov.nasa.jpl.imce.oml.model.graphs.util, 
+ gov.nasa.jpl.imce.oml.model.descriptions, 
+ gov.nasa.jpl.imce.oml.model.descriptions.impl, 
+ gov.nasa.jpl.imce.oml.model.descriptions.util, 
+ gov.nasa.jpl.imce.oml.model.extensions,
+ gov.nasa.jpl.imce.fm, 
+ gov.nasa.jpl.imce.fm.impl, 
+ gov.nasa.jpl.imce.fm.util''',
+        "Require-Bundle": '''org.eclipse.core.runtime;visibility:=reexport, 
+ org.eclipse.core.resources;visibility:=reexport, 
+ org.eclipse.emf.ecore;visibility:=reexport, 
+ org.eclipse.xtext.xbase.lib;visibility:=reexport, 
+ org.eclipse.emf.ecore.xcore.lib;visibility:=reexport, 
+ org.eclipse.emf.ecore.xcore;visibility:=reexport, 
+ org.eclipse.emf.cdo;visibility:=reexport, 
+ org.eclipse.emf.ecore.xmi;visibility:=reexport''',
+        "Bundle-ActivationPolicy": "lazy"
+    )
+    contentCharset = 'UTF-8'
+}
+
+jar {
+    manifestContentCharset = 'UTF-8'
+    manifest = eclipseManifest
+    from('src/main/resources') {
+        include '**/*.xcore'
+    }
+}
+
+eclipse {
+    pathVariables 'GRADLE_HOME': gradle.gradleUserHomeDir
+    project {
+        natures 'org.eclipse.pde.PluginNature'
+        buildCommand 'org.eclipse.pde.ManifestBuilder'
+        buildCommand 'org.eclipse.pde.SchemaBuilder'
+    }
+    classpath {
+        defaultOutputDir file('build/classes/main/')
+        file {
+            whenMerged { classpath ->
+                def res = classpath.entries.find { entry -> entry.kind == 'src' && entry.path == 'src/main/resources' }
+                res.excludes = ['**/*.xcore']
+                res.output = 'build/resources/main'
+            }
+        }
+    }
+}
+
+clean.dependsOn(cleanEclipse)
+
+tasks.cleanEclipse.doLast {
+    file('META-INF').deleteDir()
+}
+
+tasks.eclipse.doLast {
+    eclipseManifest.writeTo('META-INF/MANIFEST.MF')
+}
+
+sourceSets {
+    main {
+        java.srcDirs = ['src/main/java', 'build/xcore/main', 'build/xtend/main']
+        xtendOutputDir = 'build/xtend/main'
+        resources {
+            srcDirs = ['src/main/resources']
+            output.resourcesDir = 'build/classes/main'
+        }
+    }
+    test {
+        java.srcDirs = []
+        resources.srcDirs = []
+    }
+}
+
+xtext {
+    version = "${xtextVersion}"
+    languages {
+        ecore {
+            setup = 'org.eclipse.xtext.ecore.EcoreSupport'
+        }
+        codegen {
+            setup = 'org.eclipse.emf.codegen.ecore.xtext.GenModelSupport'
+        }
+        xcore {
+            setup = 'org.eclipse.emf.ecore.xcore.XcoreStandaloneSetup'
+            generator {
+                javaSourceLevel = '1.8'
+                outlet {
+                    producesJava = true
+                    cleanAutomatically = true
+                }
+            }
+        }
+    }
+}
+
+publishing {
+    publications {
+        mavenPublication(MavenPublication) {
+            from components.java
+            artifact sourcesJar
+            artifact javadocJar
+            artifactId project.name
+        }
+    }
+}
+
+bintray {
+    user = project.hasProperty('bintrayUser') ? project.property('bintrayUser') : System.getenv('BINTRAY_USER')
+    key = project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey') : System.getenv('BINTRAY_API_KEY')
+    publications = ['mavenPublication']
+    dryRun = false
+    pkg {
+        repo = 'gov.nasa.jpl.imce'
+        userOrg = 'jpl-imce'
+        name = project.name
+        licenses = ['Apache-2.0']
+        vcsUrl = 'https://github.com/jpl-imce/oml.core'
+        websiteUrl = 'https://github.com/JPL-IMCE/oml.core'
+        issueTrackerUrl = 'https://github.com/JPL-IMCE/oml.core/issues'
+        desc = 'Ontological Modeling Language core libraries'
+        githubRepo = 'jpl-imce/oml.core'
+        githubReleaseNotesFile = 'README.md'
+        version {
+            gpg {
+                sign = true // sign with Bintray's internal keys
+            }
+        }
+    }
+}
+
+task info() {
+    doLast {
+        println("source sets:")
+        sourceSets.main.properties.each {
+            println(it)
+        }
+        println("xtext.languages.xcore")
+        xtext.languages.xcore.generator.outlet.properties.each {
+            println(it)
+        }
+    }
+}

@@ -1,0 +1,180 @@
+@Ecore(nsPrefix="omlg", nsURI="http://imce.jpl.nasa.gov/oml/graphs")
+@GenModel(copyrightText="
+Copyright 2016 California Institute of Technology (\"Caltech\").
+U.S. Government sponsorship acknowledged.
+
+Licensed under the Apache License, Version 2.0 (the \"License\");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an \"AS IS\" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+", bundleManifest="false",
+   childCreationExtenders="true",
+   complianceLevel="8.0",
+   featureDelegation="None",
+   modelPluginVariables="org.eclipse.xtext.xbase.lib org.eclipse.emf.ecore.xcore.lib org.eclipse.emf.cdo",
+   rootExtendsClass="org.eclipse.emf.internal.cdo.CDOObjectImpl",
+   rootExtendsInterface="org.eclipse.emf.cdo.CDOObject",
+   modelDirectory="gov.nasa.jpl.imce.oml.model/build/xcore/main/",
+   modelName="OMLG")
+  
+// If commented, it is possible to build cleanly with 'gradle :generateXtext'
+// If uncommented, 'gradle :generateXtext' will have several java.io.IOExceptions like these:
+// The path '.../plugin.properties' is unmapped
+// The path '.../build.properties' is unmapped
+// The path '.../plugin.xml' is unmapped
+// @GenModel(modelPluginID="oml.model")
+ 
+package gov.nasa.jpl.imce.oml.model.graphs
+
+import gov.nasa.jpl.imce.oml.model.common.AnnotationPropertyTable
+import gov.nasa.jpl.imce.oml.model.common.Collection
+import gov.nasa.jpl.imce.oml.model.common.CopyConstructor
+import gov.nasa.jpl.imce.oml.model.common.Glossary
+import gov.nasa.jpl.imce.oml.model.common.NotSchema
+import gov.nasa.jpl.imce.oml.model.common.Override
+import gov.nasa.jpl.imce.oml.model.common.Scala
+import gov.nasa.jpl.imce.oml.model.common.UUID
+import gov.nasa.jpl.imce.oml.model.terminologies.Concept
+import gov.nasa.jpl.imce.oml.model.terminologies.TerminologyBox
+import gov.nasa.jpl.imce.oml.model.terminologies.TerminologyBoxAxiom
+import gov.nasa.jpl.imce.oml.model.terminologies.TerminologyBoxStatement
+
+/*
+ * An OML TerminologyGraph is an OML TerminologyBox with no statements our axioms involving OML Bundle(s).
+ */
+@Glossary
+class TerminologyGraph extends TerminologyBox {
+	
+	@NotSchema
+	@Scala(code="copy(annotations = this.annotations ++ resolver.convertToAnnotations(a))")
+	@Override
+	op TerminologyGraph[1] withAnnotations
+	(@Collection(kind="SortedSet") AnnotationPropertyTable[] a)
+	
+	@NotSchema
+	@Scala(code="resolver.groupAnnotationsByProperty(annotations)")
+	@Collection(kind="SortedSet")
+	@Override
+	op AnnotationPropertyTable[] annotationsByProperty()	
+	
+	@NotSchema
+	@Scala(code="copy(boxAxioms = this.boxAxioms ++ s)")
+	@Override
+	op TerminologyGraph[1] withBoxAxioms
+	(@Collection(kind="SortedSet") TerminologyBoxAxiom[] s)
+	
+	@NotSchema
+	@Scala(code="copy(boxStatements = this.boxStatements ++ s)")
+	@Override
+	op TerminologyGraph[1] withBoxStatements
+	(@Collection(kind="SortedSet") TerminologyBoxStatement[] s)
+}
+
+/*
+ * An OML ConceptDesignationTerminologyAxiom establishes
+ * a relationship from a source OML TerminologyBox
+ * where a designated OML Concept is defined to
+ * a target OML TerminologyGraph in which the internal
+ * structure of the designated OML Concept can be defined. 
+ */
+@Glossary
+class ConceptDesignationTerminologyAxiom extends TerminologyBoxAxiom {
+	
+	@NotSchema
+	@Scala(code="
+	val namespace = \"ConceptDesignationTerminologyAxiom(designationTerminologyGraph=\" + tbox.uuid + \",designatedConcept=\"+designatedConcept.uuid+\")\"
+	com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace)")
+	@Override
+	op UUID[1] calculateUUID() { 
+		val namespace = "ConceptDesignationTerminologyAxiom(designationTerminologyGraph=" + tbox.uuid + ",designatedConcept="+designatedConcept.uuid+")"
+		com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace).toString
+	}
+	
+	@NotSchema
+	@Scala(code="tbox match { case g: TerminologyGraph => g }")
+	op TerminologyGraph[1] designationTerminologyGraph() {
+		switch tbox {
+			TerminologyGraph:
+				tbox as TerminologyGraph
+		}
+	}
+	 
+	@NotSchema
+	@CopyConstructor
+	refers TerminologyBox[1] designatedTerminology
+	
+	refers Concept[1] designatedConcept
+	 
+	/*
+	 * The designationTerminologyGraph is the source
+	 */
+	@Scala(code="tbox")
+	@NotSchema
+	@Override
+	op TerminologyBox[1] source() { getTbox }
+	
+	/*
+	 * The TerminologyBox that asserts the designatedConcept is the target
+	 */
+	@NotSchema
+	@Override
+	op TerminologyBox[1] target() { designatedTerminology }
+}
+
+/*
+ * An OML TerminologyNestingAxiom provides support for relating
+ * a white-box nested OML TerminologyGraph used for describing internal
+ * details about a nesting OML Concept defined in a nesting OML TerminologyBox. 
+ * This nesting OML Concept specifies the context for the internal details
+ * defined in the nested OML TerminologyGraph.
+ */
+@Glossary
+class TerminologyNestingAxiom extends TerminologyBoxAxiom {
+
+	@Scala(code="
+	val namespace = \"TerminologyNestingAxiom(source=\" + source.uuid + \",target=\"+target.uuid + \",nestingContext=\"+nestingContext.uuid + \")\"
+	com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace)")
+	@NotSchema
+	@Override
+	op UUID[1] calculateUUID() { 
+		val namespace = "TerminologyNestingAxiom(source=" + source().uuid + ",target="+target().uuid+ ",nestingContext="+nestingContext.uuid+")"
+		com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace).toString
+	}
+	
+  	@CopyConstructor
+	refers TerminologyBox[1] nestingTerminology
+
+	@NotSchema
+	@Scala(code="tbox match { case g: TerminologyGraph => g }")
+	op TerminologyGraph[1] nestedTerminology() {
+		switch tbox {
+			TerminologyGraph:
+				tbox as TerminologyGraph
+		}
+	}
+
+  	refers Concept[1] nestingContext
+  	
+	/*
+	 * The nestedTerminology is the source
+	 */
+	@Scala(code="tbox")
+	@NotSchema
+	@Override
+	op TerminologyBox[1] source() { getTbox }
+	
+	/*
+	 * The nestingTerminology is the target
+	 */
+	@NotSchema
+	@Override
+	op TerminologyBox[1] target() { nestingTerminology }
+  	
+}

@@ -1,0 +1,47 @@
+
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'ISO-8859-1'
+}
+
+tasks.withType(Javadoc) {
+    options.encoding = 'ISO-8859-1'
+    options.tags = [ 'noreference', 'noextend', 'noimplement', 'noinstantiate', 'nooverride', 'extends', 'model', 'generated', 'ordered' ]
+    options.addStringOption('Xdoclint:none', '-quiet')
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    group 'Build'
+    description 'Assembles a jar archive containing the sources.'
+    classifier = 'sources'
+    from sourceSets.main.allSource
+    exclude 'model' // avoids duplication with 'main/resources/model', which is included.
+
+    from('.') {
+        include 'build.properties'
+        include 'plugin.properties'
+        include 'plugin.xml'
+        include 'META-INF/MANIFEST.MF'
+    }
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    group 'Build'
+    description 'Assembles a jar archive containing the JavaDoc output.'
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts.archives sourcesJar, javadocJar
+
+jar {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from('.') {
+        include 'build.properties'
+        include 'plugin.properties'
+        include 'plugin.xml'
+        include 'META-INF/MANIFEST.MF'
+    }
+}

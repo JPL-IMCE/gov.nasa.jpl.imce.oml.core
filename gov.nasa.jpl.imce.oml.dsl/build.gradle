@@ -1,0 +1,121 @@
+dependencies {
+	compile project(':gov.nasa.jpl.imce.oml.model')
+	compile "org.eclipse.xtext:org.eclipse.xtext:${xtextVersion}"
+}	
+
+configurations {
+	mwe2 {
+		extendsFrom compile
+	}
+    xtextLanguages {
+        extendsFrom compile
+    }
+    compile.transitive = true
+    testCompile.transitive = true
+}
+
+dependencies {
+	mwe2 "org.eclipse.emf:org.eclipse.emf.mwe2.launch:2.8.3"
+	mwe2 "org.eclipse.xtext:org.eclipse.xtext.xtext.generator:${xtextVersion}"
+	// added for Xcore support
+	mwe2 'org.eclipse.emf:org.eclipse.emf.ecore.xcore:+'
+	mwe2 'org.eclipse.emf:org.eclipse.emf.codegen.ecore.xtext:+'
+}
+
+sourceSets {
+    main {
+        output.classesDir = 'build/classes/main/'
+        java.srcDirs = ['src', 'src-gen', 'xtend-gen']
+        resources.srcDirs = ['src', 'src-gen']
+        xtendOutputDir = 'xtend-gen'
+    }
+    test {
+        java.srcDirs = []
+        resources.srcDirs = []
+    }
+}
+
+ext.eclipseManifest = manifest {
+    attributes(
+            "Manifest-Version": "1.0",
+            "Bundle-ManifestVersion": "2",
+            "Bundle-Name": "%pluginName",
+            "Bundle-SymbolicName": "${project.name};singleton:=true",
+            "Bundle-Version": "${project.version}",
+            "Bundle-ClassPath": ".",
+            "Bundle-Vendor": "%providerName",
+            "Bundle-Localization": "plugin",
+            "Bundle-RequiredExecutionEnvironment": "JavaSE-1.8",
+            "Export-Package": '''gov.nasa.jpl.imce.oml.dsl,
+ gov.nasa.jpl.imce.oml.dsl.formatting2,
+ gov.nasa.jpl.imce.oml.dsl.generator,
+ gov.nasa.jpl.imce.oml.dsl.linking,
+ gov.nasa.jpl.imce.oml.dsl.parser.antlr,
+ gov.nasa.jpl.imce.oml.dsl.parser.antlr.internal,
+ gov.nasa.jpl.imce.oml.dsl.scoping,
+ gov.nasa.jpl.imce.oml.dsl.serializer,
+ gov.nasa.jpl.imce.oml.dsl.services,
+ gov.nasa.jpl.imce.oml.dsl.util,
+ gov.nasa.jpl.imce.oml.dsl.validation''',
+            "Require-Bundle": '''org.antlr.runtime,
+ org.eclipse.xtend.lib,
+ org.eclipse.xtext,
+ org.eclipse.xtext.util,
+ org.eclipse.xtext.xbase.lib,
+ gov.nasa.jpl.imce.oml.model''',
+            "Bundle-ActivationPolicy": "lazy"
+    )
+}
+
+jar {
+    manifestContentCharset = 'UTF-8'
+    manifest = eclipseManifest
+    from('src-gen') {
+        include '**/*.g'
+    }
+}
+
+eclipse {
+    pathVariables 'GRADLE_HOME': gradle.gradleUserHomeDir
+    project {
+        natures 'org.eclipse.pde.PluginNature', 'org.eclipse.xtext.ui.shared.xtextNature'
+        buildCommand 'org.eclipse.pde.ManifestBuilder'
+        buildCommand 'org.eclipse.pde.SchemaBuilder'
+        buildCommand 'org.eclipse.xtext.ui.shared.xtextBuilder'
+    }
+    classpath {
+        defaultOutputDir file('build/classes/main/')
+    }
+}
+
+tasks.clean.doLast {
+    file('.antlr-generator-3.2.0-patch.jar').delete()
+    file('src-gen').deleteDir()
+    file('xtend-gen').deleteDir()
+}
+
+clean.dependsOn(cleanEclipse)
+
+tasks.cleanEclipse.doLast {
+    file('META-INF').deleteDir()
+}
+
+tasks.eclipse.doLast {
+    eclipseManifest.writeTo('META-INF/MANIFEST.MF')
+}
+
+task generateXtextLanguage(type: JavaExec) {
+	main = 'org.eclipse.emf.mwe2.launch.runtime.Mwe2Launcher'
+	classpath = configurations.mwe2
+	inputs.file "src/gov/nasa/jpl/imce/oml/dsl/GenerateOntologicalModelingLanguage.mwe2"
+	inputs.file "src/gov/nasa/jpl/imce/oml/dsl/OntologicalModelingLanguage.xtext"
+    inputs.files "src/**/*.xtend"
+	outputs.dir "build/src-gen"
+	args += "src/gov/nasa/jpl/imce/oml/dsl/GenerateOntologicalModelingLanguage.mwe2"
+	args += "-p"
+	args += "rootPath=/${projectDir}/.."
+}
+
+generateXtext.dependsOn(generateXtextLanguage)
+clean.dependsOn(cleanGenerateXtextLanguage)
+eclipse.classpath.plusConfigurations += [configurations.mwe2]

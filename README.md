@@ -1,139 +1,35 @@
 # Ontological Modeling Language core build (Xcore, Xtext, Xtend)
 
-There are no Eclipse metadata files (.classpath, .project, .settings) in GIT for two reasons:
-- Platform-specific paths in `.classpath` files; in particular for [oml.model]
-- The contents may be reordered which appears to be a significant difference with GIT
+There are no Eclipse metadata files (.classpath, .project, .settings, META-INF/MANIFEST.MF) in GIT:
+- Avoiding duplicate information (e.g., dependencies should be specified only once)
+- Avoiding platform-specific files (e.g., .classpath)
+- Avoiding problems with re-generated files were the contents are syntactically different but logically equivalent
 
 ## To clean:
 
 	./gradlew clean cleanEclipse
 
-## To build:
+## Building using Gradle
 
-    ./gradlew :oml.model:generateXtext
-    
-Currently, this fails because for some mysterious reason, the XcoreGenerator
-produces an *.ecore file that it tries to save using Resource.save();
-which works in the Eclipse IDE because there's a workspaceRoot but doesn't in gradle
-because there's no workspaceRoot nor any EMF ResourceSet pathmap.
-    
-      
-      :oml.model:generateXtext
-      java.io.IOException: The path '/oml.model/build/xcore/main/gov/nasa/jpl/imce/oml/impl/oml.ecore' is unmapped
-              at org.eclipse.emf.ecore.resource.impl.PlatformResourceURIHandlerImpl.createOutputStream(PlatformResourceURIHandlerImpl.java:501)
-              at org.eclipse.emf.ecore.resource.impl.ExtensibleURIConverterImpl.createOutputStream(ExtensibleURIConverterImpl.java:349)
-              at org.eclipse.emf.ecore.resource.impl.ResourceImpl.saveOnlyIfChangedWithMemoryBuffer(ResourceImpl.java:1234)
-              at org.eclipse.emf.ecore.resource.impl.ResourceImpl.save(ResourceImpl.java:985)
-              at org.eclipse.emf.codegen.ecore.genmodel.generator.GenPackageGeneratorAdapter.generatePackageSerialization(GenPackageGeneratorAdapter.java:544)
-              at org.eclipse.emf.codegen.ecore.genmodel.generator.GenPackageGeneratorAdapter.generateModel(GenPackageGeneratorAdapter.java:213)
-              at org.eclipse.emf.codegen.ecore.genmodel.generator.GenBaseGeneratorAdapter.doGenerate(GenBaseGeneratorAdapter.java:215)
-              at org.eclipse.emf.codegen.ecore.generator.AbstractGeneratorAdapter.generate(AbstractGeneratorAdapter.java:317)
-              at org.eclipse.emf.codegen.ecore.generator.Generator.generate(Generator.java:708)
-              at org.eclipse.emf.codegen.ecore.generator.Generator.generate(Generator.java:619)
-              at org.eclipse.emf.ecore.xcore.generator.XcoreGenerator.generateGenModel(XcoreGenerator.java:280)
-              at org.eclipse.emf.ecore.xcore.generator.XcoreGenerator.doGenerate(XcoreGenerator.java:228)
-              at org.eclipse.xtext.generator.GeneratorDelegate.doGenerate(GeneratorDelegate.java:45)
-              at org.eclipse.xtext.generator.GeneratorDelegate.generate(GeneratorDelegate.java:34)
-              at org.eclipse.xtext.build.IncrementalBuilder$InternalStatefulIncrementalBuilder.generate(IncrementalBuilder.java:278)
-              at org.eclipse.xtext.build.IncrementalBuilder$InternalStatefulIncrementalBuilder.lambda$launch$6(IncrementalBuilder.java:215)
-              at org.eclipse.xtext.build.ClusteringStorageAwareResourceLoader.lambda$executeClustered$1(ClusteringStorageAwareResourceLoader.java:77)
-              at org.eclipse.xtext.xbase.lib.internal.FunctionDelegate.apply(FunctionDelegate.java:42)
-              at com.google.common.collect.Lists$TransformingRandomAccessList$1.transform(Lists.java:617)
-              at com.google.common.collect.TransformedIterator.next(TransformedIterator.java:48)
-              at java.util.AbstractCollection.toArray(AbstractCollection.java:141)
-              at java.util.ArrayList.addAll(ArrayList.java:577)
-              at com.google.common.collect.Iterables.addAll(Iterables.java:352)
-              at org.eclipse.xtext.build.ClusteringStorageAwareResourceLoader.executeClustered(ClusteringStorageAwareResourceLoader.java:80)
-              at org.eclipse.xtext.build.BuildContext.executeClustered(BuildContext.java:55)
-              at org.eclipse.xtext.build.IncrementalBuilder$InternalStatefulIncrementalBuilder.launch(IncrementalBuilder.java:220)
-              at org.eclipse.xtext.build.IncrementalBuilder.build(IncrementalBuilder.java:368)
-              at org.eclipse.xtext.build.IncrementalBuilder.build(IncrementalBuilder.java:353)
-              at org.xtext.gradle.builder.XtextGradleBuilder.doBuild(XtextGradleBuilder.java:360)
-              at org.xtext.gradle.builder.XtextGradleBuilder.build(XtextGradleBuilder.java:206)
-              at org.xtext.gradle.tasks.XtextGenerate.generate(XtextGenerate.java:149)
-              at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
-              at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
-              at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
-              at java.lang.reflect.Method.invoke(Method.java:498)
-              at org.gradle.internal.reflect.JavaMethod.invoke(JavaMethod.java:73)
-              at org.gradle.api.internal.project.taskfactory.DefaultTaskClassInfoStore$IncrementalTaskAction.doExecute(DefaultTaskClassInfoStore.java:163)
-              at org.gradle.api.internal.project.taskfactory.DefaultTaskClassInfoStore$StandardTaskAction.execute(DefaultTaskClassInfoStore.java:134)
-              at org.gradle.api.internal.project.taskfactory.DefaultTaskClassInfoStore$StandardTaskAction.execute(DefaultTaskClassInfoStore.java:123)
-              at org.gradle.api.internal.tasks.execution.ExecuteActionsTaskExecuter.executeAction(ExecuteActionsTaskExecuter.java:95)
-              at org.gradle.api.internal.tasks.execution.ExecuteActionsTaskExecuter.executeActions(ExecuteActionsTaskExecuter.java:76)
-              at org.gradle.api.internal.tasks.execution.ExecuteActionsTaskExecuter.execute(ExecuteActionsTaskExecuter.java:55)
-              at org.gradle.api.internal.tasks.execution.SkipUpToDateTaskExecuter.execute(SkipUpToDateTaskExecuter.java:62)
-              at org.gradle.api.internal.tasks.execution.ValidatingTaskExecuter.execute(ValidatingTaskExecuter.java:58)
-              at org.gradle.api.internal.tasks.execution.SkipEmptySourceFilesTaskExecuter.execute(SkipEmptySourceFilesTaskExecuter.java:88)
-              at org.gradle.api.internal.tasks.execution.ResolveTaskArtifactStateTaskExecuter.execute(ResolveTaskArtifactStateTaskExecuter.java:46)
-              at org.gradle.api.internal.tasks.execution.SkipTaskWithNoActionsExecuter.execute(SkipTaskWithNoActionsExecuter.java:51)
-              at org.gradle.api.internal.tasks.execution.SkipOnlyIfTaskExecuter.execute(SkipOnlyIfTaskExecuter.java:54)
-              at org.gradle.api.internal.tasks.execution.ExecuteAtMostOnceTaskExecuter.execute(ExecuteAtMostOnceTaskExecuter.java:43)
-              at org.gradle.api.internal.tasks.execution.CatchExceptionTaskExecuter.execute(CatchExceptionTaskExecuter.java:34)
-              at org.gradle.execution.taskgraph.DefaultTaskGraphExecuter$EventFiringTaskWorker$1.execute(DefaultTaskGraphExecuter.java:236)
-              at org.gradle.execution.taskgraph.DefaultTaskGraphExecuter$EventFiringTaskWorker$1.execute(DefaultTaskGraphExecuter.java:228)
-              at org.gradle.internal.Transformers$4.transform(Transformers.java:169)
-              at org.gradle.internal.progress.DefaultBuildOperationExecutor.run(DefaultBuildOperationExecutor.java:106)
-              at org.gradle.internal.progress.DefaultBuildOperationExecutor.run(DefaultBuildOperationExecutor.java:61)
-              at org.gradle.execution.taskgraph.DefaultTaskGraphExecuter$EventFiringTaskWorker.execute(DefaultTaskGraphExecuter.java:228)
-              at org.gradle.execution.taskgraph.DefaultTaskGraphExecuter$EventFiringTaskWorker.execute(DefaultTaskGraphExecuter.java:215)
-              at org.gradle.execution.taskgraph.AbstractTaskPlanExecutor$TaskExecutorWorker.processTask(AbstractTaskPlanExecutor.java:77)
-              at org.gradle.execution.taskgraph.AbstractTaskPlanExecutor$TaskExecutorWorker.run(AbstractTaskPlanExecutor.java:58)
-              at org.gradle.execution.taskgraph.DefaultTaskPlanExecutor.process(DefaultTaskPlanExecutor.java:32)
-              at org.gradle.execution.taskgraph.DefaultTaskGraphExecuter.execute(DefaultTaskGraphExecuter.java:113)
-              at org.gradle.execution.SelectedTaskExecutionAction.execute(SelectedTaskExecutionAction.java:37)
-              at org.gradle.execution.DefaultBuildExecuter.execute(DefaultBuildExecuter.java:37)
-              at org.gradle.execution.DefaultBuildExecuter.access$000(DefaultBuildExecuter.java:23)
-              at org.gradle.execution.DefaultBuildExecuter$1.proceed(DefaultBuildExecuter.java:43)
-              at org.gradle.execution.DryRunBuildExecutionAction.execute(DryRunBuildExecutionAction.java:32)
-              at org.gradle.execution.DefaultBuildExecuter.execute(DefaultBuildExecuter.java:37)
-              at org.gradle.execution.DefaultBuildExecuter.execute(DefaultBuildExecuter.java:30)
-              at org.gradle.initialization.DefaultGradleLauncher$3.execute(DefaultGradleLauncher.java:196)
-              at org.gradle.initialization.DefaultGradleLauncher$3.execute(DefaultGradleLauncher.java:193)
-              at org.gradle.internal.Transformers$4.transform(Transformers.java:169)
-              at org.gradle.internal.progress.DefaultBuildOperationExecutor.run(DefaultBuildOperationExecutor.java:106)
-              at org.gradle.internal.progress.DefaultBuildOperationExecutor.run(DefaultBuildOperationExecutor.java:56)
-              at org.gradle.initialization.DefaultGradleLauncher.doBuildStages(DefaultGradleLauncher.java:193)
-              at org.gradle.initialization.DefaultGradleLauncher.doBuild(DefaultGradleLauncher.java:119)
-              at org.gradle.initialization.DefaultGradleLauncher.run(DefaultGradleLauncher.java:102)
-              at org.gradle.launcher.exec.GradleBuildController.run(GradleBuildController.java:71)
-              at org.gradle.tooling.internal.provider.ExecuteBuildActionRunner.run(ExecuteBuildActionRunner.java:28)
-              at org.gradle.launcher.exec.ChainingBuildActionRunner.run(ChainingBuildActionRunner.java:35)
-              at org.gradle.launcher.exec.InProcessBuildActionExecuter.execute(InProcessBuildActionExecuter.java:41)
-              at org.gradle.launcher.exec.InProcessBuildActionExecuter.execute(InProcessBuildActionExecuter.java:26)
-              at org.gradle.tooling.internal.provider.ContinuousBuildActionExecuter.execute(ContinuousBuildActionExecuter.java:75)
-              at org.gradle.tooling.internal.provider.ContinuousBuildActionExecuter.execute(ContinuousBuildActionExecuter.java:49)
-              at org.gradle.tooling.internal.provider.ServicesSetupBuildActionExecuter.execute(ServicesSetupBuildActionExecuter.java:44)
-              at org.gradle.tooling.internal.provider.ServicesSetupBuildActionExecuter.execute(ServicesSetupBuildActionExecuter.java:29)
-              at org.gradle.launcher.daemon.server.exec.ExecuteBuild.doBuild(ExecuteBuild.java:67)
-              at org.gradle.launcher.daemon.server.exec.BuildCommandOnly.execute(BuildCommandOnly.java:36)
-              at org.gradle.launcher.daemon.server.api.DaemonCommandExecution.proceed(DaemonCommandExecution.java:120)
-              at org.gradle.launcher.daemon.server.exec.WatchForDisconnection.execute(WatchForDisconnection.java:47)
-              at org.gradle.launcher.daemon.server.api.DaemonCommandExecution.proceed(DaemonCommandExecution.java:120)
-              at org.gradle.launcher.daemon.server.exec.ResetDeprecationLogger.execute(ResetDeprecationLogger.java:26)
-              at org.gradle.launcher.daemon.server.api.DaemonCommandExecution.proceed(DaemonCommandExecution.java:120)
-              at org.gradle.launcher.daemon.server.exec.RequestStopIfSingleUsedDaemon.execute(RequestStopIfSingleUsedDaemon.java:34)
-              at org.gradle.launcher.daemon.server.api.DaemonCommandExecution.proceed(DaemonCommandExecution.java:120)
-              at org.gradle.launcher.daemon.server.exec.ForwardClientInput$2.call(ForwardClientInput.java:74)
-              at org.gradle.launcher.daemon.server.exec.ForwardClientInput$2.call(ForwardClientInput.java:72)
-              at org.gradle.util.Swapper.swap(Swapper.java:38)
-              at org.gradle.launcher.daemon.server.exec.ForwardClientInput.execute(ForwardClientInput.java:72)
-              at org.gradle.launcher.daemon.server.api.DaemonCommandExecution.proceed(DaemonCommandExecution.java:120)
-              at org.gradle.launcher.daemon.server.exec.LogAndCheckHealth.execute(LogAndCheckHealth.java:55)
-              at org.gradle.launcher.daemon.server.api.DaemonCommandExecution.proceed(DaemonCommandExecution.java:120)
-              at org.gradle.launcher.daemon.server.exec.LogToClient.doBuild(LogToClient.java:60)
-              at org.gradle.launcher.daemon.server.exec.BuildCommandOnly.execute(BuildCommandOnly.java:36)
-              at org.gradle.launcher.daemon.server.api.DaemonCommandExecution.proceed(DaemonCommandExecution.java:120)
-              at org.gradle.launcher.daemon.server.exec.EstablishBuildEnvironment.doBuild(EstablishBuildEnvironment.java:72)
-              at org.gradle.launcher.daemon.server.exec.BuildCommandOnly.execute(BuildCommandOnly.java:36)
-              at org.gradle.launcher.daemon.server.api.DaemonCommandExecution.proceed(DaemonCommandExecution.java:120)
-              at org.gradle.launcher.daemon.server.exec.StartBuildOrRespondWithBusy$1.run(StartBuildOrRespondWithBusy.java:50)
-              at org.gradle.launcher.daemon.server.DaemonStateCoordinator$1.run(DaemonStateCoordinator.java:297)
-              at org.gradle.internal.concurrent.ExecutorPolicy$CatchAndRecordFailures.onExecute(ExecutorPolicy.java:54)
-              at org.gradle.internal.concurrent.StoppableExecutorImpl$1.run(StoppableExecutorImpl.java:40)
-              at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1142)
-              at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617)
-              at java.lang.Thread.run(Thread.java:745)
-      
-      BUILD SUCCESSFUL
-      
+    ./gradlew build
+
+## To import in eclipse:
+
+1) Build everything with gradle
+
+     ```
+     ./gradlew build
+     ```
+     
+2) Generate Eclipse metadata
+
+     ```
+     ./gradlew eclipse
+     ```
+     
+3) Import the projects in Eclipse
+
+## Building using Eclipse:
+
+- Execute the procedure to `import in Eclipse`
+- The projects can be cleaned & rebuilt in the Eclipse IDE

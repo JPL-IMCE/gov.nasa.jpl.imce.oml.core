@@ -1,0 +1,687 @@
+/*
+ * Copyright 2016 California Institute of Technology ("Caltech").
+ * U.S. Government sponsorship acknowledged.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * License Terms
+ */
+grammar gov.nasa.jpl.imce.oml.dsl.OntologicalModelingLanguage 
+	with org.eclipse.xtext.common.Terminals
+	hidden(WS, ML_COMMENT, SL_COMMENT)
+
+import "http://imce.jpl.nasa.gov/oml/common"
+import "http://imce.jpl.nasa.gov/oml/terminologies"
+import "http://imce.jpl.nasa.gov/oml/graphs"
+import "http://imce.jpl.nasa.gov/oml/bundles"
+import "http://imce.jpl.nasa.gov/oml/descriptions"
+import "http://www.eclipse.org/emf/2002/Ecore" as ecore
+
+Extent returns Extent:
+	{Extent}
+	( annotationProperties+=AnnotationProperty |
+	  modules+=Module
+	)*
+	;
+
+// syntax of Annotation & AnnotationProperties
+
+AnnotationProperty returns AnnotationProperty:
+	ANNOTATION_PROPERTY_TOKEN abbrevIRI=ABBREV_IRI EQUAL iri=IRI;
+
+/*
+ * Note that the concrete syntax for the Annotation.subject is defined implicitly
+ * in the sense that the subject of an Annotation is always the preceding
+ * TerminologyThing or the subject of the preceding Annotation.
+ * 
+ * For example, the following shows the concrete syntax for 2 Concepts, Foo and Bar
+ * and of 3 Annotations; the first two Annotations have Foo as their subject because 
+ * Foo is the first preceding TerminologyThing; the third Annotation has Bar as its subject
+ * because it appears after the TerminologyThing Bar.
+ * 
+ * concept Foo
+ * @rdfs:label = "foo"
+ * @dc:description = "A Foo is ..."
+ * 
+ * concept Bar
+ * @rdfs:label = "bar
+ * 
+ * @see jpl.imce.oml.specification.linking.OMLLinkingService
+ */
+Annotation returns Annotation:
+	ANNOTATION_TOKEN property=[AnnotationProperty|ABBREV_IRI]
+	EQUAL value=STRING;
+
+Module returns Module:
+	TerminologyBox | DescriptionBox;
+	
+// 2 TerminologyBoxes
+
+TerminologyBox returns TerminologyBox:
+	Bundle | TerminologyGraph;
+
+TerminologyGraph returns TerminologyGraph:
+	kind=TerminologyKind TERMINOLOGY_GRAPH_TOKEN iri=IRI LCURLY
+	( annotations+=Annotation | 
+	  boxAxioms+=TerminologyBoxAxiom | 
+	  boxStatements+=TerminologyBoxStatement
+	)*
+	RCURLY;
+
+Bundle returns Bundle:
+	kind=TerminologyKind BUNDLE_TOKEN iri=IRI LCURLY
+	( annotations+=Annotation |
+	  boxAxioms+=TerminologyBoxAxiom |
+	  boxStatements+=TerminologyBoxStatement |
+	  bundleStatements+=TerminologyBundleStatement |
+	  bundleAxioms+=TerminologyBundleAxiom
+	)*
+	RCURLY;
+	
+TerminologyBoxAxiom returns TerminologyBoxAxiom:
+	ConceptDesignationTerminologyAxiom | 
+	TerminologyExtensionAxiom | 
+	TerminologyNestingAxiom ;
+	
+TerminologyBoxStatement returns TerminologyBoxStatement:
+	TermAxiom | 
+	Term;
+	
+Term returns Term:
+	AtomicEntity |
+	EntityRelationship |
+	Datatype |
+	DataRelationship;
+	
+AtomicEntity returns Entity:
+	Aspect | 
+	Concept;
+	
+EntityRelationship returns EntityRelationship:
+	ReifiedRelationship | 
+	UnreifiedRelationship;
+	
+Datatype returns Datatype:
+	ScalarDataRange | 
+	Structure;
+	
+ScalarDataRange returns DataRange:
+	Scalar |
+	RestrictedDataRange;
+	
+RestrictedDataRange returns RestrictedDataRange:
+    BinaryScalarRestriction |  
+    IRIScalarRestriction | 
+    NumericScalarRestriction | 
+    PlainLiteralScalarRestriction |
+    ScalarOneOfRestriction |
+    StringScalarRestriction | 
+    SynonymScalarRestriction |
+    TimeScalarRestriction;
+
+DataRelationship returns DataRelationship:	
+	EntityStructuredDataProperty | 
+	EntityScalarDataProperty | 
+	StructuredDataProperty | 
+	ScalarDataProperty;
+	
+TermAxiom returns TermAxiom:
+	EntityRestrictionAxiom |
+	EntityScalarDataPropertyRestrictionAxiom |
+	ScalarOneOfLiteralAxiom |
+	SpecializationAxiom;
+	
+EntityRestrictionAxiom returns EntityRestrictionAxiom:
+	EntityExistentialRestrictionAxiom | 
+	EntityUniversalRestrictionAxiom;
+
+EntityScalarDataPropertyRestrictionAxiom returns EntityScalarDataPropertyRestrictionAxiom:
+	EntityScalarDataPropertyExistentialRestrictionAxiom | 
+	EntityScalarDataPropertyParticularRestrictionAxiom | 
+	EntityScalarDataPropertyUniversalRestrictionAxiom;
+	
+SpecializationAxiom returns SpecializationAxiom:
+	ConceptSpecializationAxiom | 
+	AspectSpecializationAxiom | 
+	ReifiedRelationshipSpecializationAxiom; 
+	
+TerminologyBundleStatement returns TerminologyBundleStatement:
+	AnonymousConceptTaxonomyAxiom |
+	RootConceptTaxonomyAxiom | 
+	SpecificDisjointConceptAxiom;
+
+TerminologyBundleAxiom returns TerminologyBundleAxiom:
+	BundledTerminologyAxiom;
+
+ConceptTreeDisjunction returns ConceptTreeDisjunction:
+	AnonymousConceptTaxonomyAxiom |
+	RootConceptTaxonomyAxiom;
+
+enum TerminologyKind returns TerminologyKind:
+	OpenWorldDefinitions = 'open' | 
+	ClosedWorldDesignations = 'closed'
+	;
+
+// 2 Atomic Entity Terms
+
+Aspect returns Aspect:
+	ASPECT_TOKEN name=ID;
+
+Concept returns Concept:
+	CONCEPT_TOKEN name=ID;
+
+// 2 EntityRelationship Terms
+
+ReifiedRelationship returns ReifiedRelationship:
+	REIFIED_RELATIONSHIP_TOKEN name=ID LCURLY
+	(isFunctional?=FUNCTIONAL_TOKEN)?
+	(isInverseFunctional?=INVERSE_FUNCTIONAL_TOKEN)?
+	(isEssential?=ESSENTIAL_TOKEN)?
+	(isInverseEssential?=INVERSE_ESSENTIAL_TOKEN)?
+	(isSymmetric?=SYMMETRIC_TOKEN)?
+	(isAsymmetric?=ASYMMETRIC_TOKEN)?
+	(isReflexive?=REFLEXIVE_TOKEN)?
+	(isIrreflexive?=IRREFLEXIVE_TOKEN)?
+	(isTransitive?=TRANSITIVE_TOKEN)?
+	UNREIFIED_TOKEN EQUAL unreifiedPropertyName=ID
+	(INVERSE_TOKEN EQUAL unreifiedInversePropertyName=ID)?
+	SOURCE_TOKEN EQUAL source=[Entity|Reference]
+	TARGET_TOKEN EQUAL target=[Entity|Reference]
+	RCURLY;
+
+UnreifiedRelationship returns UnreifiedRelationship:
+	UNREIFIED_RELATIONSHIP_TOKEN name=ID LCURLY
+	(isFunctional?=FUNCTIONAL_TOKEN)?
+	(isInverseFunctional?=INVERSE_FUNCTIONAL_TOKEN)?
+	(isEssential?=ESSENTIAL_TOKEN)?
+	(isInverseEssential?=INVERSE_ESSENTIAL_TOKEN)?
+	(isSymmetric?=SYMMETRIC_TOKEN)?
+	(isAsymmetric?=ASYMMETRIC_TOKEN)?
+	(isReflexive?=REFLEXIVE_TOKEN)?
+	(isIrreflexive?=IRREFLEXIVE_TOKEN)?
+	(isTransitive?=TRANSITIVE_TOKEN)?
+	SOURCE_TOKEN EQUAL source=[Entity|Reference]
+	TARGET_TOKEN EQUAL target=[Entity|Reference]
+	RCURLY;
+
+// 2 Datatypes
+
+Scalar returns Scalar:
+	SCALAR_TOKEN name=ID;
+
+Structure returns Structure:
+	STRUCTURE_TOKEN name=ID;
+
+// 4 DataRelationship Terms
+
+EntityStructuredDataProperty returns EntityStructuredDataProperty:
+	'entityStructuredDataProperty' name=ID LCURLY
+	DOMAIN_TOKEN domain=[Entity|Reference]
+	RANGE_TOKEN range=[Structure|Reference]
+	RCURLY;
+
+EntityScalarDataProperty returns EntityScalarDataProperty:
+	'entityScalarDataProperty' name=ID LCURLY
+	DOMAIN_TOKEN domain=[Entity|Reference]
+	RANGE_TOKEN range=[DataRange|Reference]
+	RCURLY;
+
+StructuredDataProperty returns StructuredDataProperty:
+	'structuredDataProperty' name=ID LCURLY
+	DOMAIN_TOKEN domain=[Structure|Reference]
+	RANGE_TOKEN range=[Structure|Reference]
+	RCURLY;
+
+ScalarDataProperty returns ScalarDataProperty:
+	'scalarDataProperty' name=ID LCURLY
+	DOMAIN_TOKEN domain=[Structure|Reference]
+	RANGE_TOKEN range=[DataRange|Reference]
+	RCURLY;
+
+// ConceptTreeDisjunctions and DisjointUnionOfConceptsAxioms
+
+AnonymousConceptTaxonomyAxiom returns AnonymousConceptTaxonomyAxiom:
+	ANONYMOUS_CONCEPT_TAXONOMY_AXIOM_TOKEN
+	LCURLY
+		'disjointTaxonomyParent' disjointTaxonomyParent=[ConceptTreeDisjunction|Reference]
+	RCURLY;
+
+RootConceptTaxonomyAxiom returns RootConceptTaxonomyAxiom:
+	ROOT_CONCEPT_TAXONOMY_AXIOM_TOKEN
+	LCURLY
+		'root' root=[Concept|Reference]
+	RCURLY;
+
+SpecificDisjointConceptAxiom returns SpecificDisjointConceptAxiom:
+	SPECIFIC_DISJOINT_CONCEPT_AXIOM_TOKEN
+	LCURLY
+		'disjointTaxonomyParent' disjointTaxonomyParent=[ConceptTreeDisjunction|Reference]
+		'disjointLeaf' disjointLeaf=[Concept|Reference]
+	RCURLY;
+
+// 1 TerminologyBundleAxiom
+
+BundledTerminologyAxiom returns BundledTerminologyAxiom:
+	BUNDLED_TERMINOLOGY_AXIOM_TOKEN
+	LCURLY
+		'bundledTerminology' bundledTerminology=[TerminologyBox|Reference]
+	RCURLY;
+
+// 3 TerminologyBoxAxioms
+
+ConceptDesignationTerminologyAxiom returns ConceptDesignationTerminologyAxiom:
+	CONCEPT_DESIGNATION_TERMINOLOGY_AXIOM_TOKEN
+	LCURLY
+		'designatedTerminology' designatedTerminology=[TerminologyBox|Reference]
+		'designatedConcept' designatedConcept=[Concept|Reference]
+	RCURLY;
+
+TerminologyExtensionAxiom returns TerminologyExtensionAxiom:
+	EXTENDS_TOKEN extendedTerminology=[TerminologyBox|Reference];
+
+TerminologyNestingAxiom returns TerminologyNestingAxiom:
+	TERMINOLOGY_NESTING_AXIOM_TOKEN
+	LCURLY
+		'nestingTerminology' nestingTerminology=[TerminologyBox|Reference]
+		'nestingContext' nestingContext=[Concept|Reference]
+	RCURLY;
+
+// 2 EntityRestrictionAxioms
+
+EntityExistentialRestrictionAxiom returns EntityExistentialRestrictionAxiom:
+	ENTITY_EXISTENTIAL_RESTRICTION_AXIOM_TOKEN
+	LCURLY
+		'restrictedRelation' restrictedRelation=[ReifiedRelationship|Reference]
+		'restrictedRange' restrictedRange=[Entity|Reference]
+		'restrictedDomain' restrictedDomain=[Entity|Reference]
+	RCURLY;
+
+EntityUniversalRestrictionAxiom returns EntityUniversalRestrictionAxiom:
+	ENTITY_UNIVERSAL_RESTRICTION_AXIOM_TOKEN
+	LCURLY
+		'restrictedRelation' restrictedRelation=[ReifiedRelationship|Reference]
+		'restrictedRange' restrictedRange=[Entity|Reference]
+		'restrictedDomain' restrictedDomain=[Entity|Reference]
+	RCURLY;
+
+// 3 SpecializationAxioms
+
+AspectSpecializationAxiom returns AspectSpecializationAxiom:
+	subEntity=[Entity|Reference] ASPECT_SPECIALIZATION_AXIOM_TOKEN superAspect=[Aspect|Reference];
+
+ConceptSpecializationAxiom returns ConceptSpecializationAxiom:
+	subConcept=[Concept|Reference] CONCEPT_SPECIALIZATION_AXIOM_TOKEN superConcept=[Concept|Reference];
+
+ReifiedRelationshipSpecializationAxiom returns ReifiedRelationshipSpecializationAxiom:
+	subRelationship=[ReifiedRelationship|Reference] REIFIED_RELATIONSHIP_SPECIALIZATION_AXIOM_TOKEN superRelationship=[ReifiedRelationship|Reference];
+
+// 3 EntityScalarDataPropertyRestrictionAxioms
+
+EntityScalarDataPropertyExistentialRestrictionAxiom returns EntityScalarDataPropertyExistentialRestrictionAxiom:
+	ENTITY_SCALAR_DATA_PROPERTY_EXISTENTIAL_RESTRICTION_AXIOM_TOKEN
+	LCURLY
+		'restrictedEntity' restrictedEntity=[Entity|Reference]
+		'scalarProperty' scalarProperty=[EntityScalarDataProperty|Reference]
+		'scalarRestriction' scalarRestriction=[DataRange|Reference]
+	RCURLY;
+
+EntityScalarDataPropertyParticularRestrictionAxiom returns EntityScalarDataPropertyParticularRestrictionAxiom:
+	ENTITY_SCALAR_DATA_PROPERTY_PARTICULAR_RESTRICTION_AXIOM_TOKEN
+	LCURLY
+		'restrictedEntity' restrictedEntity=[Entity|Reference]
+		'scalarProperty' scalarProperty=[EntityScalarDataProperty|Reference]
+		'literalValue' literalValue=STRING
+	RCURLY;
+	
+EntityScalarDataPropertyUniversalRestrictionAxiom returns EntityScalarDataPropertyUniversalRestrictionAxiom:
+	ENTITY_SCALAR_DATA_PROPERTY_UNIVERSAL_RESTRICTION_AXIOM_TOKEN
+	LCURLY
+		'restrictedEntity' restrictedEntity=[Entity|Reference]
+		'scalarProperty' scalarProperty=[EntityScalarDataProperty|Reference]
+		'scalarRestriction' scalarRestriction=[DataRange|Reference]
+	RCURLY;
+
+// 8 RestrictedDataRanges + 1 ScalarOneOfLiteralAxiom
+
+BinaryScalarRestriction returns BinaryScalarRestriction:
+	BINARY_SCALAR_RESTRICTION_TOKEN name=ID
+	LCURLY
+		('length' length=INT)?
+		('minLength' minLength=INT)?
+		('maxLength' maxLength=INT)?
+		'restrictedRange' restrictedRange=[DataRange|Reference]
+	RCURLY;
+
+IRIScalarRestriction returns IRIScalarRestriction:
+	IRI_SCALAR_RESTRICTION_TOKEN name=ID
+	LCURLY
+		('length' length=INT)?
+		('minLength' minLength=INT)?
+		('maxLength' maxLength=INT)?
+		('pattern' pattern=STRING)?
+		'restrictedRange' restrictedRange=[DataRange|Reference]
+	RCURLY;
+
+NumericScalarRestriction returns NumericScalarRestriction:
+	NUMERIC_SCALAR_RESTRICTION_TOKEN name=ID
+	LCURLY
+		('minInclusive' minInclusive=STRING)?
+		('maxInclusive' maxInclusive=STRING)?
+		('minExclusive' minExclusive=STRING)?
+		('maxExclusive' maxExclusive=STRING)?
+		'restrictedRange' restrictedRange=[DataRange|Reference]
+	RCURLY;
+
+PlainLiteralScalarRestriction returns PlainLiteralScalarRestriction:
+	PLAIN_LITERAL_SCALAR_RESTRICTION_TOKEN name=ID
+	LCURLY
+		('length' length=INT)?
+		('minLength' minLength=INT)?
+		('maxLength' maxLength=INT)?
+		('pattern' pattern=STRING)?
+		('langRange' langRange=STRING)?
+		'restrictedRange' restrictedRange=[DataRange|Reference]
+	RCURLY;
+
+ScalarOneOfRestriction returns ScalarOneOfRestriction:
+	SCALAR_ONE_OF_RESTRICTION_TOKEN name=ID
+	LCURLY
+		'restrictedRange' restrictedRange=[DataRange|Reference]
+	RCURLY;
+
+ScalarOneOfLiteralAxiom returns ScalarOneOfLiteralAxiom:
+	SCALAR_ONE_OF_LITERAL_AXIOM_TOKEN
+	LCURLY
+		'value' value=STRING
+		'axiom' axiom=[ScalarOneOfRestriction|Reference]
+	RCURLY;
+
+StringScalarRestriction returns StringScalarRestriction:
+	STRING_SCALAR_RESTRICTION_TOKEN name=ID
+	LCURLY
+		('length' length=INT)?
+		('minLength' minLength=INT)?
+		('maxLength' maxLength=INT)?
+		('pattern' pattern=STRING)?
+		'restrictedRange' restrictedRange=[DataRange|Reference]
+	RCURLY;
+
+SynonymScalarRestriction returns SynonymScalarRestriction:
+	SYNONYM_SCALAR_RESTRICTION_TOKEN name=ID
+	LCURLY
+		'restrictedRange' restrictedRange=[DataRange|Reference]
+	RCURLY;
+
+TimeScalarRestriction returns TimeScalarRestriction:
+	TIME_SCALAR_RESTRICTION_TOKEN name=ID
+	LCURLY
+		('minInclusive' minInclusive=STRING)?
+		('maxInclusive' maxInclusive=STRING)?
+		('minExclusive' minExclusive=STRING)?
+		('maxExclusive' maxExclusive=STRING)?
+		'restrictedRange' restrictedRange=[DataRange|Reference]
+	RCURLY;
+//----------------------------
+
+DescriptionBox returns DescriptionBox:
+	kind=DescriptionKind DESCRIPTION_BOX_TOKEN
+	iri=IRI
+	LCURLY
+	( annotations+=Annotation |
+	  closedWorldDefinitions+=DescriptionBoxExtendsClosedWorldDefinitions |
+	  descriptionBoxRefinements+=DescriptionBoxRefinement |
+	  conceptInstances+=ConceptInstance |
+	  reifiedRelationshipInstances+=ReifiedRelationshipInstance |
+	  reifiedRelationshipInstanceDomains+=ReifiedRelationshipInstanceDomain|
+	  reifiedRelationshipInstanceRanges+=ReifiedRelationshipInstanceRange |
+	  unreifiedRelationshipInstanceTuples+=UnreifiedRelationshipInstanceTuple
+	)*
+	RCURLY;
+
+enum DescriptionKind returns DescriptionKind:
+	Final = 'final' | 
+	Partial = 'partial';
+
+TerminologyInstanceAssertion returns TerminologyInstanceAssertion:
+	ScalarDataPropertyValue | 
+	StructuredDataPropertyValue | 
+	DataStructureTuple | 
+	ConceptInstance |
+	ReifiedRelationshipInstance | 
+	ReifiedRelationshipInstanceDomain | 
+	ReifiedRelationshipInstanceRange | 
+	UnreifiedRelationshipInstanceTuple;
+
+DescriptionBoxExtendsClosedWorldDefinitions returns DescriptionBoxExtendsClosedWorldDefinitions:
+	EXTENDS_TOKEN closedWorldDefinitions=[TerminologyBox|Reference];
+
+DescriptionBoxRefinement returns DescriptionBoxRefinement:
+	REFINES_TOKEN refinedDescriptionBox=[DescriptionBox|Reference];
+
+ScalarDataPropertyValue returns ScalarDataPropertyValue:
+	'ScalarDataPropertyValue'
+	LCURLY
+		'scalarPropertyValue' scalarPropertyValue=Reference
+		'scalarDataProperty' scalarDataProperty=[DataRelationshipToScalar|Reference]
+	RCURLY;
+
+StructuredDataPropertyValue returns StructuredDataPropertyValue:
+	'StructuredDataPropertyValue'
+	LCURLY
+		'structuredDataProperty' structuredDataProperty=[DataRelationshipToStructure|Reference]
+		'structuredPropertyTuple' structuredPropertyTuple=DataStructureTuple
+	RCURLY;
+
+DataStructureTuple returns DataStructureTuple:
+	'DataStructureTuple'
+	LCURLY
+		'dataStructureType' dataStructureType=[Structure|Reference]
+	RCURLY;
+
+ConceptInstance returns ConceptInstance:
+	'ConceptInstance'
+	LCURLY
+		'singletonConceptClassifier' singletonConceptClassifier=[Concept|Reference]
+	RCURLY;
+
+ReifiedRelationshipInstance returns ReifiedRelationshipInstance:
+	'ReifiedRelationshipInstance'
+	LCURLY
+		'singletonReifiedRelationshipClassifier' singletonReifiedRelationshipClassifier=[ReifiedRelationship|Reference]
+	RCURLY;
+
+ReifiedRelationshipInstanceDomain returns ReifiedRelationshipInstanceDomain:
+	'ReifiedRelationshipInstanceDomain'
+	LCURLY
+		'reifiedRelationshipInstance' reifiedRelationshipInstance=[ReifiedRelationshipInstance|Reference]
+		DOMAIN_TOKEN domain=[ConceptualEntitySingletonInstance|Reference]
+	RCURLY;
+
+ReifiedRelationshipInstanceRange returns ReifiedRelationshipInstanceRange:
+	'ReifiedRelationshipInstanceRange'
+	LCURLY
+		'reifiedRelationshipInstance' reifiedRelationshipInstance=[ReifiedRelationshipInstance|Reference]
+		RANGE_TOKEN range=[ConceptualEntitySingletonInstance|Reference]
+	RCURLY;
+
+UnreifiedRelationshipInstanceTuple returns UnreifiedRelationshipInstanceTuple:
+	'UnreifiedRelationshipInstanceTuple'
+	LCURLY
+		UNREIFIED_RELATIONSHIP_TOKEN unreifiedRelationship=[UnreifiedRelationship|Reference]
+		DOMAIN_TOKEN domain=[ConceptualEntitySingletonInstance|Reference]
+		RANGE_TOKEN range=[ConceptualEntitySingletonInstance|Reference]
+	RCURLY;
+
+//----------------------------
+
+Reference:
+	IRI | QNAME
+;
+
+QNAME:
+	ABBREV_IRI | ValidID;
+
+ABBREV_IRI:
+	ValidID ':' ValidID;
+
+ValidID:
+	ID;
+	
+//----------------------------
+
+terminal ANNOTATION_PROPERTY_TOKEN: 'annotationProperty';
+
+terminal ANNOTATION_TOKEN: '@';
+
+terminal TERMINOLOGY_GRAPH_TOKEN: 'terminology';
+terminal BUNDLE_TOKEN: 'bundle';
+terminal KIND_TOKEN: 'kind';
+
+terminal ASPECT_TOKEN: 'aspect';
+
+terminal ABSTRACT_TOKEN: 'abstract';
+terminal CONCEPT_TOKEN: 'concept';
+
+terminal REIFIED_RELATIONSHIP_TOKEN: 'reifiedRelationship';
+terminal UNREIFIED_RELATIONSHIP_TOKEN: 'unreifiedRelationship';
+
+terminal FUNCTIONAL_TOKEN: 'functional';
+terminal INVERSE_FUNCTIONAL_TOKEN: 'inverseFunctional';
+terminal ESSENTIAL_TOKEN: 'essential';
+terminal INVERSE_ESSENTIAL_TOKEN: 'inverseEssential';
+terminal SYMMETRIC_TOKEN: 'symmetric';
+terminal ASYMMETRIC_TOKEN: 'asymmetric';
+terminal REFLEXIVE_TOKEN: 'reflexive';
+terminal IRREFLEXIVE_TOKEN: 'irreflexive';
+terminal TRANSITIVE_TOKEN: 'transitive';
+terminal UNREIFIED_TOKEN: 'unreified';
+terminal INVERSE_TOKEN: 'inverse';
+terminal SOURCE_TOKEN: 'source';
+terminal TARGET_TOKEN: 'target';
+
+terminal SCALAR_TOKEN: 'scalar';
+terminal STRUCTURE_TOKEN: 'structure';
+
+terminal DOMAIN_TOKEN: 'domain';
+terminal RANGE_TOKEN: 'range';
+
+terminal EXTENDS_TOKEN: 'extends';
+
+terminal REFINES_TOKEN: 'refines';
+
+terminal ROOT_CONCEPT_TAXONOMY_AXIOM_TOKEN: 'rootConceptTaxonomyAxiom';
+
+terminal SPECIFIC_DISJOINT_CONCEPT_AXIOM_TOKEN: 'specificDisjointConceptAxiom';
+
+terminal ANONYMOUS_CONCEPT_TAXONOMY_AXIOM_TOKEN: 'anonymousConceptTaxonomyAxiom';
+
+terminal BUNDLED_TERMINOLOGY_AXIOM_TOKEN: 'bundledTerminologyAxiom';
+
+terminal CONCEPT_DESIGNATION_TERMINOLOGY_AXIOM_TOKEN: 'conceptDesignationTerminologyAxiom';
+
+terminal TERMINOLOGY_NESTING_AXIOM_TOKEN: 'terminologyNestingAxiom';
+
+terminal ENTITY_EXISTENTIAL_RESTRICTION_AXIOM_TOKEN: 'entityExistentialRestrictionAxiom';
+
+terminal ENTITY_UNIVERSAL_RESTRICTION_AXIOM_TOKEN: 'entityUniversalRestrictionAxiom';
+
+terminal CONCEPT_SPECIALIZATION_AXIOM_TOKEN: 'extendsConcept';
+
+terminal ASPECT_SPECIALIZATION_AXIOM_TOKEN: 'extendsAspect';
+
+terminal REIFIED_RELATIONSHIP_SPECIALIZATION_AXIOM_TOKEN: 'extendsRelationship';
+
+terminal ENTITY_SCALAR_DATA_PROPERTY_EXISTENTIAL_RESTRICTION_AXIOM_TOKEN: 'entityScalarDataPropertyExistentialRestrictionAxiom';
+
+terminal ENTITY_SCALAR_DATA_PROPERTY_UNIVERSAL_RESTRICTION_AXIOM_TOKEN: 'entityScalarDataPropertyUniversalRestrictionAxiom';
+
+terminal ENTITY_SCALAR_DATA_PROPERTY_PARTICULAR_RESTRICTION_AXIOM_TOKEN: 'entityScalarDataPropertyParticularRestrictionAxiom';
+
+terminal SYNONYM_SCALAR_RESTRICTION_TOKEN: 'synonymScalarRestriction';
+
+terminal NUMERIC_SCALAR_RESTRICTION_TOKEN: 'numericScalarRestriction';
+
+terminal STRING_SCALAR_RESTRICTION_TOKEN: 'stringScalarRestriction';
+
+terminal PLAIN_LITERAL_SCALAR_RESTRICTION_TOKEN: 'plainLiteralScalarRestriction';
+
+terminal BINARY_SCALAR_RESTRICTION_TOKEN: 'binaryScalarRestriction';
+
+terminal IRI_SCALAR_RESTRICTION_TOKEN: 'iriScalarRestriction';
+
+terminal TIME_SCALAR_RESTRICTION_TOKEN: 'timeScalarRestriction';
+
+terminal SCALAR_ONE_OF_RESTRICTION_TOKEN: 'scalarOneOfRestriction';
+
+terminal SCALAR_ONE_OF_LITERAL_AXIOM_TOKEN: 'scalarOneOfLiteralAxiom';
+
+terminal DESCRIPTION_BOX_TOKEN: 'DescriptionBox';
+
+//----------------------------
+
+terminal LCURLY: '{';
+
+terminal RCURLY: '}';
+
+terminal EQUAL: '=';
+
+terminal STRING: 
+	'"' ( '\\' . /* ('b'|'t'|'n'|'f'|'r'|'u'|'"'|"'"|'\\') */ | !('\\'|'"') )* '"'? |
+	"'" ( '\\' . /* ('b'|'t'|'n'|'f'|'r'|'u'|'"'|"'"|'\\') */ | !('\\'|"'") )* "'"?;
+
+
+terminal IRI:
+	'<' (!'>')* '>';
+
+terminal ID:
+	'^'? ('a'..'z'|'A'..'Z'|'$'|'_') ('a'..'z'|'A'..'Z'|'$'|'_'|'0'..'9')*;
+
+terminal UUID:
+	HEX_8DIGITS '-' HEX_4DIGITS '-' HEX_4DIGITS '-' HEX_4DIGITS '-' HEX_12DIGITS
+;
+
+terminal HEX_12DIGITS:
+ 	HEX_8DIGITS HEX_4DIGITS
+;
+
+terminal HEX_8DIGITS:
+ 	HEX_4DIGITS HEX_4DIGITS
+;
+
+terminal HEX_4DIGITS:
+ 	HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT
+;
+
+terminal HEX_DIGIT:
+	('0'..'9'|'a'..'f'|'A'..'F')
+;
+
+terminal HEX:
+	('0x'|'0X') ('0'..'9'|'a'..'f'|'A'..'F'|'_')+ 
+	('#' (('b'|'B')('i'|'I') | ('l'|'L')))?;
+	
+terminal INT returns ecore::EInt:
+	'0'..'9' ('0'..'9'|'_')*; 
+
+terminal DECIMAL:
+	INT 
+	(('e'|'E') ('+'|'-')? INT)? 
+	(('b'|'B')('i'|'I'|'d'|'D') | ('l'|'L'|'d'|'D'|'f'|'F'))?;
+
+terminal ML_COMMENT  : 
+ 	'/*' -> '*/';
+ 
+terminal SL_COMMENT : 
+ 	'//' !('\n'|'\r')* ('\r'? '\n')?;
+ 
+terminal WS  : 
+ 	(' '|'\t'|'\r'|'\n')+;
