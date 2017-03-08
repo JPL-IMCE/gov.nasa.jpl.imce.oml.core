@@ -119,3 +119,38 @@ task generateXtextLanguage(type: JavaExec) {
 generateXtext.dependsOn(generateXtextLanguage)
 clean.dependsOn(cleanGenerateXtextLanguage)
 eclipse.classpath.plusConfigurations += [configurations.mwe2]
+
+publishing {
+    publications {
+        mavenPublication(MavenPublication) {
+            from components.java
+            artifact sourcesJar
+            artifact javadocJar
+            artifactId project.name
+        }
+    }
+}
+
+bintray {
+    user = project.hasProperty('bintrayUser') ? project.property('bintrayUser') : System.getenv('BINTRAY_USER')
+    key = project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey') : System.getenv('BINTRAY_API_KEY')
+    publications = ['mavenPublication']
+    dryRun = false
+    pkg {
+        repo = 'gov.nasa.jpl.imce'
+        userOrg = 'jpl-imce'
+        name = project.name
+        licenses = ['Apache-2.0']
+        vcsUrl = 'https://github.com/jpl-imce/oml.core'
+        websiteUrl = 'https://github.com/JPL-IMCE/oml.core'
+        issueTrackerUrl = 'https://github.com/JPL-IMCE/oml.core/issues'
+        desc = 'Ontological Modeling Language grammar & parser'
+        githubRepo = 'jpl-imce/oml.core'
+        githubReleaseNotesFile = 'README.md'
+        version {
+            gpg {
+                sign = true // sign with Bintray's internal keys
+            }
+        }
+    }
+}
