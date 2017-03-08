@@ -1,0 +1,29 @@
+{
+  "name": "@imce/@HYPHENATED_NAME@",
+  "description": "@DESCRIPTION@",
+  "version": "@VERSION@",
+  "keywords": [
+    "scalajs",
+    "ontology",
+    "modeling",
+    "schema",
+    "normalized"
+  ],
+  "homepage": "@HOMEPAGE@",
+  "bugs": "@ISSUES@",
+  "licence": "Apache-2.0",
+  "dependencies": {},
+  "devDependencies": {},
+  "main": "jpl-omf-schema-tables.js",
+  "scripts": {},
+  "author": @AUTHOR@,
+  "contributors": @CONTRIBUTORS@,
+  "repository": {
+    "type": "git",
+    "url": "@GIT@"
+  },
+  "files": [
+    "@HYPHENATED_NAME@.js",
+    "@HYPHENATED_NAME@.js.map"
+  ]
+}
