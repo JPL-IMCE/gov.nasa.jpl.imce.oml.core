@@ -1,0 +1,13 @@
+*.log
+*.tgz
+*~
+.cache-main
+.idea/
+target/
+local.*
+*links.json
+project/project/
+local.*
+target
+gh-pages/
+/bin/
