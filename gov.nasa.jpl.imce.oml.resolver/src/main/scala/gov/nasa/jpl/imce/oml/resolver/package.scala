@@ -27,7 +27,7 @@ package object resolver {
   = apts
     .foldLeft[SortedSet[resolver.api.Annotation]](TreeSet.empty[resolver.api.Annotation]) { case (as1, apt) =>
       apt.value.foldLeft[SortedSet[resolver.api.Annotation]](as1) { case (as2, ae) =>
-          as2 + impl.Annotation(terminology = ae.terminology, subject=ae.subject, property=apt.key, value=ae.value)
+          as2 + impl.Annotation(module = ae.module, subject=ae.subject, property=apt.key, value=ae.value)
       }
   }
 
@@ -44,7 +44,7 @@ package object resolver {
           aes
             .foldLeft[SortedSet[resolver.api.AnnotationEntry]](TreeSet.empty[resolver.api.AnnotationEntry]) {
             case (asi, a) =>
-              asi + resolver.impl.AnnotationEntry(a.terminology, a.subject, a.value)
+              asi + resolver.impl.AnnotationEntry(a.module, a.subject, a.value)
           })
   }
 }

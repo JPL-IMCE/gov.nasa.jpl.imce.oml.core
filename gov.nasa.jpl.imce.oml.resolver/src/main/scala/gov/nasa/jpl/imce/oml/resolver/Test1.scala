@@ -20,7 +20,7 @@ package gov.nasa.jpl.imce.oml.resolver
 import java.io.File
 import java.lang.System
 
-import gov.nasa.jpl.imce.oml.specification.tables.OMLSpecificationTables
+import gov.nasa.jpl.imce.oml.tables.OMLSpecificationTables
 
 import scala.{Array, StringContext, Unit}
 import scala.Predef.{String, refArrayOps}

@@ -46,7 +46,15 @@ lazy val core = Project("oml-resolver", file("."))
     scalacOptions in (Compile, compile) += s"-P:artima-supersafe:config-file:${baseDirectory.value}/project/supersafe.cfg",
     scalacOptions in (Test, compile) += s"-P:artima-supersafe:config-file:${baseDirectory.value}/project/supersafe.cfg",
     scalacOptions in (Compile, doc) += "-Xplugin-disable:artima-supersafe",
-    scalacOptions in (Test, doc) += "-Xplugin-disable:artima-supersafe"
+    scalacOptions in (Test, doc) += "-Xplugin-disable:artima-supersafe",
+
+    libraryDependencies ++= Seq(
+      "com.fasterxml.uuid" % "java-uuid-generator" % "3.1.+",
+
+      "gov.nasa.jpl.imce" %% "imce.third_party.scala_graph_libraries"
+        % Settings.versions.scalaGraphLibraries artifacts
+        Artifact("imce.third_party.scala_graph_libraries", "zip", "zip", "resource")
+    )
   )
 //  .dependsOn(ProjectRef(file("../gov.nasa.jpl.imce.oml.tables"), "tablesJVM"))
   .dependsOnSourceProjectRefOrLibraryArtifacts(
@@ -54,9 +62,13 @@ lazy val core = Project("oml-resolver", file("."))
     "gov.nasa.jpl.imce.oml.tables",
     Some("compile;test->compile"),
     Seq(
-      "gov.nasa.jpl.imce" %% "gov.nasa.jpl.imce.oml.tables"
+      "gov.nasa.jpl.imce" %% "gov-nasa-jpl-imce-oml-tables"
         % Settings.versions.jpl_omf_schema_tables
-        % "compile" withSources()
+        % "compile" withSources(),
+
+      "gov.nasa.jpl.imce" %% "gov-nasa-jpl-imce-oml-tables"
+        % Settings.versions.jpl_omf_schema_tables artifacts
+        Artifact("gov.nasa.jpl.imce.oml.tables", "zip", "zip", "resource")
     )
   )
 
