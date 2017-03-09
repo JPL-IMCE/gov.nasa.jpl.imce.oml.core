@@ -15,8 +15,7 @@
  * limitations under the License.
  * License Terms
  */
-
-package gov.nasa.jpl.imce.oml.specification.resolver
+package gov.nasa.jpl.imce.oml.resolver
 
 import scala.collection.generic.CanBuildFrom
 import scala.collection.immutable.Iterable
