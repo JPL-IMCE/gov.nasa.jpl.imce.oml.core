@@ -1,0 +1,70 @@
+# Use container-based infrastructure
+sudo: false
+
+# Tell Travis to cache SBT's caches to Amazon S3 at the end of the build.
+cache:
+  directories:
+  - "$HOME/.ivy2/cache"
+  - "$HOME/.sbt/boot/"
+
+before_cache:
+  # Tricks to avoid unnecessary cache updates
+  - find $HOME/.ivy2 -name "ivydata-*.properties" -delete
+  - find $HOME/.sbt -name "*.lock" -delete
+
+addons:
+  apt:
+    packages:
+      - graphviz
+
+# Support for cross-compilation of Scala source code to Scala.js
+install:
+  - rm -rf ~/.nvm && git clone https://github.com/creationix/nvm.git ~/.nvm && (cd ~/.nvm && git checkout `git describe --abbrev=0 --tags`) && source ~/.nvm/nvm.sh && nvm install $TRAVIS_NODE_VERSION
+
+jdk:
+- oraclejdk8
+
+env:
+- TRAVIS_NODE_VERSION="5.10"
+
+# This build uses several tools: gradle (primarily for java) 
+# and sbt (for polyglot source code in Scala cross-compiled for JVM and Node/JS)
+# We need the superset of all these capabilities; which happens to be scala in terms
+# of travis' language-based container virtual machines.
+language: scala
+
+scala:
+- 2.11.8
+
+jdk:
+- oraclejdk8
+
+# The Gradle Eclipse Buildships scripts use an Eclipse target definition
+# to assemble a target platform and to "mavenize" it so that dependencies can be resolved
+# to that assembled, mavenized target platform.
+# This takes time so caching made sense; however, it may be implicated in the problems
+# in building grammar-based xtext formatting.
+#
+# For now it is disabled.
+#
+# TODO: split assembling & mavenizing a target platform into a separate project that would
+#       publish the mavenized, assembled target platform to somewhere (e.g., S3) to make
+#       this job go much faster. 
+# 
+# https://dzone.com/articles/speed-up-gradle-build-on-travisci
+#before_cache:
+# - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
+#cache:
+# directories:
+# - $HOME/.gradle/caches/
+# - $HOME/.gradle/wrapper/
+# - $HOME/.gradle/nodejs/
+# - $HOME/.tooling
+# - node_modules
+
+# https://dzone.com/articles/speed-up-gradle-build-on-travisci
+install: echo "skip 'gradle assemble' step"
+
+script:
+- ./scripts/travis-build.sh
+- ./scripts/travis-deploy.sh
