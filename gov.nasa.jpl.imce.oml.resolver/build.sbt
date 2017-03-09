@@ -12,7 +12,7 @@ import scala.util.control.Exception._
 
 import ProjectRefHelper._
 
-lazy val core = Project("oml-specification-resolver", file("."))
+lazy val core = Project("oml-resolver", file("."))
   .enablePlugins(IMCEGitPlugin)
   .enablePlugins(IMCEReleasePlugin)
   .settings(dynamicScriptsResourceSettings(Settings.name))
@@ -48,17 +48,17 @@ lazy val core = Project("oml-specification-resolver", file("."))
     scalacOptions in (Compile, doc) += "-Xplugin-disable:artima-supersafe",
     scalacOptions in (Test, doc) += "-Xplugin-disable:artima-supersafe"
   )
-  .dependsOn(ProjectRef(file("../gov.nasa.jpl.imce.oml.specification.tables"), "tablesJVM"))
-//  .dependsOnSourceProjectRefOrLibraryArtifacts(
-//    "gov.nasa.jpl.imce.oml.specification.tables",
-//    "gov.nasa.jpl.imce.oml.specification.tables",
-//    Some("compile;test->compile"),
-//    Seq(
-//      "gov.nasa.jpl.imce" %% "gov.nasa.jpl.imce.oml.specification.tables"
-//        % Settings.versions.jpl_omf_schema_tables
-//        % "compile" withSources()
-//    )
-//  )
+//  .dependsOn(ProjectRef(file("../gov.nasa.jpl.imce.oml.tables"), "tablesJVM"))
+  .dependsOnSourceProjectRefOrLibraryArtifacts(
+    "gov.nasa.jpl.imce.oml.tables",
+    "gov.nasa.jpl.imce.oml.tables",
+    Some("compile;test->compile"),
+    Seq(
+      "gov.nasa.jpl.imce" %% "gov.nasa.jpl.imce.oml.tables"
+        % Settings.versions.jpl_omf_schema_tables
+        % "compile" withSources()
+    )
+  )
 
 def dynamicScriptsResourceSettings(projectName: String): Seq[Setting[_]] = {
 
