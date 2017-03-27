@@ -34,9 +34,11 @@ limitations under the License.
 package gov.nasa.jpl.imce.oml.provenance.oti
 
 /*
- * An RFC-4122 UUID (either Version 4 (random) or Version 5 (SHA-1 hash & namespace) 
+ * An RFC-4122 UUID; either Version 4 (random) or Version 5 (SHA-1 hash & namespace) 
  */
 type UUID wraps String
+
+type OML_IRI wraps String
 
 type OTI_TOOL_SPECIFIC_ID wraps String
 
@@ -46,28 +48,33 @@ type OTI_TOOL_SPECIFIC_URL wraps String
 
 /*
  * A 3 or 4 tuple establishing the provenance between:
- * - an OML TerminologyThing (identified by its primary key: omlUUID)
+ * - an OML Element identified by its primary key: omlUUID or, if it is an OML Resource, by its auxiliary key: omlIRI
  * - an OTI UMLElement (identified by its keys: otiID, otiURL, and, if available, otiUUID)
  */
 class OML2OTIProvenance {
 	
 	/*
-	 * The OML UUID of a TerminologyThing mapped to OTI
+	 * The UUID of an OML Resource mapped to OTI
 	 */
 	UUID[1] omlUUID
 	
 	/*
-	 * The OTI tool-specific ID of the OTI element mapped from an OML TerminologyThing
+	 * If the OML Element is an OML Resource, its IRI otherwise nothing.
+	 */
+	OML_IRI[?] omlIRI
+	
+	/*
+	 * The OTI tool-specific ID of the OTI element mapped from an OML Element
 	 */
 	OTI_TOOL_SPECIFIC_ID[1] otiID
 	
 	/*
-	 * The OTI tool-specific URL of the OTI element mapped from an OML TerminologyThing
+	 * The OTI tool-specific URL of the OTI element mapped from an OML Element
 	 */
 	OTI_TOOL_SPECIFIC_URL[1] otiURL
 	
 	/*
-	 * The OTI tool-specific UUID of the OTI element mapped from an OML TerminologyThing
+	 * The OTI tool-specific UUID of the OTI element mapped from an OML Element
 	 */
 	OTI_TOOL_SPECIFIC_UUID[?] otiUUID
 	

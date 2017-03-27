@@ -12,6 +12,12 @@ There are no Eclipse metadata files (.classpath, .project, .settings, META-INF/M
 ## Building using Gradle
 
     ./gradlew build
+    
+Sometimes, `build` fails because `:gov.nasa.jpl.imce.oml.model:generateXtext` fails to resolve the *.xcore files.
+The following usually suffices to avoid this problem:
+
+    ./gradlew :gov.nasa.jpl.imce.oml.model:generateXtext
+    ./gradlew build
 
 ## To import in Intellij:
 
