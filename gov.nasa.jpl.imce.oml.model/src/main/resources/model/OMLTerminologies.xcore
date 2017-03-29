@@ -36,6 +36,7 @@ package gov.nasa.jpl.imce.oml.model.terminologies
 import gov.nasa.jpl.imce.oml.model.common.Collection
 import gov.nasa.jpl.imce.oml.model.common.CopyConstructor
 import gov.nasa.jpl.imce.oml.model.common.Element
+import gov.nasa.jpl.imce.oml.model.common.Extent
 import gov.nasa.jpl.imce.oml.model.common.FunctionalInterface
 import gov.nasa.jpl.imce.oml.model.common.Glossary
 import gov.nasa.jpl.imce.oml.model.common.IRI
@@ -162,13 +163,13 @@ abstract class TerminologyAxiom extends ModuleElement {
 	 * The source TerminologyBox
 	 */
 	@NotSchema
-	op TerminologyBox[1] source()
+	op TerminologyBox[?] source(Extent[1] extent)
 	
 	/*
 	 * The target TerminologyBox
 	 */
 	@NotSchema
-	op TerminologyBox[1] target()
+	op TerminologyBox[1] target(Extent[1] extent)
 }
 
 /*
@@ -191,18 +192,18 @@ abstract class TerminologyBoxAxiom extends TerminologyAxiom {
 class TerminologyExtensionAxiom extends TerminologyBoxAxiom {
 
 	@Scala(code="
-	val namespace = \"TerminologyExtensionAxiom(source=\" + source.uuid + \",target=\"+target.uuid+\")\"
-	com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace)")
+	for {
+	  s <- extent.lookupModule(tbox)
+	  u1 <- s.uuid(extent)
+    	  u2 <- extendedTerminology.uuid(extent)
+	} yield gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator.derivedUUID(\"TerminologyExtensionAxiom\",\"source\"->u1,\"target\"->u2)")
 	@NotSchema
 	@Override
-	op UUID[1] calculateUUID() { 
-		val namespace = "TerminologyExtensionAxiom(source=" + source().uuid + ",target="+target().uuid+")"
-		com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace).toString
-	}
+	op UUID[?] uuid(Extent[1] extent) { null }
 	
-	@Scala(code="tbox")
+	@Scala(code="lookupTerminologyBox(extent, tbox)")
 	@NotSchema
-	op TerminologyBox[1] extendingTerminology() { getTbox }
+	op TerminologyBox[?] extendingTerminology(Extent[1] extent) { null }
 	
 	@CopyConstructor
   	refers TerminologyBox[1] extendedTerminology
@@ -210,20 +211,18 @@ class TerminologyExtensionAxiom extends TerminologyBoxAxiom {
 	/*
 	 * The extendingTerminology is the source
 	 */
-	@Scala(code="tbox")
 	@NotSchema
 	@Override
-	op TerminologyBox[1] source() { getTbox }
+	op TerminologyBox[?] source(Extent[1] extent) { extendingTerminology(extent) }
 	
 	/*
 	 * The extendedTerminology is the target
 	 */
 	@NotSchema
 	@Override
-	op TerminologyBox[1] target() { extendedTerminology }
+	op TerminologyBox[1] target(Extent[1] extent) { extendedTerminology }
   	
 }
-
 
 /*
  * An OML Term map to the declaration of an [OWL2-DL Entity] of some kind.
@@ -238,20 +237,21 @@ abstract class Term extends TerminologyBoxStatement, Resource {
 	@NotSchema
 	op LocalName[1] name() { getName() }
 	
-	@Scala(code="tbox.iri + \"#\" + name")
+	@Scala(code="extent.lookupModule(tbox).map(m => m.iri + \"#\" + name)")
 	@NotSchema
 	@Override
-	op IRI[1] iri() { getTbox.iri() + "#" + name() }
+	op IRI[?] iri(Extent[1] extent) { null }
 	
 	/*
 	 * The UUID of a Term is a Version5 namespace UUID based on the term's IRI.
 	 */
-	@Scala(code="com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(iri())")
+	@Scala(code="
+	for {
+	  iri <- iri(extent)
+	} yield gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator.uuidFromURL(iri)")
 	@NotSchema 
 	@Override
-	op UUID[1] calculateUUID() { 
-		com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(iri().toString).toString
-	}
+	op UUID[?] uuid(Extent[1] extent) { null }
 }
 
 /*
@@ -443,7 +443,7 @@ abstract class DataRelationship extends Term, DirectedBinaryRelationshipKind {
 abstract class DataRelationshipDomain {
 	
 	@FunctionalInterface
-	op UUID[1] calculateUUID()
+	op UUID[?] uuid(Extent[1] extent)
 }
 
 /*
@@ -482,7 +482,7 @@ abstract class DataRelationshipFromStructure extends DataRelationshipDomain {
 abstract class DataRelationshipRange {
 
 	@FunctionalInterface
-	op UUID[1] calculateUUID()
+	op UUID[?] uuid(Extent[1] extent)
 }
 
 /*
@@ -605,14 +605,20 @@ abstract class EntityRestrictionAxiom extends TermAxiom {
 class EntityExistentialRestrictionAxiom extends EntityRestrictionAxiom {
 	
 	@Scala(code="
-	val namespace = \"EntityExistentialRestrictionAxiom(restrictedDomain=\" + restrictedDomain.uuid + \",restrictedRelation=\"+restrictedRelation.uuid + \",restrictedRange=\"+restrictedRange.uuid+\")\"
-	com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace)")
+	for {
+	  u1 <- tbox
+	  u2 <- restrictedDomain.uuid(extent)
+    	  u3 <- restrictedRelation.uuid(extent)
+	  u4 <- restrictedRange.uuid(extent)
+	} yield gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator.derivedUUID(
+		\"EntityExistentialRestrictionAxiom\",
+	    \"tbox\"->u1,
+		\"restrictedDomain\"->u2,
+		\"restrictedRelation\"->u3,
+		\"restrictedRange\"->u4)")
 	@NotSchema
 	@Override
-	op UUID[1] calculateUUID() { 
-		val namespace = "EntityExistentialRestrictionAxiom(restrictedDomain=" + restrictedDomain.uuid + ",restrictedRelation="+restrictedRelation.uuid + ",restrictedRange="+restrictedRange.uuid+")"
-		com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace).toString
-	}
+	op UUID[?] uuid(Extent[1] extent) { null }
 	
 }
 
@@ -624,14 +630,20 @@ class EntityExistentialRestrictionAxiom extends EntityRestrictionAxiom {
 class EntityUniversalRestrictionAxiom extends EntityRestrictionAxiom {
 	
 	@Scala(code="
-	val namespace = \"EntityUniversalRestrictionAxiom(restrictedDomain=\" + restrictedDomain.uuid + \",restrictedRelation=\"+restrictedRelation.uuid + \",restrictedRange=\"+restrictedRange.uuid+\")\"
-	com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace)")
+	for {
+	  u1 <- tbox
+	  u2 <- restrictedDomain.uuid(extent)
+    	  u3 <- restrictedRelation.uuid(extent)
+	  u4 <- restrictedRange.uuid(extent)
+	} yield gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator.derivedUUID(
+		\"EntityUniversalRestrictionAxiom\",
+	    \"tbox\"->u1,
+		\"restrictedDomain\"->u2,
+		\"restrictedRelation\"->u3,
+		\"restrictedRange\"->u4)")
 	@NotSchema
 	@Override
-	op UUID[1] calculateUUID() { 
-		val namespace = "EntityUniversalRestrictionAxiom(restrictedDomain=" + restrictedDomain.uuid + ",restrictedRelation="+restrictedRelation.uuid + ",restrictedRange="+restrictedRange.uuid+")"
-		com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace).toString
-	}
+	op UUID[?] uuid(Extent[1] extent) { null }
 	
 }
 
@@ -661,15 +673,19 @@ abstract class SpecializationAxiom extends TermAxiom {
 @Glossary
 class AspectSpecializationAxiom extends SpecializationAxiom {
 	
-	@NotSchema
 	@Scala(code="
-	val namespace = \"AspectSpecializationAxiom(subEntity=\" + subEntity.uuid + \",superAspect=\"+superAspect.uuid+\")\"
-	com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace)")
+	for {
+	  u1 <- tbox
+	  u2 <- subEntity.uuid(extent)
+    	  u3 <- superAspect.uuid(extent)
+	} yield gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator.derivedUUID(
+		\"AspectSpecializationAxiom\",
+	    \"tbox\"->u1,
+		\"subEntity\"->u2,
+		\"superAspect\"->u3)")
+	@NotSchema
 	@Override
-	op UUID[1] calculateUUID() { 
-		val namespace = "AspectSpecializationAxiom(subEntity=" + subEntity.uuid + ",superAspect="+superAspect.uuid+")"
-		com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace).toString
-	}
+	op UUID[?] uuid(Extent[1] extent) { null }
 	
 	/*
 	 * The sub (child) entity
@@ -701,15 +717,19 @@ class AspectSpecializationAxiom extends SpecializationAxiom {
 @Glossary
 class ConceptSpecializationAxiom extends SpecializationAxiom {
 	
-	@NotSchema
 	@Scala(code="
-	val namespace = \"ConceptSpecializationAxiom(subConcept=\" + subConcept.uuid + \",superConcept=\"+superConcept.uuid+\")\"
-	com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace)")
+	for {
+	  u1 <- tbox
+	  u2 <- subConcept.uuid(extent)
+    	  u3 <- superConcept.uuid(extent)
+	} yield gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator.derivedUUID(
+		\"ConceptSpecializationAxiom\",
+	    \"tbox\"->u1,
+		\"subConcept\"->u2,
+		\"superConcept\"->u3)")
+	@NotSchema
 	@Override
-	op UUID[1] calculateUUID() { 
-		val namespace = "ConceptSpecializationAxiom(subConcept=" + subConcept.uuid + ",superConcept="+superConcept.uuid+")"
-		com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace).toString
-	}
+	op UUID[?] uuid(Extent[1] extent) { null }
 	
 	refers Concept[1] subConcept
 	refers Concept[1] superConcept
@@ -735,15 +755,19 @@ class ConceptSpecializationAxiom extends SpecializationAxiom {
 @Glossary
 class ReifiedRelationshipSpecializationAxiom extends SpecializationAxiom {
 	
-	@NotSchema
 	@Scala(code="
-	val namespace = \"ReifiedRelationshipSpecializationAxiom(subRelationship=\" + subRelationship.uuid + \",superRelationship=\"+superRelationship.uuid+\")\"
-	com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace)")
+	for {
+	  u1 <- tbox
+	  u2 <- subRelationship.uuid(extent)
+    	  u3 <- superRelationship.uuid(extent)
+	} yield gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator.derivedUUID(
+		\"ReifiedRelationshipSpecializationAxiom\",
+	    \"tbox\"->u1,
+		\"subRelationship\"->u2,
+		\"superRelationship\"->u3)")
+	@NotSchema
 	@Override
-	op UUID[1] calculateUUID() { 
-		val namespace = "ReifiedRelationshipSpecializationAxiom(subRelationship=" + subRelationship.uuid + ",superRelationship="+superRelationship.uuid+")"
-		com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace).toString
-	}
+	op UUID[?] uuid(Extent[1] extent) { null }
 	
 	/*
 	 * The sub (child) relationship
@@ -785,15 +809,21 @@ abstract class EntityScalarDataPropertyRestrictionAxiom extends TermAxiom {
 class EntityScalarDataPropertyExistentialRestrictionAxiom 
 extends EntityScalarDataPropertyRestrictionAxiom {
 	
-	@NotSchema
 	@Scala(code="
-	val namespace = \"EntityScalarDataPropertyExistentialRestrictionAxiom(restrictedEntity=\"+restrictedEntity.uuid+\",scalarProperty=\"+scalarProperty.calculateUUID()+\",scalarRestriction=\"+scalarRestriction.uuid+\")\"
-	com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace)")
+	for {
+	  u1 <- tbox
+	  u2 <- restrictedEntity.uuid(extent)
+    	  u3 <- scalarProperty.uuid(extent)
+    	  u4 <- scalarRestriction.uuid(extent)
+	} yield gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator.derivedUUID(
+		\"EntityScalarDataPropertyExistentialRestrictionAxiom\",
+	    \"tbox\"->u1,
+		\"restrictedEntity\"->u2,
+		\"scalarProperty\"->u3,
+		\"scalarRestriction\"->u4)")
+	@NotSchema
 	@Override
-	op UUID[1] calculateUUID() { 
-		val namespace = "EntityScalarDataPropertyExistentialRestrictionAxiom(restrictedEntity=" + restrictedEntity.uuid + ",scalarProperty="+scalarProperty.calculateUUID()+ ",scalarRestriction="+scalarRestriction.uuid+")"
-		com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace).toString
-	}
+	op UUID[?] uuid(Extent[1] extent) { null }
 	
   	refers DataRange[1] scalarRestriction
 }
@@ -806,15 +836,21 @@ extends EntityScalarDataPropertyRestrictionAxiom {
 class EntityScalarDataPropertyUniversalRestrictionAxiom 
 extends EntityScalarDataPropertyRestrictionAxiom {
 	
-	@NotSchema
 	@Scala(code="
-	val namespace = \"EntityScalarDataPropertyUniversalRestrictionAxiom(restrictedEntity=\"+restrictedEntity.uuid+\",scalarProperty=\"+scalarProperty.calculateUUID()+\",scalarRestriction=\"+scalarRestriction.uuid+\")\"
-	com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace)")
+	for {
+	  u1 <- tbox
+	  u2 <- restrictedEntity.uuid(extent)
+    	  u3 <- scalarProperty.uuid(extent)
+    	  u4 <- scalarRestriction.uuid(extent)
+	} yield gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator.derivedUUID(
+		\"EntityScalarDataPropertyUniversalRestrictionAxiom\",
+	    \"tbox\"->u1,
+		\"restrictedEntity\"->u2,
+		\"scalarProperty\"->u3,
+		\"scalarRestriction\"->u4)")
+	@NotSchema
 	@Override
-	op UUID[1] calculateUUID() { 
-		val namespace = "EntityScalarDataPropertyUniversalRestrictionAxiom(restrictedEntity=" + restrictedEntity.uuid + ",scalarProperty="+scalarProperty.calculateUUID()+ ",scalarRestriction="+scalarRestriction.uuid+")"
-		com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace).toString
-	}
+	op UUID[?] uuid(Extent[1] extent) { null }
 	
   	refers DataRange[1] scalarRestriction
 }
@@ -826,15 +862,19 @@ extends EntityScalarDataPropertyRestrictionAxiom {
 class EntityScalarDataPropertyParticularRestrictionAxiom
 extends EntityScalarDataPropertyRestrictionAxiom {
 	
-	@NotSchema
 	@Scala(code="
-	val namespace = \"EntityScalarDataPropertyParticularRestrictionAxiom(restrictedEntity=\"+restrictedEntity.uuid+\",scalarProperty=\"+scalarProperty.calculateUUID()+\")\"
-	com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace)")
+	for {
+	  u1 <- tbox
+	  u2 <- restrictedEntity.uuid(extent)
+    	  u3 <- scalarProperty.uuid(extent)
+	} yield gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator.derivedUUID(
+		\"EntityScalarDataPropertyParticularRestrictionAxiom\",
+	    \"tbox\"->u1,
+		\"restrictedEntity\"->u2,
+		\"scalarProperty\"->u3)")
+	@NotSchema
 	@Override
-	op UUID[1] calculateUUID() { 
-		val namespace = "EntityScalarDataPropertyParticularRestrictionAxiom(restrictedEntity=" + restrictedEntity.uuid + ",scalarProperty="+scalarProperty.calculateUUID()+")"
-		com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace).toString
-	}
+	op UUID[?] uuid(Extent[1] extent) { null }
 	
 	LexicalValue[1] literalValue
 }
@@ -873,15 +913,17 @@ abstract class RestrictedDataRange extends DataRange {
 @Glossary
 class BinaryScalarRestriction extends RestrictedDataRange {
 	
-	@NotSchema
 	@Scala(code="
-	val namespace = \"BinaryScalarRestriction(restrictedRange=\"+restrictedRange.uuid+\")\"
-	com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace)")
+	for {
+	  u1 <- tbox
+	  u2 <- restrictedRange.uuid(extent)
+	} yield gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator.derivedUUID(
+		\"BinaryScalarRestriction\",
+	    \"tbox\"->u1,
+		\"restrictedRange\"->u2)")
+	@NotSchema
 	@Override
-	op UUID[1] calculateUUID() { 
-		val namespace = "BinaryScalarRestriction(restrictedRange="+restrictedRange.uuid+")"
-		com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace).toString
-	}
+	op UUID[?] uuid(Extent[1] extent) { null }
 	
 	/*
 	 * The length of the binary data
@@ -913,15 +955,17 @@ class BinaryScalarRestriction extends RestrictedDataRange {
 @Glossary
 class IRIScalarRestriction extends RestrictedDataRange {
 	
-	@NotSchema
 	@Scala(code="
-	val namespace = \"IRIScalarRestriction(restrictedRange=\"+restrictedRange.uuid+\")\"
-	com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace)")
+	for {
+	  u1 <- tbox
+	  u2 <- restrictedRange.uuid(extent)
+	} yield gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator.derivedUUID(
+		\"IRIScalarRestriction\",
+	    \"tbox\"->u1,
+		\"restrictedRange\"->u2)")
+	@NotSchema
 	@Override
-	op UUID[1] calculateUUID() { 
-		val namespace = "IRIScalarRestriction(restrictedRange="+restrictedRange.uuid+")"
-		com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace).toString
-	}
+	op UUID[?] uuid(Extent[1] extent) { null }
 	
 	/*
 	 * The length of the IRI
@@ -974,15 +1018,17 @@ class IRIScalarRestriction extends RestrictedDataRange {
 @Glossary
 class NumericScalarRestriction extends RestrictedDataRange {
 	
-	@NotSchema
 	@Scala(code="
-	val namespace = \"NumericScalarRestriction(restrictedRange=\"+restrictedRange.uuid+\")\"
-	com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace)")
+	for {
+	  u1 <- tbox
+	  u2 <- restrictedRange.uuid(extent)
+	} yield gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator.derivedUUID(
+		\"NumericScalarRestriction\",
+	    \"tbox\"->u1,
+		\"restrictedRange\"->u2)")
+	@NotSchema
 	@Override
-	op UUID[1] calculateUUID() { 
-		val namespace = "NumericScalarRestriction(restrictedRange="+restrictedRange.uuid+")"
-		com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace).toString
-	}
+	op UUID[?] uuid(Extent[1] extent) { null }
 	
 	/*
 	 * The inclusive minimum value in the range
@@ -1019,15 +1065,17 @@ class NumericScalarRestriction extends RestrictedDataRange {
 @Glossary
 class PlainLiteralScalarRestriction extends RestrictedDataRange {
 	
-	@NotSchema
 	@Scala(code="
-	val namespace = \"PlainLiteralScalarRestriction(restrictedRange=\"+restrictedRange.uuid+\")\"
-	com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace)")
+	for {
+	  u1 <- tbox
+	  u2 <- restrictedRange.uuid(extent)
+	} yield gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator.derivedUUID(
+		\"PlainLiteralScalarRestriction\",
+	    \"tbox\"->u1,
+		\"restrictedRange\"->u2)")
+	@NotSchema
 	@Override
-	op UUID[1] calculateUUID() { 
-		val namespace = "PlainLiteralScalarRestriction(restrictedRange="+restrictedRange.uuid+")"
-		com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace).toString
-	}
+	op UUID[?] uuid(Extent[1] extent) { null }
 	
 	/*
 	 * The length of the plain literal
@@ -1073,15 +1121,17 @@ class PlainLiteralScalarRestriction extends RestrictedDataRange {
 @Glossary
 class StringScalarRestriction extends RestrictedDataRange {
 	
-	@NotSchema
 	@Scala(code="
-	val namespace = \"StringScalarRestriction(restrictedRange=\"+restrictedRange.uuid+\")\"
-	com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace)")
+	for {
+	  u1 <- tbox
+	  u2 <- restrictedRange.uuid(extent)
+	} yield gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator.derivedUUID(
+		\"StringScalarRestriction\",
+	    \"tbox\"->u1,
+		\"restrictedRange\"->u2)")
+	@NotSchema
 	@Override
-	op UUID[1] calculateUUID() { 
-		val namespace = "StringScalarRestriction(restrictedRange="+restrictedRange.uuid+")"
-		com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace).toString
-	}
+	op UUID[?] uuid(Extent[1] extent) { null }
 	
 	/*
 	 * The length of the string
@@ -1118,15 +1168,17 @@ class StringScalarRestriction extends RestrictedDataRange {
 @Glossary
 class TimeScalarRestriction extends RestrictedDataRange {
 	
-	@NotSchema
 	@Scala(code="
-	val namespace = \"TimeScalarRestriction(restrictedRange=\"+restrictedRange.uuid+\")\"
-	com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace)")
+	for {
+	  u1 <- tbox
+	  u2 <- restrictedRange.uuid(extent)
+	} yield gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator.derivedUUID(
+		\"TimeScalarRestriction\",
+	    \"tbox\"->u1,
+		\"restrictedRange\"->u2)")
+	@NotSchema
 	@Override
-	op UUID[1] calculateUUID() { 
-		val namespace = "TimeScalarRestriction(restrictedRange="+restrictedRange.uuid+")"
-		com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace).toString
-	}
+	op UUID[?] uuid(Extent[1] extent) { null }
 	
 	/*
 	 * The inclusive minimum value in the range
@@ -1152,15 +1204,17 @@ class TimeScalarRestriction extends RestrictedDataRange {
 @Glossary
 class SynonymScalarRestriction extends RestrictedDataRange {
 	
-	@NotSchema
 	@Scala(code="
-	val namespace = \"SynonymScalarRestriction(restrictedRange=\"+restrictedRange.uuid+\")\"
-	com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace)")
+	for {
+	  u1 <- tbox
+	  u2 <- restrictedRange.uuid(extent)
+	} yield gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator.derivedUUID(
+		\"SynonymScalarRestriction\",
+	    \"tbox\"->u1,
+		\"restrictedRange\"->u2)")
+	@NotSchema
 	@Override
-	op UUID[1] calculateUUID() { 
-		val namespace = "SynonymScalarRestriction(restrictedRange="+restrictedRange.uuid+")"
-		com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace).toString
-	}
+	op UUID[?] uuid(Extent[1] extent) { null }
 	
 }
 
@@ -1171,15 +1225,17 @@ class SynonymScalarRestriction extends RestrictedDataRange {
 @Glossary
 class ScalarOneOfRestriction extends RestrictedDataRange {
 	
-	@NotSchema
 	@Scala(code="
-	val namespace = \"ScalarOneOfRestriction(restrictedRange=\"+restrictedRange.uuid+\")\"
-	com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace)")
+	for {
+	  u1 <- tbox
+	  u2 <- restrictedRange.uuid(extent)
+	} yield gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator.derivedUUID(
+		\"ScalarOneOfRestriction\",
+	    \"tbox\"->u1,
+		\"restrictedRange\"->u2)")
+	@NotSchema
 	@Override
-	op UUID[1] calculateUUID() { 
-		val namespace = "ScalarOneOfRestriction(restrictedRange="+restrictedRange.uuid+")"
-		com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace).toString
-	}
+	op UUID[?] uuid(Extent[1] extent) { null }
 	
 }
 
@@ -1189,16 +1245,19 @@ class ScalarOneOfRestriction extends RestrictedDataRange {
 @Glossary
 class ScalarOneOfLiteralAxiom extends TermAxiom {
 	
-	@NotSchema
 	@Scala(code="
-	val namespace = \"ScalarOneOfLiteralAxiom(scalarOneOfRestriction=\"+axiom.uuid+\")\"
-	com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace)")
+	for {
+	  u1 <- tbox
+	  u2 <- axiom.uuid(extent)
+	} yield gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator.derivedUUID(
+		\"ScalarOneOfLiteralAxiom\",
+	    \"tbox\"->u1,
+		\"axiom\"->u2,
+		\"value\"->value)")
+	@NotSchema
 	@Override
-	op UUID[1] calculateUUID() { 
-		val namespace = "ScalarOneOfLiteralAxiom(scalarOneOfRestriction="+axiom.uuid+")"
-		com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace).toString
-	}
-
+	op UUID[?] uuid(Extent[1] extent) { null }
+	
 	refers ScalarOneOfRestriction[1] axiom
 	/*
 	 * The value of the literal from the restrictedScalar datatype

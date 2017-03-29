@@ -37,6 +37,7 @@ import gov.nasa.jpl.imce.oml.model.common.AnnotationPropertyTable
 import gov.nasa.jpl.imce.oml.model.common.Collection
 import gov.nasa.jpl.imce.oml.model.common.CopyConstructor
 import gov.nasa.jpl.imce.oml.model.common.Element
+import gov.nasa.jpl.imce.oml.model.common.Extent
 import gov.nasa.jpl.imce.oml.model.common.Glossary
 import gov.nasa.jpl.imce.oml.model.common.IRI
 import gov.nasa.jpl.imce.oml.model.common.LocalName
@@ -141,7 +142,7 @@ class DescriptionBox extends Module {
 abstract class DescriptionBoxRelationship extends ModuleElement {
 	
 	@NotSchema
-	op DescriptionBox[1] descriptionDomain()
+	op DescriptionBox[?] descriptionDomain(Extent[1] extent)
 	
 	@NotSchema
 	op Module[1] targetModule()
@@ -157,19 +158,22 @@ abstract class DescriptionBoxRelationship extends ModuleElement {
 class DescriptionBoxExtendsClosedWorldDefinitions extends DescriptionBoxRelationship {
 	
 	@Scala(code="
-	val namespace = \"DescriptionBoxExtendsClosedWorldDefinitions(descriptionBox=\" + descriptionBox.uuid + \",closedWorldDefinitions=\"+closedWorldDefinitions.uuid+\")\"
-	com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace)")
+	for {
+	  u1 <- descriptionBox
+	  u2 <- closedWorldDefinitions.uuid(extent)
+	} yield gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator.derivedUUID(
+		\"DescriptionBoxExtendsClosedWorldDefinitions\",
+	    \"descriptionBox\"->u1,
+		\"closedWorldDefinitions\"->u2)")
 	@NotSchema
 	@Override
-	op UUID[1] calculateUUID() { 
-		val namespace = "DescriptionBoxExtendsClosedWorldDefinitions(descriptionBox=" + descriptionBox.uuid + ",closedWorldDefinitions="+closedWorldDefinitions.uuid+")"
-		com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace).toString
-	}
+	op UUID[?] uuid(Extent[1] extent) { null }
 	
 	container DescriptionBox[1] descriptionBox opposite closedWorldDefinitions
 	
+	@Scala(code="lookupDescriptionBox(extent, descriptionBox)")
 	@NotSchema
-	op DescriptionBox[1] descriptionDomain() { descriptionBox }
+	op DescriptionBox[?] descriptionDomain(Extent[1] extent) { null }
 	
 	refers TerminologyBox[1] closedWorldDefinitions
 	
@@ -186,19 +190,22 @@ class DescriptionBoxExtendsClosedWorldDefinitions extends DescriptionBoxRelation
 class DescriptionBoxRefinement extends DescriptionBoxRelationship {
 	
 	@Scala(code="
-	val namespace = \"DescriptionBoxRefinement(refiningDescriptionBox=\" + refiningDescriptionBox.uuid + \",refinedDescriptionBox=\"+refinedDescriptionBox.uuid+\")\"
-	com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace)")
+	for {
+	  u1 <- refiningDescriptionBox
+	  u2 <- refinedDescriptionBox.uuid(extent)
+	} yield gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator.derivedUUID(
+		\"DescriptionBoxRefinement\",
+	    \"refiningDescriptionBox\"->u1,
+		\"refinedDescriptionBox\"->u2)")
 	@NotSchema
 	@Override
-	op UUID[1] calculateUUID() { 
-		val namespace = "DescriptionBoxRefinement(refiningDescriptionBox=" + refiningDescriptionBox.uuid + ",refinedDescriptionBox="+refinedDescriptionBox.uuid+")"
-		com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace).toString
-	}
+	op UUID[?] uuid(Extent[1] extent) { null }
 	
 	container DescriptionBox[1] refiningDescriptionBox opposite descriptionBoxRefinements
 	
+	@Scala(code="lookupDescriptionBox(extent, refiningDescriptionBox)")
 	@NotSchema
-	op DescriptionBox[1] descriptionDomain() { refiningDescriptionBox }
+	op DescriptionBox[?] descriptionDomain(Extent[1] extent) { null }
 	
 	refers DescriptionBox[1] refinedDescriptionBox
 	
@@ -207,12 +214,17 @@ class DescriptionBoxRefinement extends DescriptionBoxRelationship {
 }
 
 /*
- * An OML TerminologyInstanceAssertion is a logical OML TerminologyThing defined in an OML TerminologyDescription.
+ * An OML TerminologyInstanceAssertion is a logical OML ModuleElement defined in an OML TerminologyDescription.
  */
 @Glossary
 abstract class TerminologyInstanceAssertion extends ModuleElement, Resource {
+	
 	@NotSchema
-	op DescriptionBox[1] descriptionBox()
+	op UUID[?] descriptionBox()
+	
+	@Scala(code="lookupDescriptionBox(extent, descriptionBox())")
+	@NotSchema
+	op DescriptionBox[?] descriptionBox(Extent[1] extent)
 	
 	@Override
 	id LocalName[1] name
@@ -221,20 +233,22 @@ abstract class TerminologyInstanceAssertion extends ModuleElement, Resource {
 	@NotSchema
 	op LocalName[1] name() { getName() }
 	
-	@Scala(code="descriptionBox.iri + \"#\" + name")
+	@Scala(code="descriptionBox(extent).map(m => m.iri + \"#\" + name)")
 	@NotSchema
 	@Override
-	op IRI[1] iri() { descriptionBox.iri() + "#" + name() }
+	op IRI[?] iri(Extent[1] extent) { null }
 	
 	/*
-	 * The UUID of a Term is a Version5 namespace UUID based on the term's IRI.
+	 * The UUID of a Term is a Version5 namespace UUID based on the terminology instance assertion's IRI.
 	 */
-	@Scala(code="com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(iri())")
+	@Scala(code="
+	for {
+	  iri <- iri(extent)
+	} yield gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator.uuidFromURL(iri)")
 	@NotSchema 
 	@Override
-	op UUID[1] calculateUUID() { 
-		com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(iri().toString).toString
-	}
+	op UUID[?] uuid(Extent[1] extent) { null }
+
 }
 
 /*
@@ -259,20 +273,6 @@ abstract class SingletonInstance extends TerminologyInstanceAssertion {
 @Glossary
 class ScalarDataPropertyValue extends TerminologyInstanceAssertion {
 	
-	@Scala(code="
-	val namespace = \"ScalarDataPropertyValue(singletonInstance=\" + singletonInstance.uuid + \",scalarDataProperty=\"+scalarDataProperty.calculateUUID()+\")\"
-	com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace)")
-	@NotSchema
-	@Override
-	op UUID[1] calculateUUID() { 
-		val namespace = "ScalarDataPropertyValue(singletonInstance=" + singletonInstance.uuid + ",scalarDataProperty="+scalarDataProperty.calculateUUID()+")"
-		com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace).toString
-	}
-	
-	@Scala(code="singletonInstance.descriptionBox()")
-	@NotSchema
-	op DescriptionBox[1] descriptionBox() { singletonInstance.descriptionBox() }
-	
 	container SingletonInstance[1] singletonInstance opposite scalarDataPropertyValues
 	refers DataRelationshipToScalar[1] scalarDataProperty
 	String[1] scalarPropertyValue
@@ -286,20 +286,6 @@ class ScalarDataPropertyValue extends TerminologyInstanceAssertion {
 @Glossary
 class StructuredDataPropertyValue extends TerminologyInstanceAssertion {
 	
-	@Scala(code="
-	val namespace = \"StructuredDataPropertyValue(singletonInstance=\" + singletonInstance.uuid + \",structuredDataProperty=\"+structuredDataProperty.calculateUUID()+ \",structuredPropertyTuple=\"+structuredPropertyTuple.uuid+\")\"
-	com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace)")
-	@NotSchema
-	@Override
-	op UUID[1] calculateUUID() { 
-		val namespace = "StructuredDataPropertyValue(singletonInstance=" + singletonInstance.uuid + ",structuredDataProperty="+structuredDataProperty.calculateUUID() + ",structuredPropertyTuple="+structuredPropertyTuple.uuid+")"
-		com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace).toString
-	}
-	
-	@Scala(code="singletonInstance.descriptionBox()")
-	@NotSchema
-	op DescriptionBox[1] descriptionBox() { singletonInstance.descriptionBox() }
-	
 	container SingletonInstance[1] singletonInstance opposite structuredDataPropertyValues
 	refers DataRelationshipToStructure[1] structuredDataProperty
 	contains DataStructureTuple[1] structuredPropertyTuple opposite structuredDataPropertyValue
@@ -311,22 +297,7 @@ class StructuredDataPropertyValue extends TerminologyInstanceAssertion {
 @Glossary
 class DataStructureTuple extends SingletonInstance {
 	
-	@Scala(code="
-	val namespace = \"DataStructureTuple(structuredDataPropertyValue=\" + structuredDataPropertyValue.uuid + \",dataStructureType=\"+dataStructureType.uuid+\")\"
-	com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace)")
-	@NotSchema
-	@Override
-	op UUID[1] calculateUUID() { 
-		val namespace = "DataStructureTuple(structuredDataPropertyValue=" + structuredDataPropertyValue.uuid + ",dataStructureType="+dataStructureType.uuid+")"
-		com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace).toString
-	}
-	
-	@Scala(code="structuredDataPropertyValue.descriptionBox()")
-	@NotSchema
-	op DescriptionBox[1] descriptionBox() { structuredDataPropertyValue.descriptionBox() }
-	
 	container StructuredDataPropertyValue[1] structuredDataPropertyValue opposite structuredPropertyTuple
-	
 	refers Structure[1] dataStructureType
 }
 
@@ -400,16 +371,6 @@ abstract class ConceptualEntitySingletonInstance extends SingletonInstance {
 @Glossary
 class ConceptInstance extends ConceptualEntitySingletonInstance {
 	
-	@Scala(code="
-	val namespace = \"ConceptInstance(descriptionBox=\" + descriptionBox.uuid + \",singletonConceptClassifier=\"+singletonConceptClassifier.uuid+\")\"
-	com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace)")
-	@NotSchema
-	@Override
-	op UUID[1] calculateUUID() { 
-		val namespace = "ConceptInstance(descriptionBox=" + descriptionBox().uuid + ",singletonConceptClassifier="+singletonConceptClassifier.uuid+")"
-		com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace).toString
-	}
-	
 	container DescriptionBox[1] descriptionBox opposite conceptInstances
 	
 	refers Concept[1] singletonConceptClassifier
@@ -424,16 +385,6 @@ class ConceptInstance extends ConceptualEntitySingletonInstance {
  */
 @Glossary
 class ReifiedRelationshipInstance extends ConceptualEntitySingletonInstance {
-	
-	@Scala(code="
-	val namespace = \"ReifiedRelationshipInstance(descriptionBox=\" + descriptionBox.uuid + \",singletonReifiedRelationshipClassifier=\"+singletonReifiedRelationshipClassifier.uuid+\")\"
-	com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace)")
-	@NotSchema
-	@Override
-	op UUID[1] calculateUUID() { 
-		val namespace = "ReifiedRelationshipInstance(descriptionBox=" + descriptionBox().uuid + ",singletonReifiedRelationshipClassifier="+singletonReifiedRelationshipClassifier.uuid+")"
-		com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace).toString
-	}
 	
 	container DescriptionBox[1] descriptionBox opposite reifiedRelationshipInstances
 	
@@ -454,16 +405,6 @@ class ReifiedRelationshipInstance extends ConceptualEntitySingletonInstance {
 @Glossary
 class ReifiedRelationshipInstanceDomain extends TerminologyInstanceAssertion {
 	
-	@Scala(code="
-	val namespace = \"ReifiedRelationshipInstanceDomain(descriptionBox=\" + descriptionBox.uuid + \",reifiedRelationshipInstance=\"+reifiedRelationshipInstance.uuid+ \",domain=\"+domain.uuid+\")\"
-	com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace)")
-	@NotSchema
-	@Override
-	op UUID[1] calculateUUID() { 
-		val namespace = "ReifiedRelationshipInstanceDomain(descriptionBox=" + descriptionBox().uuid + ",reifiedRelationshipInstance="+reifiedRelationshipInstance.uuid + ",domain="+domain.uuid+")"
-		com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace).toString
-	}
-	
 	container DescriptionBox[1] descriptionBox opposite reifiedRelationshipInstanceDomains
 	refers ReifiedRelationshipInstance[1] reifiedRelationshipInstance
 	refers ConceptualEntitySingletonInstance[1] domain
@@ -478,16 +419,6 @@ class ReifiedRelationshipInstanceDomain extends TerminologyInstanceAssertion {
  */
 @Glossary
 class ReifiedRelationshipInstanceRange extends TerminologyInstanceAssertion {
-	
-	@Scala(code="
-	val namespace = \"ReifiedRelationshipInstanceRange(descriptionBox=\" + descriptionBox.uuid + \",reifiedRelationshipInstance=\"+reifiedRelationshipInstance.uuid+ \",range=\"+range.uuid+\")\"
-	com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace)")
-	@NotSchema
-	@Override
-	op UUID[1] calculateUUID() { 
-		val namespace = "ReifiedRelationshipInstanceRange(descriptionBox=" + descriptionBox().uuid + ",reifiedRelationshipInstance="+reifiedRelationshipInstance.uuid + ",range="+range.uuid+")"
-		com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace).toString
-	}
 	
 	container DescriptionBox[1] descriptionBox opposite reifiedRelationshipInstanceRanges
 	refers ReifiedRelationshipInstance[1] reifiedRelationshipInstance
@@ -504,16 +435,6 @@ class ReifiedRelationshipInstanceRange extends TerminologyInstanceAssertion {
  */
 @Glossary
 class UnreifiedRelationshipInstanceTuple extends TerminologyInstanceAssertion {
-	
-	@Scala(code="
-	val namespace = \"UnreifiedRelationshipInstanceTuple(descriptionBox=\" + descriptionBox.uuid + \",unreifiedRelationship=\"+unreifiedRelationship.uuid+ \",domain=\"+domain.uuid+ \",range=\"+range.uuid+\")\"
-	com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace)")
-	@NotSchema
-	@Override
-	op UUID[1] calculateUUID() { 
-		val namespace = "UnreifiedRelationshipInstanceTuple(descriptionBox=" + descriptionBox().uuid + ",unreifiedRelationship="+unreifiedRelationship.uuid + ",domain="+domain.uuid + ",range="+range.uuid+")"
-		com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace).toString
-	}
 	
 	container DescriptionBox[1] descriptionBox opposite unreifiedRelationshipInstanceTuples
 	refers UnreifiedRelationship[1] unreifiedRelationship

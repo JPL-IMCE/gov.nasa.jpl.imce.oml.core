@@ -65,53 +65,53 @@ class OMLExtensions {
 		]
 	}
 	
-	def Iterable<TerminologyBox> allImportedTerminologies(TerminologyBox it) {
-		collectAllImportedTerminologies(Lists.newArrayList(it), Lists.newArrayList())
+	def Iterable<TerminologyBox> allImportedTerminologies(Extent ex, TerminologyBox it) {
+		collectAllImportedTerminologies(ex, Lists.newArrayList(it), Lists.newArrayList())
 	}
 	
-	final def Iterable<TerminologyBox> collectAllImportedTerminologies(ArrayList<TerminologyBox> queue, ArrayList<TerminologyBox> acc) {
+	final def Iterable<TerminologyBox> collectAllImportedTerminologies(Extent ex, ArrayList<TerminologyBox> queue, ArrayList<TerminologyBox> acc) {
 		if (queue.isEmpty)
 			return acc
 		
 		val tbox = queue.head
 		queue.remove(tbox)
 		
-		val inc = tbox.boxAxioms.map[target]
+		val inc = tbox.boxAxioms.map[target(ex)]
 		queue.addAll(inc)
 		acc.addAll(inc)
 		
-		collectAllImportedTerminologies(queue, acc)
+		collectAllImportedTerminologies(ex, queue, acc)
 	}
 	
 	def Iterable<Entity> localEntities(TerminologyBox it) {
 		boxStatements.filter(Entity)
 	}
 	
-	def Iterable<Entity> allEntities(TerminologyBox it) {
-		localEntities + allImportedTerminologies.map[localEntities].flatten
+	def Iterable<Entity> allEntities(Extent ex, TerminologyBox it) {
+		localEntities + allImportedTerminologies(ex,it).map[localEntities].flatten
 	}
 	
 	def Iterable<Aspect> localAspects(TerminologyBox it) {
 		boxStatements.filter(Aspect)
 	}
 	
-	def Iterable<Aspect> allAspects(TerminologyBox it) {
-		localAspects + allImportedTerminologies.map[localAspects].flatten
+	def Iterable<Aspect> allAspects(Extent ex,TerminologyBox it) {
+		localAspects + allImportedTerminologies(ex,it).map[localAspects].flatten
 	}
 	
 	def Iterable<Concept> localConcepts(TerminologyBox it) {
 		boxStatements.filter(Concept)
 	}
 	
-	def Iterable<Concept> allConcepts(TerminologyBox it) {
-		localConcepts + allImportedTerminologies.map[localConcepts].flatten
+	def Iterable<Concept> allConcepts(Extent ex,TerminologyBox it) {
+		localConcepts + allImportedTerminologies(ex,it).map[localConcepts].flatten
 	}
 	
 	def Iterable<ReifiedRelationship> localReifiedRelationships(TerminologyBox it) {
 		boxStatements.filter(ReifiedRelationship)
 	}
 	
-	def Iterable<ReifiedRelationship> allReifiedRelationships(TerminologyBox it) {
-		localReifiedRelationships + allImportedTerminologies.map[localReifiedRelationships].flatten
+	def Iterable<ReifiedRelationship> allReifiedRelationships(Extent ex,TerminologyBox it) {
+		localReifiedRelationships + allImportedTerminologies(ex,it).map[localReifiedRelationships].flatten
 	}
 }

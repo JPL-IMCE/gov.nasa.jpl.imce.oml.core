@@ -36,6 +36,7 @@ package gov.nasa.jpl.imce.oml.model.graphs
 import gov.nasa.jpl.imce.oml.model.common.AnnotationPropertyTable
 import gov.nasa.jpl.imce.oml.model.common.Collection
 import gov.nasa.jpl.imce.oml.model.common.CopyConstructor
+import gov.nasa.jpl.imce.oml.model.common.Extent
 import gov.nasa.jpl.imce.oml.model.common.Glossary
 import gov.nasa.jpl.imce.oml.model.common.NotSchema
 import gov.nasa.jpl.imce.oml.model.common.Override
@@ -87,24 +88,23 @@ class TerminologyGraph extends TerminologyBox {
 @Glossary
 class ConceptDesignationTerminologyAxiom extends TerminologyBoxAxiom {
 	
-	@NotSchema
 	@Scala(code="
-	val namespace = \"ConceptDesignationTerminologyAxiom(designationTerminologyGraph=\" + tbox.uuid + \",designatedConcept=\"+designatedConcept.uuid+\")\"
-	com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace)")
+	for {
+	  u1 <- tbox
+	  u2 <- designatedTerminology.uuid(extent)
+	  u3 <- designatedConcept.uuid(extent)
+	} yield gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator.derivedUUID(
+		\"ConceptDesignationTerminologyAxiom\",
+	    \"tbox\"->u1,
+		\"designatedTerminology\"->u2,
+		\"designatedConcept\"->u3)")
+	@NotSchema
 	@Override
-	op UUID[1] calculateUUID() { 
-		val namespace = "ConceptDesignationTerminologyAxiom(designationTerminologyGraph=" + tbox.uuid + ",designatedConcept="+designatedConcept.uuid+")"
-		com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace).toString
-	}
+	op UUID[?] uuid(Extent[1] extent) { null }
 	
 	@NotSchema
-	@Scala(code="tbox match { case g: TerminologyGraph => g }")
-	op TerminologyGraph[1] designationTerminologyGraph() {
-		switch tbox {
-			TerminologyGraph:
-				tbox as TerminologyGraph
-		}
-	}
+	@Scala(code="lookupTerminologyGraph(extent, tbox)")
+	op TerminologyGraph[?] designationTerminologyGraph(Extent[1] extent) { null }
 	 
 	@NotSchema
 	@CopyConstructor
@@ -115,17 +115,17 @@ class ConceptDesignationTerminologyAxiom extends TerminologyBoxAxiom {
 	/*
 	 * The designationTerminologyGraph is the source
 	 */
-	@Scala(code="tbox")
+	@Scala(code="designationTerminologyGraph(extent)")
 	@NotSchema
 	@Override
-	op TerminologyBox[1] source() { getTbox }
+	op TerminologyBox[?] source(Extent[1] extent) { null }
 	
 	/*
 	 * The TerminologyBox that asserts the designatedConcept is the target
 	 */
 	@NotSchema
 	@Override
-	op TerminologyBox[1] target() { designatedTerminology }
+	op TerminologyBox[1] target(Extent[1] extent) { designatedTerminology }
 }
 
 /*
@@ -139,42 +139,41 @@ class ConceptDesignationTerminologyAxiom extends TerminologyBoxAxiom {
 class TerminologyNestingAxiom extends TerminologyBoxAxiom {
 
 	@Scala(code="
-	val namespace = \"TerminologyNestingAxiom(source=\" + source.uuid + \",target=\"+target.uuid + \",nestingContext=\"+nestingContext.uuid + \")\"
-	com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace)")
+	for {
+	  u1 <- tbox
+	  u2 <- nestingTerminology.uuid(extent)
+	  u3 <- nestingContext.uuid(extent)
+	} yield gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator.derivedUUID(
+		\"TerminologyNestingAxiom\",
+	    \"tbox\"->u1,
+		\"nestingTerminology\"->u2,
+		\"nestingContext\"->u3)")
 	@NotSchema
 	@Override
-	op UUID[1] calculateUUID() { 
-		val namespace = "TerminologyNestingAxiom(source=" + source().uuid + ",target="+target().uuid+ ",nestingContext="+nestingContext.uuid+")"
-		com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace).toString
-	}
+	op UUID[?] uuid(Extent[1] extent) { null }
 	
   	@CopyConstructor
 	refers TerminologyBox[1] nestingTerminology
 
 	@NotSchema
-	@Scala(code="tbox match { case g: TerminologyGraph => g }")
-	op TerminologyGraph[1] nestedTerminology() {
-		switch tbox {
-			TerminologyGraph:
-				tbox as TerminologyGraph
-		}
-	}
+	@Scala(code="lookupTerminologyGraph(extent, tbox)")
+	op TerminologyGraph[?] nestedTerminology(Extent[1] extent) { null }
 
   	refers Concept[1] nestingContext
   	
 	/*
 	 * The nestedTerminology is the source
 	 */
-	@Scala(code="tbox")
+	@Scala(code="nestedTerminology(extent)")
 	@NotSchema
 	@Override
-	op TerminologyBox[1] source() { getTbox }
+	op TerminologyBox[?] source(Extent[1] extent) { null }
 	
 	/*
 	 * The nestingTerminology is the target
 	 */
 	@NotSchema
 	@Override
-	op TerminologyBox[1] target() { nestingTerminology }
+	op TerminologyBox[1] target(Extent[1] extent) { nestingTerminology }
   	
 }

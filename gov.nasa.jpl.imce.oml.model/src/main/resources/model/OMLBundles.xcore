@@ -37,6 +37,7 @@ import gov.nasa.jpl.imce.oml.model.common.AnnotationPropertyTable
 import gov.nasa.jpl.imce.oml.model.common.Collection
 import gov.nasa.jpl.imce.oml.model.common.CopyConstructor
 import gov.nasa.jpl.imce.oml.model.common.Element
+import gov.nasa.jpl.imce.oml.model.common.Extent
 import gov.nasa.jpl.imce.oml.model.common.FunctionalInterface
 import gov.nasa.jpl.imce.oml.model.common.Glossary
 import gov.nasa.jpl.imce.oml.model.common.NotSchema
@@ -49,7 +50,6 @@ import gov.nasa.jpl.imce.oml.model.terminologies.TerminologyAxiom
 import gov.nasa.jpl.imce.oml.model.terminologies.TerminologyBox
 import gov.nasa.jpl.imce.oml.model.terminologies.TerminologyBoxAxiom
 import gov.nasa.jpl.imce.oml.model.terminologies.TerminologyBoxStatement
-
 
 /*
  * An OML Bundle is an OML TerminologyBox that is 
@@ -139,7 +139,7 @@ abstract class TerminologyBundleAxiom extends TerminologyAxiom {
 abstract class ConceptTreeDisjunction {
 
 	@FunctionalInterface
-	op UUID[1] calculateUUID()
+	op UUID[?] uuid(Extent[1] extent)
 }
 
 /*
@@ -162,15 +162,19 @@ abstract class DisjointUnionOfConceptsAxiom extends TerminologyBundleStatement {
 @Glossary
 class SpecificDisjointConceptAxiom extends DisjointUnionOfConceptsAxiom {
 	
-	@NotSchema
 	@Scala(code="
-	val namespace = \"SpecificDisjointConceptAxiom(bundle=\" + bundle.uuid + \",disjointLeaf=\"+disjointLeaf.uuid+\")\"
-	com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace)")
+	for {
+	  u1 <- bundle
+	  u2 <- disjointTaxonomyParent.uuid(extent)
+	  u3 <- disjointLeaf.uuid(extent)
+	} yield gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator.derivedUUID(
+		\"SpecificDisjointConceptAxiom\",
+	    \"bundle\"->u1,
+		\"disjointTaxonomyParent\"->u2,
+		\"disjointLeaf\"->u3)")
+	@NotSchema
 	@Override
-	op UUID[1] calculateUUID() { 
-		val namespace = "SpecificDisjointConceptAxiom(bundle=" + bundle.uuid + ",disjointLeaf="+disjointLeaf.uuid+")"
-		com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace).toString
-	}
+	op UUID[?] uuid(Extent[1] extent) { null }
 	
 	/*
 	 * A Concept that is a disjoint leaf in a taxonomy tree.
@@ -184,15 +188,17 @@ class SpecificDisjointConceptAxiom extends DisjointUnionOfConceptsAxiom {
 @Glossary
 class AnonymousConceptTaxonomyAxiom extends DisjointUnionOfConceptsAxiom, ConceptTreeDisjunction {
 	
-	@NotSchema
 	@Scala(code="
-	val namespace = \"AnonymousConceptTaxonomyAxiom(bundle=\" + bundle.uuid + \",disjointTaxonomyParent=\"+disjointTaxonomyParent.calculateUUID()+\")\"
-	com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace)")
+	for {
+	  u1 <- bundle
+	  u2 <- disjointTaxonomyParent.uuid(extent)
+	} yield gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator.derivedUUID(
+		\"AnonymousConceptTaxonomyAxiom\",
+	    \"bundle\"->u1,
+		\"disjointTaxonomyParent\"->u2)")
+	@NotSchema
 	@Override
-	op UUID[1] calculateUUID() { 
-		val namespace = "AnonymousConceptTaxonomyAxiom(bundle=" + bundle.uuid + ",disjointTaxonomyParent="+disjointTaxonomyParent.calculateUUID()+")"
-		com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace).toString
-	}
+	op UUID[?] uuid(Extent[1] extent) { null }
 	
 }
 
@@ -203,15 +209,19 @@ class AnonymousConceptTaxonomyAxiom extends DisjointUnionOfConceptsAxiom, Concep
 @Glossary
 class RootConceptTaxonomyAxiom extends TerminologyBundleStatement, ConceptTreeDisjunction {
 	
-	@NotSchema
 	@Scala(code="
-	val namespace = \"RootConceptTaxonomyAxiom(bundle=\" + bundle.uuid + \",root=\"+root.uuid+\")\"
-	com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace)")
+	for {
+	  u1 <- bundle
+	  u2 <- disjointTaxonomyParent.uuid(extent)
+	  u3 <- root.uuid(extent)
+	} yield gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator.derivedUUID(
+		\"RootConceptTaxonomyAxiom\",
+	    \"bundle\"->u1,
+		\"disjointTaxonomyParent\"->u2,
+		\"root\"->u3)")
+	@NotSchema
 	@Override
-	op UUID[1] calculateUUID() { 
-		val namespace = "RootConceptTaxonomyAxiom(bundle=" + bundle.uuid + ",root="+root.uuid+")"
-		com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace).toString
-	}
+	op UUID[?] uuid(Extent[1] extent) { null }
 	
 	/*
 	 * The Concept that is at the root of a taxonomy of disjunctions.
@@ -229,15 +239,17 @@ class RootConceptTaxonomyAxiom extends TerminologyBundleStatement, ConceptTreeDi
 @Glossary
 class BundledTerminologyAxiom extends TerminologyBundleAxiom {
 
-	@NotSchema
 	@Scala(code="
-	val namespace = \"BundledTerminologyAxiom(bundle=\" + bundle.uuid + \",bundledTerminology=\"+bundledTerminology.uuid+\")\"
-	com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace)")
+	for {
+	  u1 <- bundle
+	  u2 <- bundledTerminology.uuid(extent)
+	} yield gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator.derivedUUID(
+		\"BundledTerminologyAxiom\",
+	    \"bundle\"->u1,
+		\"bundledTerminology\"->u2)")
+	@NotSchema
 	@Override
-	op UUID[1] calculateUUID() { 
-		val namespace = "BundledTerminologyAxiom(bundle=" + bundle.uuid + ",bundledTerminology="+bundledTerminology.uuid+")"
-		com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(namespace).toString
-	}
+	op UUID[?] uuid(Extent[1] extent) { null }
 	
 	@CopyConstructor
 	refers TerminologyBox[1] bundledTerminology
@@ -245,14 +257,15 @@ class BundledTerminologyAxiom extends TerminologyBundleAxiom {
 	/*
 	 * The bundle is the source
 	 */
+	@Scala(code="lookupBundle(extent, bundle)")
 	@NotSchema
 	@Override
-	op TerminologyBox[1] source() { bundle }
+	op TerminologyBox[?] source(Extent[1] extent) { null }
 	
 	/*
 	 * The bundledTerminology is the target
 	 */
 	@NotSchema
 	@Override
-	op TerminologyBox[1] target() { bundledTerminology }
+	op TerminologyBox[1] target(Extent[1] extent) { bundledTerminology }
 }

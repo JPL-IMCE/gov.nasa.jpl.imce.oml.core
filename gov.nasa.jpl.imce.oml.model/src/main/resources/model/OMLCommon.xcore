@@ -147,12 +147,9 @@ type NamespacePrefix wraps String
  */
 abstract class Element {
 	
-	@Scala(code="calculateUUID()")
 	@IsOrderingKey
-	derived UUID[1] uuid get { calculateUUID() }
+	op UUID[?] uuid(Extent[1] extent)
 	
-	@NotSchema
-	op UUID[1] calculateUUID()
 }
 
 /*
@@ -167,7 +164,7 @@ abstract class Element {
 abstract class Resource {
 	
 	@NotSchema
-	op IRI[1] iri()
+	op IRI[?] iri(Extent[1] extent)
 	
 	@NotSchema
 	op LocalName[1] name()
@@ -293,13 +290,20 @@ class Annotation {
 @ResolverAPI
 class Extent {
 	
+	UUID[1] uuid
+	
 	@CopyConstructor
 	@Collection(kind="SortedSet")
 	contains AnnotationProperty[] annotationProperties
 	
 	@CopyConstructor
-	@Collection(kind="SortedSet")
+	//@Collection(kind="SortedSet")
+	@Collection(kind="Map", key="java.util.UUID")
 	contains Module[] modules opposite extent
+	
+	@Scala(code="uuid.map(id => modules.get(id)")
+	@NotSchema
+	op Module[?] lookupModule(UUID[?] uuid)
 }
 
 /*
@@ -313,18 +317,19 @@ abstract class Module extends Element, Resource {
 	@NotSchema
 	container Extent[1] extent opposite modules
 	
-	@Scala(code="com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(iri)")
+	@Scala(code="Some(com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(iri))")
 	@NotSchema
 	@Override
-	op UUID[1] calculateUUID() { 
-		com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(iri()).toString
+	op UUID[?] uuid(Extent[1] extent) { 
+		com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(iri).toString
 	}
 	
-	@Override
 	id IRI[1] iri
 	
-	@NotFunctionalAPI
-	op IRI[1] iri() { getIri() }
+	@Scala(code="Some(iri)")
+	@NotSchema
+	@Override
+	op IRI[?] iri(Extent[1] extent) { iri }
 	
 	@Scala(code="iri.substring(1+iri.lastIndexOf('/'))")
 	@NotSchema
