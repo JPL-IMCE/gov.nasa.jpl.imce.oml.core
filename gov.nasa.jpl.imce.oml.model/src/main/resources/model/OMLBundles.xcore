@@ -33,24 +33,20 @@ limitations under the License.
    
 package gov.nasa.jpl.imce.oml.model.bundles
 
-import gov.nasa.jpl.imce.oml.model.common.AnnotationPropertyTable
 import gov.nasa.jpl.imce.oml.model.common.Collection
 import gov.nasa.jpl.imce.oml.model.common.CopyConstructor
 import gov.nasa.jpl.imce.oml.model.common.Element
-import gov.nasa.jpl.imce.oml.model.common.Extent
 import gov.nasa.jpl.imce.oml.model.common.FunctionalInterface
 import gov.nasa.jpl.imce.oml.model.common.Glossary
+import gov.nasa.jpl.imce.oml.model.common.ImplicitExtent
+import gov.nasa.jpl.imce.oml.model.common.ModuleElement
 import gov.nasa.jpl.imce.oml.model.common.NotSchema
 import gov.nasa.jpl.imce.oml.model.common.Override
 import gov.nasa.jpl.imce.oml.model.common.Scala
-import gov.nasa.jpl.imce.oml.model.common.ModuleElement
 import gov.nasa.jpl.imce.oml.model.common.UUID
 import gov.nasa.jpl.imce.oml.model.terminologies.Concept
 import gov.nasa.jpl.imce.oml.model.terminologies.TerminologyAxiom
 import gov.nasa.jpl.imce.oml.model.terminologies.TerminologyBox
-import gov.nasa.jpl.imce.oml.model.terminologies.TerminologyBoxAxiom
-import gov.nasa.jpl.imce.oml.model.terminologies.TerminologyBoxStatement
-
 /*
  * An OML Bundle is an OML TerminologyBox that is 
  * an acyclic logical aggregate of other OML TerminologyBox(es)
@@ -59,52 +55,23 @@ import gov.nasa.jpl.imce.oml.model.terminologies.TerminologyBoxStatement
 @Glossary
 class Bundle extends TerminologyBox {
 		
-	@NotSchema
-	@Scala(code="copy(annotations = this.annotations ++ resolver.convertToAnnotations(a))")
-	@Override
-	op Bundle[1] withAnnotations
-	(@Collection(kind="SortedSet") AnnotationPropertyTable[] a)
-	
-	@NotSchema
-	@Scala(code="resolver.groupAnnotationsByProperty(annotations)")
-	@Collection(kind="SortedSet")
-	@Override
-	op AnnotationPropertyTable[] annotationsByProperty()	
-	
 	/*
 	 * The TerminologyBundleStatements asserted in this Bundle
 	 */
 	@NotSchema
-	@Collection(kind="SortedSet")
+	@Collection(kind="Set")
 	contains TerminologyBundleStatement[] bundleStatements opposite bundle
 	
 	/*
 	 * The BundledTerminologyAxioms asserted in this Bundle
 	 */
 	@NotSchema
-	@Collection(kind="SortedSet")
+	@Collection(kind="Set")
 	contains TerminologyBundleAxiom[] bundleAxioms opposite bundle
 			
 	@NotSchema
-	@Scala(code="copy(bundleStatements = this.bundleStatements ++ s)")
-	op Bundle[1] withBundleStatements
-	(@Collection(kind="SortedSet") TerminologyBundleStatement[] s)
-	
-	@NotSchema
-	@Scala(code="copy(boxAxioms = this.boxAxioms ++ s)")
-	@Override
-	op Bundle[1] withBoxAxioms
-	(@Collection(kind="SortedSet") TerminologyBoxAxiom[] s)
-	
-	@NotSchema
-	@Scala(code="copy(boxStatements = this.boxStatements ++ s)")
-	@Override
-	op Bundle[1] withBoxStatements
-	(@Collection(kind="SortedSet") TerminologyBoxStatement[] s)
-
-	@NotSchema
 	@Scala(code="super.everything() ++ bundleStatements + this")
-	@Collection(kind="SortedSet")
+	@Collection(kind="Set")
 	@Override
 	op Element[] everything()
 }
@@ -138,8 +105,9 @@ abstract class TerminologyBundleAxiom extends TerminologyAxiom {
 @Glossary
 abstract class ConceptTreeDisjunction {
 
+	@ImplicitExtent
 	@FunctionalInterface
-	op UUID[?] uuid(Extent[1] extent)
+	op UUID[?] uuid()
 }
 
 /*
@@ -172,9 +140,10 @@ class SpecificDisjointConceptAxiom extends DisjointUnionOfConceptsAxiom {
 	    \"bundle\"->u1,
 		\"disjointTaxonomyParent\"->u2,
 		\"disjointLeaf\"->u3)")
+	@ImplicitExtent
 	@NotSchema
 	@Override
-	op UUID[?] uuid(Extent[1] extent) { null }
+	op UUID[?] uuid() { null }
 	
 	/*
 	 * A Concept that is a disjoint leaf in a taxonomy tree.
@@ -196,9 +165,10 @@ class AnonymousConceptTaxonomyAxiom extends DisjointUnionOfConceptsAxiom, Concep
 		\"AnonymousConceptTaxonomyAxiom\",
 	    \"bundle\"->u1,
 		\"disjointTaxonomyParent\"->u2)")
+	@ImplicitExtent
 	@NotSchema
 	@Override
-	op UUID[?] uuid(Extent[1] extent) { null }
+	op UUID[?] uuid() { null }
 	
 }
 
@@ -212,16 +182,15 @@ class RootConceptTaxonomyAxiom extends TerminologyBundleStatement, ConceptTreeDi
 	@Scala(code="
 	for {
 	  u1 <- bundle
-	  u2 <- disjointTaxonomyParent.uuid(extent)
-	  u3 <- root.uuid(extent)
+	  u2 <- root.uuid(extent)
 	} yield gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator.derivedUUID(
 		\"RootConceptTaxonomyAxiom\",
 	    \"bundle\"->u1,
-		\"disjointTaxonomyParent\"->u2,
-		\"root\"->u3)")
+		\"root\"->u2)")
+	@ImplicitExtent
 	@NotSchema
 	@Override
-	op UUID[?] uuid(Extent[1] extent) { null }
+	op UUID[?] uuid() { null }
 	
 	/*
 	 * The Concept that is at the root of a taxonomy of disjunctions.
@@ -247,9 +216,10 @@ class BundledTerminologyAxiom extends TerminologyBundleAxiom {
 		\"BundledTerminologyAxiom\",
 	    \"bundle\"->u1,
 		\"bundledTerminology\"->u2)")
+	@ImplicitExtent
 	@NotSchema
 	@Override
-	op UUID[?] uuid(Extent[1] extent) { null }
+	op UUID[?] uuid() { null }
 	
 	@CopyConstructor
 	refers TerminologyBox[1] bundledTerminology
@@ -257,15 +227,17 @@ class BundledTerminologyAxiom extends TerminologyBundleAxiom {
 	/*
 	 * The bundle is the source
 	 */
-	@Scala(code="lookupBundle(extent, bundle)")
+	@Scala(code="resolver.OMLOps.lookupBundle(extent, bundle)")
+	@ImplicitExtent
 	@NotSchema
 	@Override
-	op TerminologyBox[?] source(Extent[1] extent) { null }
+	op TerminologyBox[?] source() { null }
 	
 	/*
 	 * The bundledTerminology is the target
 	 */
+	@ImplicitExtent
 	@NotSchema
 	@Override
-	op TerminologyBox[1] target(Extent[1] extent) { bundledTerminology }
+	op TerminologyBox[1] target() { bundledTerminology }
 }

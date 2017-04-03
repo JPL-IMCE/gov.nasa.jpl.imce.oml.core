@@ -25,7 +25,7 @@ limitations under the License.
    modelName="OMLT")
   
 // If commented, it is possible to build cleanly with 'gradle :generateXtext'
-// If uncommented, 'gradle :generateXtext' will have several java.io.IOExceptions like these:
+// If uncommented, 'gradle :generateXtext' swill have several java.io.IOExceptions like these:
 // The path '.../plugin.properties' is unmapped
 // The path '.../build.properties' is unmapped
 // The path '.../plugin.xml' is unmapped
@@ -36,9 +36,9 @@ package gov.nasa.jpl.imce.oml.model.terminologies
 import gov.nasa.jpl.imce.oml.model.common.Collection
 import gov.nasa.jpl.imce.oml.model.common.CopyConstructor
 import gov.nasa.jpl.imce.oml.model.common.Element
-import gov.nasa.jpl.imce.oml.model.common.Extent
 import gov.nasa.jpl.imce.oml.model.common.FunctionalInterface
 import gov.nasa.jpl.imce.oml.model.common.Glossary
+import gov.nasa.jpl.imce.oml.model.common.ImplicitExtent
 import gov.nasa.jpl.imce.oml.model.common.IRI
 import gov.nasa.jpl.imce.oml.model.common.LangRange
 import gov.nasa.jpl.imce.oml.model.common.LexicalNumber
@@ -46,6 +46,7 @@ import gov.nasa.jpl.imce.oml.model.common.LexicalTime
 import gov.nasa.jpl.imce.oml.model.common.LexicalValue
 import gov.nasa.jpl.imce.oml.model.common.LocalName
 import gov.nasa.jpl.imce.oml.model.common.Module
+import gov.nasa.jpl.imce.oml.model.common.ModuleEdge
 import gov.nasa.jpl.imce.oml.model.common.ModuleElement
 import gov.nasa.jpl.imce.oml.model.common.NotFunctionalAPI
 import gov.nasa.jpl.imce.oml.model.common.NotSchema
@@ -118,27 +119,19 @@ abstract class TerminologyBox extends Module {
 	 * The OML TerminologyBoxAxiom(s) asserted in this OML TerminologyBox
 	 */
 	@NotSchema
-	@Collection(kind="SortedSet")
+	@Collection(kind="Set")
 	contains TerminologyBoxAxiom[] boxAxioms opposite tbox
-	
-	@NotSchema
-	op TerminologyBox[1] withBoxAxioms
-	(@Collection(kind="SortedSet") TerminologyBoxAxiom[] s)
 	
 	/*
 	 * The OML TerminologyBoxStatement(s) asserted in this OML TerminologyBox
 	 */
 	@NotSchema
-	@Collection(kind="SortedSet")
+	@Collection(kind="Set")
 	contains TerminologyBoxStatement[] boxStatements opposite tbox
 	 
 	@NotSchema
-	op TerminologyBox[1] withBoxStatements
-	(@Collection(kind="SortedSet") TerminologyBoxStatement[] s)
-	
-	@NotSchema
-	@Scala(code="scala.collection.immutable.SortedSet.empty[resolver.api.Element] ++ boxStatements + this")
-	@Collection(kind="SortedSet")
+	@Scala(code="scala.collection.immutable.HashSet.empty[resolver.api.Element] ++ boxStatements + this")
+	@Collection(kind="Set")
 	@Override
 	op Element[] everything()
 }
@@ -157,19 +150,27 @@ abstract class TerminologyBoxStatement extends ModuleElement {
  * An OML TerminologyAxiom is asserted in an OML TerminologyBox of some kind.
  */
 @Glossary
-abstract class TerminologyAxiom extends ModuleElement {
+abstract class TerminologyAxiom extends ModuleEdge {
 	
 	/*
 	 * The source TerminologyBox
 	 */
+	@ImplicitExtent
 	@NotSchema
-	op TerminologyBox[?] source(Extent[1] extent)
+	op TerminologyBox[?] source()
+	
+	@NotSchema
+	op Module[1] sourceModule() { source() }
 	
 	/*
 	 * The target TerminologyBox
 	 */
+	@ImplicitExtent
 	@NotSchema
-	op TerminologyBox[1] target(Extent[1] extent)
+	op TerminologyBox[1] target()
+	
+	@NotSchema
+	op Module[1] targetModule() { target() }
 }
 
 /*
@@ -197,13 +198,15 @@ class TerminologyExtensionAxiom extends TerminologyBoxAxiom {
 	  u1 <- s.uuid(extent)
     	  u2 <- extendedTerminology.uuid(extent)
 	} yield gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator.derivedUUID(\"TerminologyExtensionAxiom\",\"source\"->u1,\"target\"->u2)")
+	@ImplicitExtent
 	@NotSchema
 	@Override
-	op UUID[?] uuid(Extent[1] extent) { null }
+	op UUID[?] uuid() { null }
 	
-	@Scala(code="lookupTerminologyBox(extent, tbox)")
+	@Scala(code="resolver.OMLOps.lookupTerminologyBox(extent, tbox)")
+	@ImplicitExtent
 	@NotSchema
-	op TerminologyBox[?] extendingTerminology(Extent[1] extent) { null }
+	op TerminologyBox[?] extendingTerminology() { null }
 	
 	@CopyConstructor
   	refers TerminologyBox[1] extendedTerminology
@@ -211,16 +214,18 @@ class TerminologyExtensionAxiom extends TerminologyBoxAxiom {
 	/*
 	 * The extendingTerminology is the source
 	 */
+	@ImplicitExtent
 	@NotSchema
 	@Override
-	op TerminologyBox[?] source(Extent[1] extent) { extendingTerminology(extent) }
+	op TerminologyBox[?] source() { extendingTerminology }
 	
 	/*
 	 * The extendedTerminology is the target
 	 */
+	@ImplicitExtent
 	@NotSchema
 	@Override
-	op TerminologyBox[1] target(Extent[1] extent) { extendedTerminology }
+	op TerminologyBox[1] target() { extendedTerminology }
   	
 }
 
@@ -238,9 +243,10 @@ abstract class Term extends TerminologyBoxStatement, Resource {
 	op LocalName[1] name() { getName() }
 	
 	@Scala(code="extent.lookupModule(tbox).map(m => m.iri + \"#\" + name)")
+	@ImplicitExtent
 	@NotSchema
 	@Override
-	op IRI[?] iri(Extent[1] extent) { null }
+	op IRI[?] iri() { null }
 	
 	/*
 	 * The UUID of a Term is a Version5 namespace UUID based on the term's IRI.
@@ -249,9 +255,10 @@ abstract class Term extends TerminologyBoxStatement, Resource {
 	for {
 	  iri <- iri(extent)
 	} yield gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator.uuidFromURL(iri)")
+	@ImplicitExtent
 	@NotSchema 
 	@Override
-	op UUID[?] uuid(Extent[1] extent) { null }
+	op UUID[?] uuid() { null }
 }
 
 /*
@@ -442,8 +449,9 @@ abstract class DataRelationship extends Term, DirectedBinaryRelationshipKind {
 @Glossary
 abstract class DataRelationshipDomain {
 	
+	@ImplicitExtent
 	@FunctionalInterface
-	op UUID[?] uuid(Extent[1] extent)
+	op UUID[?] uuid()
 }
 
 /*
@@ -481,8 +489,9 @@ abstract class DataRelationshipFromStructure extends DataRelationshipDomain {
 @Glossary
 abstract class DataRelationshipRange {
 
+	@ImplicitExtent
 	@FunctionalInterface
-	op UUID[?] uuid(Extent[1] extent)
+	op UUID[?] uuid()
 }
 
 /*
@@ -616,9 +625,10 @@ class EntityExistentialRestrictionAxiom extends EntityRestrictionAxiom {
 		\"restrictedDomain\"->u2,
 		\"restrictedRelation\"->u3,
 		\"restrictedRange\"->u4)")
+	@ImplicitExtent
 	@NotSchema
 	@Override
-	op UUID[?] uuid(Extent[1] extent) { null }
+	op UUID[?] uuid() { null }
 	
 }
 
@@ -641,9 +651,10 @@ class EntityUniversalRestrictionAxiom extends EntityRestrictionAxiom {
 		\"restrictedDomain\"->u2,
 		\"restrictedRelation\"->u3,
 		\"restrictedRange\"->u4)")
+	@ImplicitExtent
 	@NotSchema
 	@Override
-	op UUID[?] uuid(Extent[1] extent) { null }
+	op UUID[?] uuid() { null }
 	
 }
 
@@ -683,9 +694,10 @@ class AspectSpecializationAxiom extends SpecializationAxiom {
 	    \"tbox\"->u1,
 		\"subEntity\"->u2,
 		\"superAspect\"->u3)")
+	@ImplicitExtent
 	@NotSchema
 	@Override
-	op UUID[?] uuid(Extent[1] extent) { null }
+	op UUID[?] uuid() { null }
 	
 	/*
 	 * The sub (child) entity
@@ -727,9 +739,10 @@ class ConceptSpecializationAxiom extends SpecializationAxiom {
 	    \"tbox\"->u1,
 		\"subConcept\"->u2,
 		\"superConcept\"->u3)")
+	@ImplicitExtent
 	@NotSchema
 	@Override
-	op UUID[?] uuid(Extent[1] extent) { null }
+	op UUID[?] uuid() { null }
 	
 	refers Concept[1] subConcept
 	refers Concept[1] superConcept
@@ -765,9 +778,10 @@ class ReifiedRelationshipSpecializationAxiom extends SpecializationAxiom {
 	    \"tbox\"->u1,
 		\"subRelationship\"->u2,
 		\"superRelationship\"->u3)")
+	@ImplicitExtent
 	@NotSchema
 	@Override
-	op UUID[?] uuid(Extent[1] extent) { null }
+	op UUID[?] uuid() { null }
 	
 	/*
 	 * The sub (child) relationship
@@ -821,9 +835,10 @@ extends EntityScalarDataPropertyRestrictionAxiom {
 		\"restrictedEntity\"->u2,
 		\"scalarProperty\"->u3,
 		\"scalarRestriction\"->u4)")
+	@ImplicitExtent
 	@NotSchema
 	@Override
-	op UUID[?] uuid(Extent[1] extent) { null }
+	op UUID[?] uuid() { null }
 	
   	refers DataRange[1] scalarRestriction
 }
@@ -848,9 +863,10 @@ extends EntityScalarDataPropertyRestrictionAxiom {
 		\"restrictedEntity\"->u2,
 		\"scalarProperty\"->u3,
 		\"scalarRestriction\"->u4)")
+	@ImplicitExtent
 	@NotSchema
 	@Override
-	op UUID[?] uuid(Extent[1] extent) { null }
+	op UUID[?] uuid() { null }
 	
   	refers DataRange[1] scalarRestriction
 }
@@ -872,9 +888,10 @@ extends EntityScalarDataPropertyRestrictionAxiom {
 	    \"tbox\"->u1,
 		\"restrictedEntity\"->u2,
 		\"scalarProperty\"->u3)")
+	@ImplicitExtent
 	@NotSchema
 	@Override
-	op UUID[?] uuid(Extent[1] extent) { null }
+	op UUID[?] uuid() { null }
 	
 	LexicalValue[1] literalValue
 }
@@ -921,9 +938,10 @@ class BinaryScalarRestriction extends RestrictedDataRange {
 		\"BinaryScalarRestriction\",
 	    \"tbox\"->u1,
 		\"restrictedRange\"->u2)")
+	@ImplicitExtent
 	@NotSchema
 	@Override
-	op UUID[?] uuid(Extent[1] extent) { null }
+	op UUID[?] uuid() { null }
 	
 	/*
 	 * The length of the binary data
@@ -963,9 +981,10 @@ class IRIScalarRestriction extends RestrictedDataRange {
 		\"IRIScalarRestriction\",
 	    \"tbox\"->u1,
 		\"restrictedRange\"->u2)")
+	@ImplicitExtent
 	@NotSchema
 	@Override
-	op UUID[?] uuid(Extent[1] extent) { null }
+	op UUID[?] uuid() { null }
 	
 	/*
 	 * The length of the IRI
@@ -1026,9 +1045,10 @@ class NumericScalarRestriction extends RestrictedDataRange {
 		\"NumericScalarRestriction\",
 	    \"tbox\"->u1,
 		\"restrictedRange\"->u2)")
+	@ImplicitExtent
 	@NotSchema
 	@Override
-	op UUID[?] uuid(Extent[1] extent) { null }
+	op UUID[?] uuid() { null }
 	
 	/*
 	 * The inclusive minimum value in the range
@@ -1073,9 +1093,10 @@ class PlainLiteralScalarRestriction extends RestrictedDataRange {
 		\"PlainLiteralScalarRestriction\",
 	    \"tbox\"->u1,
 		\"restrictedRange\"->u2)")
+	@ImplicitExtent
 	@NotSchema
 	@Override
-	op UUID[?] uuid(Extent[1] extent) { null }
+	op UUID[?] uuid() { null }
 	
 	/*
 	 * The length of the plain literal
@@ -1129,9 +1150,10 @@ class StringScalarRestriction extends RestrictedDataRange {
 		\"StringScalarRestriction\",
 	    \"tbox\"->u1,
 		\"restrictedRange\"->u2)")
+	@ImplicitExtent
 	@NotSchema
 	@Override
-	op UUID[?] uuid(Extent[1] extent) { null }
+	op UUID[?] uuid() { null }
 	
 	/*
 	 * The length of the string
@@ -1176,9 +1198,10 @@ class TimeScalarRestriction extends RestrictedDataRange {
 		\"TimeScalarRestriction\",
 	    \"tbox\"->u1,
 		\"restrictedRange\"->u2)")
+	@ImplicitExtent
 	@NotSchema
 	@Override
-	op UUID[?] uuid(Extent[1] extent) { null }
+	op UUID[?] uuid() { null }
 	
 	/*
 	 * The inclusive minimum value in the range
@@ -1212,9 +1235,10 @@ class SynonymScalarRestriction extends RestrictedDataRange {
 		\"SynonymScalarRestriction\",
 	    \"tbox\"->u1,
 		\"restrictedRange\"->u2)")
+	@ImplicitExtent
 	@NotSchema
 	@Override
-	op UUID[?] uuid(Extent[1] extent) { null }
+	op UUID[?] uuid() { null }
 	
 }
 
@@ -1233,9 +1257,10 @@ class ScalarOneOfRestriction extends RestrictedDataRange {
 		\"ScalarOneOfRestriction\",
 	    \"tbox\"->u1,
 		\"restrictedRange\"->u2)")
+	@ImplicitExtent
 	@NotSchema
 	@Override
-	op UUID[?] uuid(Extent[1] extent) { null }
+	op UUID[?] uuid() { null }
 	
 }
 
@@ -1254,9 +1279,10 @@ class ScalarOneOfLiteralAxiom extends TermAxiom {
 	    \"tbox\"->u1,
 		\"axiom\"->u2,
 		\"value\"->value)")
+	@ImplicitExtent
 	@NotSchema
 	@Override
-	op UUID[?] uuid(Extent[1] extent) { null }
+	op UUID[?] uuid() { null }
 	
 	refers ScalarOneOfRestriction[1] axiom
 	/*

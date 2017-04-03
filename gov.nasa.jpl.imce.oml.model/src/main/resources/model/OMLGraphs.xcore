@@ -33,11 +33,9 @@ limitations under the License.
  
 package gov.nasa.jpl.imce.oml.model.graphs
 
-import gov.nasa.jpl.imce.oml.model.common.AnnotationPropertyTable
-import gov.nasa.jpl.imce.oml.model.common.Collection
 import gov.nasa.jpl.imce.oml.model.common.CopyConstructor
-import gov.nasa.jpl.imce.oml.model.common.Extent
 import gov.nasa.jpl.imce.oml.model.common.Glossary
+import gov.nasa.jpl.imce.oml.model.common.ImplicitExtent
 import gov.nasa.jpl.imce.oml.model.common.NotSchema
 import gov.nasa.jpl.imce.oml.model.common.Override
 import gov.nasa.jpl.imce.oml.model.common.Scala
@@ -45,37 +43,12 @@ import gov.nasa.jpl.imce.oml.model.common.UUID
 import gov.nasa.jpl.imce.oml.model.terminologies.Concept
 import gov.nasa.jpl.imce.oml.model.terminologies.TerminologyBox
 import gov.nasa.jpl.imce.oml.model.terminologies.TerminologyBoxAxiom
-import gov.nasa.jpl.imce.oml.model.terminologies.TerminologyBoxStatement
 
 /*
  * An OML TerminologyGraph is an OML TerminologyBox with no statements our axioms involving OML Bundle(s).
  */
 @Glossary
 class TerminologyGraph extends TerminologyBox {
-	
-	@NotSchema
-	@Scala(code="copy(annotations = this.annotations ++ resolver.convertToAnnotations(a))")
-	@Override
-	op TerminologyGraph[1] withAnnotations
-	(@Collection(kind="SortedSet") AnnotationPropertyTable[] a)
-	
-	@NotSchema
-	@Scala(code="resolver.groupAnnotationsByProperty(annotations)")
-	@Collection(kind="SortedSet")
-	@Override
-	op AnnotationPropertyTable[] annotationsByProperty()	
-	
-	@NotSchema
-	@Scala(code="copy(boxAxioms = this.boxAxioms ++ s)")
-	@Override
-	op TerminologyGraph[1] withBoxAxioms
-	(@Collection(kind="SortedSet") TerminologyBoxAxiom[] s)
-	
-	@NotSchema
-	@Scala(code="copy(boxStatements = this.boxStatements ++ s)")
-	@Override
-	op TerminologyGraph[1] withBoxStatements
-	(@Collection(kind="SortedSet") TerminologyBoxStatement[] s)
 }
 
 /*
@@ -98,16 +71,16 @@ class ConceptDesignationTerminologyAxiom extends TerminologyBoxAxiom {
 	    \"tbox\"->u1,
 		\"designatedTerminology\"->u2,
 		\"designatedConcept\"->u3)")
+	@ImplicitExtent
 	@NotSchema
 	@Override
-	op UUID[?] uuid(Extent[1] extent) { null }
+	op UUID[?] uuid() { null }
 	
+	@ImplicitExtent
 	@NotSchema
-	@Scala(code="lookupTerminologyGraph(extent, tbox)")
-	op TerminologyGraph[?] designationTerminologyGraph(Extent[1] extent) { null }
+	@Scala(code="resolver.OMLOps.lookupTerminologyGraph(extent, tbox)")
+	op TerminologyGraph[?] designationTerminologyGraph() { null }
 	 
-	@NotSchema
-	@CopyConstructor
 	refers TerminologyBox[1] designatedTerminology
 	
 	refers Concept[1] designatedConcept
@@ -116,16 +89,18 @@ class ConceptDesignationTerminologyAxiom extends TerminologyBoxAxiom {
 	 * The designationTerminologyGraph is the source
 	 */
 	@Scala(code="designationTerminologyGraph(extent)")
+	@ImplicitExtent
 	@NotSchema
 	@Override
-	op TerminologyBox[?] source(Extent[1] extent) { null }
+	op TerminologyBox[?] source() { null }
 	
 	/*
 	 * The TerminologyBox that asserts the designatedConcept is the target
 	 */
+	@ImplicitExtent
 	@NotSchema
 	@Override
-	op TerminologyBox[1] target(Extent[1] extent) { designatedTerminology }
+	op TerminologyBox[1] target() { designatedTerminology }
 }
 
 /*
@@ -148,16 +123,18 @@ class TerminologyNestingAxiom extends TerminologyBoxAxiom {
 	    \"tbox\"->u1,
 		\"nestingTerminology\"->u2,
 		\"nestingContext\"->u3)")
+	@ImplicitExtent
 	@NotSchema
 	@Override
-	op UUID[?] uuid(Extent[1] extent) { null }
+	op UUID[?] uuid() { null }
 	
   	@CopyConstructor
 	refers TerminologyBox[1] nestingTerminology
 
+	@ImplicitExtent
 	@NotSchema
-	@Scala(code="lookupTerminologyGraph(extent, tbox)")
-	op TerminologyGraph[?] nestedTerminology(Extent[1] extent) { null }
+	@Scala(code="resolver.OMLOps.lookupTerminologyGraph(extent, tbox)")
+	op TerminologyGraph[?] nestedTerminology() { null }
 
   	refers Concept[1] nestingContext
   	
@@ -165,15 +142,17 @@ class TerminologyNestingAxiom extends TerminologyBoxAxiom {
 	 * The nestedTerminology is the source
 	 */
 	@Scala(code="nestedTerminology(extent)")
+	@ImplicitExtent
 	@NotSchema
 	@Override
-	op TerminologyBox[?] source(Extent[1] extent) { null }
+	op TerminologyBox[?] source() { null }
 	
 	/*
 	 * The nestingTerminology is the target
 	 */
+	@ImplicitExtent
 	@NotSchema
 	@Override
-	op TerminologyBox[1] target(Extent[1] extent) { nestingTerminology }
+	op TerminologyBox[1] target() { nestingTerminology }
   	
 }

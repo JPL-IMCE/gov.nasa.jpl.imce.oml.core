@@ -103,6 +103,12 @@ annotation "http://imce.jpl.nasa.gov/oml/CopyConstructor" as CopyConstructor
  */
 annotation "http://imce.jpl.nasa.gov/oml/Glossary" as Glossary
 
+annotation "http://imce.jpl.nasa.gov/oml/ExtentContainer" as ExtentContainer
+
+annotation "http://imce.jpl.nasa.gov/oml/ExtentManaged" as ExtentManaged
+
+annotation "http://imce.jpl.nasa.gov/oml/ImplicitExtent" as ImplicitExtent
+
 /*
  * An IRI based on RFC 3987
  */
@@ -147,8 +153,9 @@ type NamespacePrefix wraps String
  */
 abstract class Element {
 	
+	@ImplicitExtent
 	@IsOrderingKey
-	op UUID[?] uuid(Extent[1] extent)
+	op UUID[?] uuid()
 	
 }
 
@@ -163,8 +170,9 @@ abstract class Element {
 @Glossary
 abstract class Resource {
 	
+	@ImplicitExtent
 	@NotSchema
-	op IRI[?] iri(Extent[1] extent)
+	op IRI[?] iri()
 	
 	@NotSchema
 	op LocalName[1] name()
@@ -177,11 +185,25 @@ abstract class Resource {
 abstract class ModuleElement extends Element {}
 
 /*
+ * An OML ModuleEdge is a binary, directed relationship from one OML Module to another
+ */
+@Glossary
+abstract class ModuleEdge extends Element {
+	
+	@NotSchema
+	op Module[1] sourceModule()
+	
+	@NotSchema
+	op Module[1] targetModule()
+}
+
+/*
  * An OML AnnotationProperty maps to an [OWL2 AnnotationProperty] 
  * and is similarly a non-logical property for associating some information
  * to any OML TerminologyThing in an OML Module.
  */
 @Glossary
+@ExtentManaged
 class AnnotationProperty {
 
 	@Scala(code="com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(iri)")
@@ -201,13 +223,14 @@ class AnnotationProperty {
  * with a set of OML AnnotationEntry values.
  */
 @Glossary
+@NotFunctionalAPI
 @NotSchema
 class AnnotationPropertyTable wraps java.util.Map$Entry {
 	
 	@IsOrderingKey
 	refers AnnotationProperty[1] key
 	
-	@Collection(kind="SortedSet")
+	@Collection(kind="Set")
 	contains AnnotationEntry[] value
 }
 
@@ -269,7 +292,6 @@ class AnnotationSubjectPropertyValue {
 @NotSchema
 class Annotation {
 	
-	@IsOrderingKey
 	container Module[1] module opposite annotations
 	
 	@IsOrderingKey
@@ -286,24 +308,10 @@ class Annotation {
  * An OML Extent is an in-memory store of all OML Element(s)
  * loaded from external OML documents.
  */
+@ExtentContainer
 @Glossary
 @ResolverAPI
 class Extent {
-	
-	UUID[1] uuid
-	
-	@CopyConstructor
-	@Collection(kind="SortedSet")
-	contains AnnotationProperty[] annotationProperties
-	
-	@CopyConstructor
-	//@Collection(kind="SortedSet")
-	@Collection(kind="Map", key="java.util.UUID")
-	contains Module[] modules opposite extent
-	
-	@Scala(code="uuid.map(id => modules.get(id)")
-	@NotSchema
-	op Module[?] lookupModule(UUID[?] uuid)
 }
 
 /*
@@ -312,24 +320,24 @@ class Extent {
  * and a non-logical container of OML Annotation(s).
  */
 @Glossary
+@ExtentManaged
 abstract class Module extends Element, Resource {
 	
-	@NotSchema
-	container Extent[1] extent opposite modules
-	
 	@Scala(code="Some(com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(iri))")
+	@ImplicitExtent
 	@NotSchema
 	@Override
-	op UUID[?] uuid(Extent[1] extent) { 
-		com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(iri).toString
+	op UUID[?] uuid() { 
+		com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(iri()).toString
 	}
 	
 	id IRI[1] iri
 	
 	@Scala(code="Some(iri)")
+	@ImplicitExtent
 	@NotSchema
 	@Override
-	op IRI[?] iri(Extent[1] extent) { iri }
+	op IRI[?] iri() { getIri }
 	
 	@Scala(code="iri.substring(1+iri.lastIndexOf('/'))")
 	@NotSchema
@@ -339,21 +347,10 @@ abstract class Module extends Element, Resource {
 	op LocalName[1] name() { nsPrefix }
 	
 	@NotSchema
-	@Collection(kind="SortedSet")
+	@Collection(kind="Set")
 	contains Annotation[] annotations opposite module
 	
-	@NotFunctionalAPI
-	op AnnotationSubjectTable[] annotationsBySubject()
-	
 	@NotSchema
-	@Collection(kind="SortedSet")
-	op AnnotationPropertyTable[] annotationsByProperty()
-	
-	@NotSchema
-	op Module[1] withAnnotations
-	(@Collection(kind="SortedSet") AnnotationPropertyTable[] a)
-	
-	@NotSchema
-	@Collection(kind="SortedSet")
+	@Collection(kind="Set")
 	op Element[] everything()
 }

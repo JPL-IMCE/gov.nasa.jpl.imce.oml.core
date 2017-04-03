@@ -33,21 +33,21 @@ limitations under the License.
  
 package gov.nasa.jpl.imce.oml.model.descriptions
 
-import gov.nasa.jpl.imce.oml.model.common.AnnotationPropertyTable
 import gov.nasa.jpl.imce.oml.model.common.Collection
 import gov.nasa.jpl.imce.oml.model.common.CopyConstructor
 import gov.nasa.jpl.imce.oml.model.common.Element
-import gov.nasa.jpl.imce.oml.model.common.Extent
 import gov.nasa.jpl.imce.oml.model.common.Glossary
 import gov.nasa.jpl.imce.oml.model.common.IRI
+import gov.nasa.jpl.imce.oml.model.common.ImplicitExtent
 import gov.nasa.jpl.imce.oml.model.common.LocalName
 import gov.nasa.jpl.imce.oml.model.common.Module
+import gov.nasa.jpl.imce.oml.model.common.ModuleEdge
+import gov.nasa.jpl.imce.oml.model.common.ModuleElement
 import gov.nasa.jpl.imce.oml.model.common.NotFunctionalAPI
 import gov.nasa.jpl.imce.oml.model.common.NotSchema
 import gov.nasa.jpl.imce.oml.model.common.Override
 import gov.nasa.jpl.imce.oml.model.common.Resource
 import gov.nasa.jpl.imce.oml.model.common.Scala
-import gov.nasa.jpl.imce.oml.model.common.ModuleElement
 import gov.nasa.jpl.imce.oml.model.common.UUID
 import gov.nasa.jpl.imce.oml.model.terminologies.Concept
 import gov.nasa.jpl.imce.oml.model.terminologies.ConceptualEntity
@@ -57,8 +57,8 @@ import gov.nasa.jpl.imce.oml.model.terminologies.EntityScalarDataProperty
 import gov.nasa.jpl.imce.oml.model.terminologies.EntityStructuredDataProperty
 import gov.nasa.jpl.imce.oml.model.terminologies.ReifiedRelationship
 import gov.nasa.jpl.imce.oml.model.terminologies.Structure
-import gov.nasa.jpl.imce.oml.model.terminologies.UnreifiedRelationship
 import gov.nasa.jpl.imce.oml.model.terminologies.TerminologyBox
+import gov.nasa.jpl.imce.oml.model.terminologies.UnreifiedRelationship
 
 /*
  * OML DescriptionKind specifies semantic constraints that apply to
@@ -79,57 +79,45 @@ enum DescriptionKind {
 @Glossary
 class DescriptionBox extends Module {
 	
-	@NotSchema
-	@Scala(code="copy(annotations = this.annotations ++ resolver.convertToAnnotations(a))")
-	@Override
-	op DescriptionBox[1] withAnnotations
-	(@Collection(kind="SortedSet") AnnotationPropertyTable[] a)
-	
-	@NotSchema
-	@Scala(code="resolver.groupAnnotationsByProperty(annotations)")
-	@Collection(kind="SortedSet")
-	@Override
-	op AnnotationPropertyTable[] annotationsByProperty()	
-	
 	DescriptionKind[1] kind
 	
 	@CopyConstructor
-	@Collection(kind="SortedSet")
+	@Collection(kind="Set")
 	contains DescriptionBoxExtendsClosedWorldDefinitions[] closedWorldDefinitions opposite descriptionBox
 	
 	@CopyConstructor
-	@Collection(kind="SortedSet")
+	@Collection(kind="Set")
 	contains DescriptionBoxRefinement[] descriptionBoxRefinements opposite refiningDescriptionBox
 	
 	@CopyConstructor
-	@Collection(kind="SortedSet")
+	@Collection(kind="Set")
 	contains ConceptInstance[] conceptInstances opposite descriptionBox
 	
 	@CopyConstructor
-	@Collection(kind="SortedSet")
+	@Collection(kind="Set")
 	contains ReifiedRelationshipInstance[] reifiedRelationshipInstances opposite descriptionBox
 	
 	@CopyConstructor
-	@Collection(kind="SortedSet")
+	@Collection(kind="Set")
 	contains ReifiedRelationshipInstanceDomain[] reifiedRelationshipInstanceDomains opposite descriptionBox
 	
 	@CopyConstructor
-	@Collection(kind="SortedSet")
+	@Collection(kind="Set")
 	contains ReifiedRelationshipInstanceRange[] reifiedRelationshipInstanceRanges opposite descriptionBox
 	
 	@CopyConstructor
-	@Collection(kind="SortedSet")
+	@Collection(kind="Set")
 	contains UnreifiedRelationshipInstanceTuple[] unreifiedRelationshipInstanceTuples opposite descriptionBox
 	
 	@NotSchema
-	@Scala(code="scala.collection.immutable.SortedSet.empty[resolver.api.Element] ++ 
+	@Scala(code="scala.collection.immutable.HashSet.empty[resolver.api.Element] ++ 
 	conceptInstances ++
 	reifiedRelationshipInstances ++ 
 	reifiedRelationshipInstanceDomains ++ 
 	reifiedRelationshipInstanceRanges ++ 
 	unreifiedRelationshipInstanceTuples + 
 	this")
-	@Collection(kind="SortedSet")
+	@Collection(kind="Set")
 	@Override
 	op Element[] everything()
 }
@@ -139,13 +127,14 @@ class DescriptionBox extends Module {
  * from an OML DescriptionBox source to an OML Module target.
  */
 @Glossary
-abstract class DescriptionBoxRelationship extends ModuleElement {
+abstract class DescriptionBoxRelationship extends ModuleEdge {
+	
+	@ImplicitExtent
+	@NotSchema
+	op DescriptionBox[?] descriptionDomain()
 	
 	@NotSchema
-	op DescriptionBox[?] descriptionDomain(Extent[1] extent)
-	
-	@NotSchema
-	op Module[1] targetModule()
+	op Module[1] sourceModule() { descriptionDomain() }
 }
 
 /*
@@ -165,15 +154,17 @@ class DescriptionBoxExtendsClosedWorldDefinitions extends DescriptionBoxRelation
 		\"DescriptionBoxExtendsClosedWorldDefinitions\",
 	    \"descriptionBox\"->u1,
 		\"closedWorldDefinitions\"->u2)")
+	@ImplicitExtent
 	@NotSchema
 	@Override
-	op UUID[?] uuid(Extent[1] extent) { null }
+	op UUID[?] uuid() { null }
 	
 	container DescriptionBox[1] descriptionBox opposite closedWorldDefinitions
 	
-	@Scala(code="lookupDescriptionBox(extent, descriptionBox)")
+	@Scala(code="resolver.OMLOps.lookupDescriptionBox(extent, descriptionBox)")
+	@ImplicitExtent
 	@NotSchema
-	op DescriptionBox[?] descriptionDomain(Extent[1] extent) { null }
+	op DescriptionBox[?] descriptionDomain() { null }
 	
 	refers TerminologyBox[1] closedWorldDefinitions
 	
@@ -197,15 +188,17 @@ class DescriptionBoxRefinement extends DescriptionBoxRelationship {
 		\"DescriptionBoxRefinement\",
 	    \"refiningDescriptionBox\"->u1,
 		\"refinedDescriptionBox\"->u2)")
+	@ImplicitExtent
 	@NotSchema
 	@Override
-	op UUID[?] uuid(Extent[1] extent) { null }
+	op UUID[?] uuid() { null }
 	
 	container DescriptionBox[1] refiningDescriptionBox opposite descriptionBoxRefinements
 	
-	@Scala(code="lookupDescriptionBox(extent, refiningDescriptionBox)")
+	@Scala(code="resolver.OMLOps.lookupDescriptionBox(extent, refiningDescriptionBox)")
+	@ImplicitExtent
 	@NotSchema
-	op DescriptionBox[?] descriptionDomain(Extent[1] extent) { null }
+	op DescriptionBox[?] descriptionDomain() { null }
 	
 	refers DescriptionBox[1] refinedDescriptionBox
 	
@@ -219,12 +212,10 @@ class DescriptionBoxRefinement extends DescriptionBoxRelationship {
 @Glossary
 abstract class TerminologyInstanceAssertion extends ModuleElement, Resource {
 	
+	@Scala(code="resolver.OMLOps.lookupDescriptionBox(extent, descriptionBox())")
+	@ImplicitExtent
 	@NotSchema
-	op UUID[?] descriptionBox()
-	
-	@Scala(code="lookupDescriptionBox(extent, descriptionBox())")
-	@NotSchema
-	op DescriptionBox[?] descriptionBox(Extent[1] extent)
+	op DescriptionBox[?] descriptionBox()
 	
 	@Override
 	id LocalName[1] name
@@ -234,9 +225,10 @@ abstract class TerminologyInstanceAssertion extends ModuleElement, Resource {
 	op LocalName[1] name() { getName() }
 	
 	@Scala(code="descriptionBox(extent).map(m => m.iri + \"#\" + name)")
+	@ImplicitExtent
 	@NotSchema
 	@Override
-	op IRI[?] iri(Extent[1] extent) { null }
+	op IRI[?] iri() { null }
 	
 	/*
 	 * The UUID of a Term is a Version5 namespace UUID based on the terminology instance assertion's IRI.
@@ -245,9 +237,10 @@ abstract class TerminologyInstanceAssertion extends ModuleElement, Resource {
 	for {
 	  iri <- iri(extent)
 	} yield gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator.uuidFromURL(iri)")
+	@ImplicitExtent
 	@NotSchema 
 	@Override
-	op UUID[?] uuid(Extent[1] extent) { null }
+	op UUID[?] uuid() { null }
 
 }
 
@@ -258,11 +251,11 @@ abstract class TerminologyInstanceAssertion extends ModuleElement, Resource {
 abstract class SingletonInstance extends TerminologyInstanceAssertion {
 	
 	@CopyConstructor
-	@Collection(kind="SortedSet")
+	@Collection(kind="Set")
 	contains ScalarDataPropertyValue[] scalarDataPropertyValues opposite singletonInstance
 	
 	@CopyConstructor
-	@Collection(kind="SortedSet")
+	@Collection(kind="Set")
 	contains StructuredDataPropertyValue[] structuredDataPropertyValues opposite singletonInstance
 }
 
@@ -327,7 +320,7 @@ abstract class ConceptualEntitySingletonInstance extends SingletonInstance {
 	    case _ =>
 	      false
 	  }}")
-	@Collection(kind="SortedSet")
+	@Collection(kind="Set")
 	op ScalarDataPropertyValue[] identifyingScalarValues() {
 		scalarDataPropertyValues
 		.filter[v | 
@@ -350,7 +343,7 @@ abstract class ConceptualEntitySingletonInstance extends SingletonInstance {
 	    case _ =>
 	      false
 	  }}")
-	@Collection(kind="SortedSet")
+	@Collection(kind="Set")
 	op StructuredDataPropertyValue[] identifyingStructuredTuples() { 
 		structuredDataPropertyValues
 		.filter[v | 
