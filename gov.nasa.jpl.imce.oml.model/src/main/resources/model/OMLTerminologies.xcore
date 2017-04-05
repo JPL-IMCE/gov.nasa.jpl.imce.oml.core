@@ -51,10 +51,14 @@ import gov.nasa.jpl.imce.oml.model.common.ModuleElement
 import gov.nasa.jpl.imce.oml.model.common.NotFunctionalAPI
 import gov.nasa.jpl.imce.oml.model.common.NotSchema
 import gov.nasa.jpl.imce.oml.model.common.Override
+import gov.nasa.jpl.imce.oml.model.common.OverrideVal
 import gov.nasa.jpl.imce.oml.model.common.Pattern
 import gov.nasa.jpl.imce.oml.model.common.Resource
 import gov.nasa.jpl.imce.oml.model.common.Scala
 import gov.nasa.jpl.imce.oml.model.common.UUID
+import gov.nasa.jpl.imce.oml.model.common.NamespaceUUID
+import gov.nasa.jpl.imce.oml.model.common.DerivedUUID
+
 
 /*
  * OML supports two different interpretations for OML TerminologyBox vocabularies:
@@ -190,19 +194,9 @@ abstract class TerminologyBoxAxiom extends TerminologyAxiom {
  * declared within the transitive closure of the extendedTerminlogy.
  */
 @Glossary
+@DerivedUUID
 class TerminologyExtensionAxiom extends TerminologyBoxAxiom {
 
-	@Scala(code="
-	for {
-	  s <- extent.lookupModule(tbox)
-	  u1 <- s.uuid(extent)
-    	  u2 <- extendedTerminology.uuid(extent)
-	} yield gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator.derivedUUID(\"TerminologyExtensionAxiom\",\"source\"->u1,\"target\"->u2)")
-	@ImplicitExtent
-	@NotSchema
-	@Override
-	op UUID[?] uuid() { null }
-	
 	@Scala(code="resolver.OMLOps.lookupTerminologyBox(extent, tbox)")
 	@ImplicitExtent
 	@NotSchema
@@ -233,6 +227,7 @@ class TerminologyExtensionAxiom extends TerminologyBoxAxiom {
  * An OML Term map to the declaration of an [OWL2-DL Entity] of some kind.
  */
 @Glossary
+@NamespaceUUID(namespace="tbox", factors="name")
 abstract class Term extends TerminologyBoxStatement, Resource {
 	
 	@Override
@@ -248,17 +243,6 @@ abstract class Term extends TerminologyBoxStatement, Resource {
 	@Override
 	op IRI[?] iri() { null }
 	
-	/*
-	 * The UUID of a Term is a Version5 namespace UUID based on the term's IRI.
-	 */
-	@Scala(code="
-	for {
-	  iri <- iri(extent)
-	} yield gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator.uuidFromURL(iri)")
-	@ImplicitExtent
-	@NotSchema 
-	@Override
-	op UUID[?] uuid() { null }
 }
 
 /*
@@ -449,9 +433,8 @@ abstract class DataRelationship extends Term, DirectedBinaryRelationshipKind {
 @Glossary
 abstract class DataRelationshipDomain {
 	
-	@ImplicitExtent
 	@FunctionalInterface
-	op UUID[?] uuid()
+	op UUID[1] uuid()
 }
 
 /*
@@ -489,9 +472,8 @@ abstract class DataRelationshipFromStructure extends DataRelationshipDomain {
 @Glossary
 abstract class DataRelationshipRange {
 
-	@ImplicitExtent
 	@FunctionalInterface
-	op UUID[?] uuid()
+	op UUID[1] uuid()
 }
 
 /*
@@ -519,6 +501,10 @@ abstract class DataRelationshipToStructure extends DataRelationshipRange {
 @Glossary
 class EntityStructuredDataProperty extends DataRelationship, DataRelationshipFromEntity, DataRelationshipToStructure {
 	
+	@FunctionalInterface
+	@OverrideVal
+	op UUID[1] uuid()
+	
 	@NotSchema
 	@Override
 	op Term[1] source() { domain }
@@ -534,6 +520,10 @@ class EntityStructuredDataProperty extends DataRelationship, DataRelationshipFro
  */
 @Glossary
 class EntityScalarDataProperty extends DataRelationship, DataRelationshipFromEntity, DataRelationshipToScalar {
+	
+	@FunctionalInterface
+	@OverrideVal
+	op UUID[1] uuid()
 	
 	@NotSchema
 	@Override
@@ -551,6 +541,10 @@ class EntityScalarDataProperty extends DataRelationship, DataRelationshipFromEnt
 @Glossary
 class StructuredDataProperty extends DataRelationship, DataRelationshipFromStructure, DataRelationshipToStructure {
 	
+	@FunctionalInterface
+	@OverrideVal
+	op UUID[1] uuid()
+	
 	@NotSchema
 	@Override
 	op Term[1] source() { domain }
@@ -566,6 +560,10 @@ class StructuredDataProperty extends DataRelationship, DataRelationshipFromStruc
  */
 @Glossary
 class ScalarDataProperty extends DataRelationship, DataRelationshipFromStructure, DataRelationshipToScalar {
+	
+	@FunctionalInterface
+	@OverrideVal
+	op UUID[1] uuid()
 	
 	@NotSchema
 	@Override
@@ -611,24 +609,8 @@ abstract class EntityRestrictionAxiom extends TermAxiom {
  * to an [OWL2 Object Property Existential Restriction].
  */
 @Glossary
+@DerivedUUID
 class EntityExistentialRestrictionAxiom extends EntityRestrictionAxiom {
-	
-	@Scala(code="
-	for {
-	  u1 <- tbox
-	  u2 <- restrictedDomain.uuid(extent)
-    	  u3 <- restrictedRelation.uuid(extent)
-	  u4 <- restrictedRange.uuid(extent)
-	} yield gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator.derivedUUID(
-		\"EntityExistentialRestrictionAxiom\",
-	    \"tbox\"->u1,
-		\"restrictedDomain\"->u2,
-		\"restrictedRelation\"->u3,
-		\"restrictedRange\"->u4)")
-	@ImplicitExtent
-	@NotSchema
-	@Override
-	op UUID[?] uuid() { null }
 	
 }
 
@@ -637,24 +619,8 @@ class EntityExistentialRestrictionAxiom extends EntityRestrictionAxiom {
  * to an [OWL2 Object Property Universal Restriction].
  */
 @Glossary
+@DerivedUUID
 class EntityUniversalRestrictionAxiom extends EntityRestrictionAxiom {
-	
-	@Scala(code="
-	for {
-	  u1 <- tbox
-	  u2 <- restrictedDomain.uuid(extent)
-    	  u3 <- restrictedRelation.uuid(extent)
-	  u4 <- restrictedRange.uuid(extent)
-	} yield gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator.derivedUUID(
-		\"EntityUniversalRestrictionAxiom\",
-	    \"tbox\"->u1,
-		\"restrictedDomain\"->u2,
-		\"restrictedRelation\"->u3,
-		\"restrictedRange\"->u4)")
-	@ImplicitExtent
-	@NotSchema
-	@Override
-	op UUID[?] uuid() { null }
 	
 }
 
@@ -682,22 +648,8 @@ abstract class SpecializationAxiom extends TermAxiom {
  * and a general OML Entity.
  */
 @Glossary
+@DerivedUUID
 class AspectSpecializationAxiom extends SpecializationAxiom {
-	
-	@Scala(code="
-	for {
-	  u1 <- tbox
-	  u2 <- subEntity.uuid(extent)
-    	  u3 <- superAspect.uuid(extent)
-	} yield gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator.derivedUUID(
-		\"AspectSpecializationAxiom\",
-	    \"tbox\"->u1,
-		\"subEntity\"->u2,
-		\"superAspect\"->u3)")
-	@ImplicitExtent
-	@NotSchema
-	@Override
-	op UUID[?] uuid() { null }
 	
 	/*
 	 * The sub (child) entity
@@ -727,22 +679,8 @@ class AspectSpecializationAxiom extends SpecializationAxiom {
  * OML Concept.
  */
 @Glossary
+@DerivedUUID
 class ConceptSpecializationAxiom extends SpecializationAxiom {
-	
-	@Scala(code="
-	for {
-	  u1 <- tbox
-	  u2 <- subConcept.uuid(extent)
-    	  u3 <- superConcept.uuid(extent)
-	} yield gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator.derivedUUID(
-		\"ConceptSpecializationAxiom\",
-	    \"tbox\"->u1,
-		\"subConcept\"->u2,
-		\"superConcept\"->u3)")
-	@ImplicitExtent
-	@NotSchema
-	@Override
-	op UUID[?] uuid() { null }
 	
 	refers Concept[1] subConcept
 	refers Concept[1] superConcept
@@ -766,37 +704,26 @@ class ConceptSpecializationAxiom extends SpecializationAxiom {
  * OML ReifiedRelationship.
  */
 @Glossary
+@DerivedUUID
 class ReifiedRelationshipSpecializationAxiom extends SpecializationAxiom {
-	
-	@Scala(code="
-	for {
-	  u1 <- tbox
-	  u2 <- subRelationship.uuid(extent)
-    	  u3 <- superRelationship.uuid(extent)
-	} yield gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator.derivedUUID(
-		\"ReifiedRelationshipSpecializationAxiom\",
-	    \"tbox\"->u1,
-		\"subRelationship\"->u2,
-		\"superRelationship\"->u3)")
-	@ImplicitExtent
-	@NotSchema
-	@Override
-	op UUID[?] uuid() { null }
 	
 	/*
 	 * The sub (child) relationship
 	 */
 	refers ReifiedRelationship[1] subRelationship
+	
 	/*
 	 * The super (parent) relationship
 	 */
 	refers ReifiedRelationship[1] superRelationship
+	
 	/*
 	 * Get the sub (child) entity
 	 */
 	@NotSchema
 	@Override
 	op Entity[1] child() { subRelationship }
+	
 	/*
 	 * Get the super (parent) entity
 	 */
@@ -820,25 +747,9 @@ abstract class EntityScalarDataPropertyRestrictionAxiom extends TermAxiom {
  * OWL2 DataSomeValuesFrom restriction (the range must be explicitly defined as a Scalar datatype)
  */
 @Glossary
+@DerivedUUID
 class EntityScalarDataPropertyExistentialRestrictionAxiom 
 extends EntityScalarDataPropertyRestrictionAxiom {
-	
-	@Scala(code="
-	for {
-	  u1 <- tbox
-	  u2 <- restrictedEntity.uuid(extent)
-    	  u3 <- scalarProperty.uuid(extent)
-    	  u4 <- scalarRestriction.uuid(extent)
-	} yield gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator.derivedUUID(
-		\"EntityScalarDataPropertyExistentialRestrictionAxiom\",
-	    \"tbox\"->u1,
-		\"restrictedEntity\"->u2,
-		\"scalarProperty\"->u3,
-		\"scalarRestriction\"->u4)")
-	@ImplicitExtent
-	@NotSchema
-	@Override
-	op UUID[?] uuid() { null }
 	
   	refers DataRange[1] scalarRestriction
 }
@@ -848,25 +759,9 @@ extends EntityScalarDataPropertyRestrictionAxiom {
  * OWL2 DataAllValuesFrom (the range must be explicitly defined as a Scalar datatype)
  */
 @Glossary
+@DerivedUUID
 class EntityScalarDataPropertyUniversalRestrictionAxiom 
 extends EntityScalarDataPropertyRestrictionAxiom {
-	
-	@Scala(code="
-	for {
-	  u1 <- tbox
-	  u2 <- restrictedEntity.uuid(extent)
-    	  u3 <- scalarProperty.uuid(extent)
-    	  u4 <- scalarRestriction.uuid(extent)
-	} yield gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator.derivedUUID(
-		\"EntityScalarDataPropertyUniversalRestrictionAxiom\",
-	    \"tbox\"->u1,
-		\"restrictedEntity\"->u2,
-		\"scalarProperty\"->u3,
-		\"scalarRestriction\"->u4)")
-	@ImplicitExtent
-	@NotSchema
-	@Override
-	op UUID[?] uuid() { null }
 	
   	refers DataRange[1] scalarRestriction
 }
@@ -875,23 +770,9 @@ extends EntityScalarDataPropertyRestrictionAxiom {
  * An OML EntityScalarDataPropertyParticularRestrictionAxiom maps to an OWL2 DataHasValue restriction.
  */
 @Glossary
+@DerivedUUID
 class EntityScalarDataPropertyParticularRestrictionAxiom
 extends EntityScalarDataPropertyRestrictionAxiom {
-	
-	@Scala(code="
-	for {
-	  u1 <- tbox
-	  u2 <- restrictedEntity.uuid(extent)
-    	  u3 <- scalarProperty.uuid(extent)
-	} yield gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator.derivedUUID(
-		\"EntityScalarDataPropertyParticularRestrictionAxiom\",
-	    \"tbox\"->u1,
-		\"restrictedEntity\"->u2,
-		\"scalarProperty\"->u3)")
-	@ImplicitExtent
-	@NotSchema
-	@Override
-	op UUID[?] uuid() { null }
 	
 	LexicalValue[1] literalValue
 }
@@ -930,19 +811,6 @@ abstract class RestrictedDataRange extends DataRange {
 @Glossary
 class BinaryScalarRestriction extends RestrictedDataRange {
 	
-	@Scala(code="
-	for {
-	  u1 <- tbox
-	  u2 <- restrictedRange.uuid(extent)
-	} yield gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator.derivedUUID(
-		\"BinaryScalarRestriction\",
-	    \"tbox\"->u1,
-		\"restrictedRange\"->u2)")
-	@ImplicitExtent
-	@NotSchema
-	@Override
-	op UUID[?] uuid() { null }
-	
 	/*
 	 * The length of the binary data
 	 */
@@ -972,19 +840,6 @@ class BinaryScalarRestriction extends RestrictedDataRange {
  */
 @Glossary
 class IRIScalarRestriction extends RestrictedDataRange {
-	
-	@Scala(code="
-	for {
-	  u1 <- tbox
-	  u2 <- restrictedRange.uuid(extent)
-	} yield gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator.derivedUUID(
-		\"IRIScalarRestriction\",
-	    \"tbox\"->u1,
-		\"restrictedRange\"->u2)")
-	@ImplicitExtent
-	@NotSchema
-	@Override
-	op UUID[?] uuid() { null }
 	
 	/*
 	 * The length of the IRI
@@ -1037,19 +892,6 @@ class IRIScalarRestriction extends RestrictedDataRange {
 @Glossary
 class NumericScalarRestriction extends RestrictedDataRange {
 	
-	@Scala(code="
-	for {
-	  u1 <- tbox
-	  u2 <- restrictedRange.uuid(extent)
-	} yield gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator.derivedUUID(
-		\"NumericScalarRestriction\",
-	    \"tbox\"->u1,
-		\"restrictedRange\"->u2)")
-	@ImplicitExtent
-	@NotSchema
-	@Override
-	op UUID[?] uuid() { null }
-	
 	/*
 	 * The inclusive minimum value in the range
 	 */
@@ -1084,19 +926,6 @@ class NumericScalarRestriction extends RestrictedDataRange {
  */
 @Glossary
 class PlainLiteralScalarRestriction extends RestrictedDataRange {
-	
-	@Scala(code="
-	for {
-	  u1 <- tbox
-	  u2 <- restrictedRange.uuid(extent)
-	} yield gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator.derivedUUID(
-		\"PlainLiteralScalarRestriction\",
-	    \"tbox\"->u1,
-		\"restrictedRange\"->u2)")
-	@ImplicitExtent
-	@NotSchema
-	@Override
-	op UUID[?] uuid() { null }
 	
 	/*
 	 * The length of the plain literal
@@ -1142,19 +971,6 @@ class PlainLiteralScalarRestriction extends RestrictedDataRange {
 @Glossary
 class StringScalarRestriction extends RestrictedDataRange {
 	
-	@Scala(code="
-	for {
-	  u1 <- tbox
-	  u2 <- restrictedRange.uuid(extent)
-	} yield gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator.derivedUUID(
-		\"StringScalarRestriction\",
-	    \"tbox\"->u1,
-		\"restrictedRange\"->u2)")
-	@ImplicitExtent
-	@NotSchema
-	@Override
-	op UUID[?] uuid() { null }
-	
 	/*
 	 * The length of the string
 	 */
@@ -1190,19 +1006,6 @@ class StringScalarRestriction extends RestrictedDataRange {
 @Glossary
 class TimeScalarRestriction extends RestrictedDataRange {
 	
-	@Scala(code="
-	for {
-	  u1 <- tbox
-	  u2 <- restrictedRange.uuid(extent)
-	} yield gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator.derivedUUID(
-		\"TimeScalarRestriction\",
-	    \"tbox\"->u1,
-		\"restrictedRange\"->u2)")
-	@ImplicitExtent
-	@NotSchema
-	@Override
-	op UUID[?] uuid() { null }
-	
 	/*
 	 * The inclusive minimum value in the range
 	 */
@@ -1227,19 +1030,6 @@ class TimeScalarRestriction extends RestrictedDataRange {
 @Glossary
 class SynonymScalarRestriction extends RestrictedDataRange {
 	
-	@Scala(code="
-	for {
-	  u1 <- tbox
-	  u2 <- restrictedRange.uuid(extent)
-	} yield gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator.derivedUUID(
-		\"SynonymScalarRestriction\",
-	    \"tbox\"->u1,
-		\"restrictedRange\"->u2)")
-	@ImplicitExtent
-	@NotSchema
-	@Override
-	op UUID[?] uuid() { null }
-	
 }
 
 /*
@@ -1248,20 +1038,7 @@ class SynonymScalarRestriction extends RestrictedDataRange {
  */
 @Glossary
 class ScalarOneOfRestriction extends RestrictedDataRange {
-	
-	@Scala(code="
-	for {
-	  u1 <- tbox
-	  u2 <- restrictedRange.uuid(extent)
-	} yield gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator.derivedUUID(
-		\"ScalarOneOfRestriction\",
-	    \"tbox\"->u1,
-		\"restrictedRange\"->u2)")
-	@ImplicitExtent
-	@NotSchema
-	@Override
-	op UUID[?] uuid() { null }
-	
+
 }
 
 /*
@@ -1269,20 +1046,6 @@ class ScalarOneOfRestriction extends RestrictedDataRange {
  */
 @Glossary
 class ScalarOneOfLiteralAxiom extends TermAxiom {
-	
-	@Scala(code="
-	for {
-	  u1 <- tbox
-	  u2 <- axiom.uuid(extent)
-	} yield gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator.derivedUUID(
-		\"ScalarOneOfLiteralAxiom\",
-	    \"tbox\"->u1,
-		\"axiom\"->u2,
-		\"value\"->value)")
-	@ImplicitExtent
-	@NotSchema
-	@Override
-	op UUID[?] uuid() { null }
 	
 	refers ScalarOneOfRestriction[1] axiom
 	/*

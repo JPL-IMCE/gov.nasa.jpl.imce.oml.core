@@ -35,6 +35,7 @@ package gov.nasa.jpl.imce.oml.model.bundles
 
 import gov.nasa.jpl.imce.oml.model.common.Collection
 import gov.nasa.jpl.imce.oml.model.common.CopyConstructor
+import gov.nasa.jpl.imce.oml.model.common.DerivedUUID
 import gov.nasa.jpl.imce.oml.model.common.Element
 import gov.nasa.jpl.imce.oml.model.common.FunctionalInterface
 import gov.nasa.jpl.imce.oml.model.common.Glossary
@@ -42,6 +43,7 @@ import gov.nasa.jpl.imce.oml.model.common.ImplicitExtent
 import gov.nasa.jpl.imce.oml.model.common.ModuleElement
 import gov.nasa.jpl.imce.oml.model.common.NotSchema
 import gov.nasa.jpl.imce.oml.model.common.Override
+import gov.nasa.jpl.imce.oml.model.common.OverrideVal
 import gov.nasa.jpl.imce.oml.model.common.Scala
 import gov.nasa.jpl.imce.oml.model.common.UUID
 import gov.nasa.jpl.imce.oml.model.terminologies.Concept
@@ -105,9 +107,8 @@ abstract class TerminologyBundleAxiom extends TerminologyAxiom {
 @Glossary
 abstract class ConceptTreeDisjunction {
 
-	@ImplicitExtent
 	@FunctionalInterface
-	op UUID[?] uuid()
+	op UUID[1] uuid()
 }
 
 /*
@@ -128,22 +129,8 @@ abstract class DisjointUnionOfConceptsAxiom extends TerminologyBundleStatement {
  * An OML SpecificDisjointConceptAxiom specifies a leaf in a taxonomy tree.
  */
 @Glossary
+@DerivedUUID
 class SpecificDisjointConceptAxiom extends DisjointUnionOfConceptsAxiom {
-	
-	@Scala(code="
-	for {
-	  u1 <- bundle
-	  u2 <- disjointTaxonomyParent.uuid(extent)
-	  u3 <- disjointLeaf.uuid(extent)
-	} yield gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator.derivedUUID(
-		\"SpecificDisjointConceptAxiom\",
-	    \"bundle\"->u1,
-		\"disjointTaxonomyParent\"->u2,
-		\"disjointLeaf\"->u3)")
-	@ImplicitExtent
-	@NotSchema
-	@Override
-	op UUID[?] uuid() { null }
 	
 	/*
 	 * A Concept that is a disjoint leaf in a taxonomy tree.
@@ -155,21 +142,12 @@ class SpecificDisjointConceptAxiom extends DisjointUnionOfConceptsAxiom {
  * An OML AnonymousConceptTaxonomyAxiom is an anonymous taxonomy tree of DisjointUnionOfEntityAxioms.
  */
 @Glossary
+@DerivedUUID
 class AnonymousConceptTaxonomyAxiom extends DisjointUnionOfConceptsAxiom, ConceptTreeDisjunction {
 	
-	@Scala(code="
-	for {
-	  u1 <- bundle
-	  u2 <- disjointTaxonomyParent.uuid(extent)
-	} yield gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator.derivedUUID(
-		\"AnonymousConceptTaxonomyAxiom\",
-	    \"bundle\"->u1,
-		\"disjointTaxonomyParent\"->u2)")
-	@ImplicitExtent
-	@NotSchema
-	@Override
-	op UUID[?] uuid() { null }
-	
+	@FunctionalInterface
+	@OverrideVal
+	op UUID[1] uuid()
 }
 
 /*
@@ -177,26 +155,17 @@ class AnonymousConceptTaxonomyAxiom extends DisjointUnionOfConceptsAxiom, Concep
  * is the root of a taxonomy of specializations of that Entity.
  */
 @Glossary
+@DerivedUUID
 class RootConceptTaxonomyAxiom extends TerminologyBundleStatement, ConceptTreeDisjunction {
 	
-	@Scala(code="
-	for {
-	  u1 <- bundle
-	  u2 <- root.uuid(extent)
-	} yield gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator.derivedUUID(
-		\"RootConceptTaxonomyAxiom\",
-	    \"bundle\"->u1,
-		\"root\"->u2)")
-	@ImplicitExtent
-	@NotSchema
-	@Override
-	op UUID[?] uuid() { null }
+	@FunctionalInterface
+	@OverrideVal
+	op UUID[1] uuid()
 	
 	/*
 	 * The Concept that is at the root of a taxonomy of disjunctions.
 	 */
 	refers Concept[1] root
-	
 }
 
 /*
@@ -206,21 +175,9 @@ class RootConceptTaxonomyAxiom extends TerminologyBundleStatement, ConceptTreeDi
  * within the transitive closure of a bundledTerminology.
  */
 @Glossary
+@DerivedUUID
 class BundledTerminologyAxiom extends TerminologyBundleAxiom {
 
-	@Scala(code="
-	for {
-	  u1 <- bundle
-	  u2 <- bundledTerminology.uuid(extent)
-	} yield gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator.derivedUUID(
-		\"BundledTerminologyAxiom\",
-	    \"bundle\"->u1,
-		\"bundledTerminology\"->u2)")
-	@ImplicitExtent
-	@NotSchema
-	@Override
-	op UUID[?] uuid() { null }
-	
 	@CopyConstructor
 	refers TerminologyBox[1] bundledTerminology
 	

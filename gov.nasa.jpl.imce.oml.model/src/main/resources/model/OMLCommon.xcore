@@ -56,6 +56,13 @@ annotation "http://imce.jpl.nasa.gov/oml/ResolverAPI" as ResolverAPI
  */
 annotation "http://imce.jpl.nasa.gov/oml/Override" as Override
 
+/* 
+ * If present, indicates that this feature overrides another feature in a parent.
+ * Normally, this information should be accessible from the EMF API; however,
+ * it is not obvious how to get it.
+ */
+annotation "http://imce.jpl.nasa.gov/oml/OverrideVal" as OverrideVal
+
 /*
  * If present, disables including the feature in the resolver API & resolver Implementation
  * This is used for:
@@ -109,6 +116,10 @@ annotation "http://imce.jpl.nasa.gov/oml/ExtentManaged" as ExtentManaged
 
 annotation "http://imce.jpl.nasa.gov/oml/ImplicitExtent" as ImplicitExtent
 
+annotation "http://imce.jpl.nasa.gov/oml/NamespaceUUID" as NamespaceUUID
+
+annotation "http://imce.jpl.nasa.gov/oml/DerivedUUID" as DerivedUUID
+
 /*
  * An IRI based on RFC 3987
  */
@@ -155,7 +166,7 @@ abstract class Element {
 	
 	@ImplicitExtent
 	@IsOrderingKey
-	op UUID[?] uuid()
+	readonly UUID[1] uuid
 	
 }
 
@@ -204,13 +215,12 @@ abstract class ModuleEdge extends Element {
  */
 @Glossary
 @ExtentManaged
+@NamespaceUUID(namespace="iri", factors="")
 class AnnotationProperty {
 
 	@Scala(code="com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(iri)")
 	@IsOrderingKey
-	op UUID[1] uuid() {
-		com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(iri).toString
-	}
+	readonly UUID[1] uuid
 
 	IRI[1] iri
 	
@@ -321,15 +331,8 @@ class Extent {
  */
 @Glossary
 @ExtentManaged
+@NamespaceUUID(namespace="iri", factors="")
 abstract class Module extends Element, Resource {
-	
-	@Scala(code="Some(com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(iri))")
-	@ImplicitExtent
-	@NotSchema
-	@Override
-	op UUID[?] uuid() { 
-		com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(iri()).toString
-	}
 	
 	id IRI[1] iri
 	

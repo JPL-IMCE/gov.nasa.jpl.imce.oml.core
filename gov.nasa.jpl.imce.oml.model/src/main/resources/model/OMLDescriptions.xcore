@@ -35,6 +35,7 @@ package gov.nasa.jpl.imce.oml.model.descriptions
 
 import gov.nasa.jpl.imce.oml.model.common.Collection
 import gov.nasa.jpl.imce.oml.model.common.CopyConstructor
+import gov.nasa.jpl.imce.oml.model.common.DerivedUUID
 import gov.nasa.jpl.imce.oml.model.common.Element
 import gov.nasa.jpl.imce.oml.model.common.Glossary
 import gov.nasa.jpl.imce.oml.model.common.IRI
@@ -43,12 +44,12 @@ import gov.nasa.jpl.imce.oml.model.common.LocalName
 import gov.nasa.jpl.imce.oml.model.common.Module
 import gov.nasa.jpl.imce.oml.model.common.ModuleEdge
 import gov.nasa.jpl.imce.oml.model.common.ModuleElement
+import gov.nasa.jpl.imce.oml.model.common.NamespaceUUID
 import gov.nasa.jpl.imce.oml.model.common.NotFunctionalAPI
 import gov.nasa.jpl.imce.oml.model.common.NotSchema
 import gov.nasa.jpl.imce.oml.model.common.Override
 import gov.nasa.jpl.imce.oml.model.common.Resource
 import gov.nasa.jpl.imce.oml.model.common.Scala
-import gov.nasa.jpl.imce.oml.model.common.UUID
 import gov.nasa.jpl.imce.oml.model.terminologies.Concept
 import gov.nasa.jpl.imce.oml.model.terminologies.ConceptualEntity
 import gov.nasa.jpl.imce.oml.model.terminologies.DataRelationshipToScalar
@@ -144,20 +145,8 @@ abstract class DescriptionBoxRelationship extends ModuleEdge {
  * former can be an instance of an OML Term defined in the latter.
  */
 @Glossary
+@DerivedUUID
 class DescriptionBoxExtendsClosedWorldDefinitions extends DescriptionBoxRelationship {
-	
-	@Scala(code="
-	for {
-	  u1 <- descriptionBox
-	  u2 <- closedWorldDefinitions.uuid(extent)
-	} yield gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator.derivedUUID(
-		\"DescriptionBoxExtendsClosedWorldDefinitions\",
-	    \"descriptionBox\"->u1,
-		\"closedWorldDefinitions\"->u2)")
-	@ImplicitExtent
-	@NotSchema
-	@Override
-	op UUID[?] uuid() { null }
 	
 	container DescriptionBox[1] descriptionBox opposite closedWorldDefinitions
 	
@@ -178,20 +167,8 @@ class DescriptionBoxExtendsClosedWorldDefinitions extends DescriptionBoxRelation
  * the former refines the descriptions of the latter.
  */
 @Glossary
+@DerivedUUID
 class DescriptionBoxRefinement extends DescriptionBoxRelationship {
-	
-	@Scala(code="
-	for {
-	  u1 <- refiningDescriptionBox
-	  u2 <- refinedDescriptionBox.uuid(extent)
-	} yield gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator.derivedUUID(
-		\"DescriptionBoxRefinement\",
-	    \"refiningDescriptionBox\"->u1,
-		\"refinedDescriptionBox\"->u2)")
-	@ImplicitExtent
-	@NotSchema
-	@Override
-	op UUID[?] uuid() { null }
 	
 	container DescriptionBox[1] refiningDescriptionBox opposite descriptionBoxRefinements
 	
@@ -210,6 +187,7 @@ class DescriptionBoxRefinement extends DescriptionBoxRelationship {
  * An OML TerminologyInstanceAssertion is a logical OML ModuleElement defined in an OML TerminologyDescription.
  */
 @Glossary
+@NamespaceUUID(namespace="descriptionBox", factors="name")
 abstract class TerminologyInstanceAssertion extends ModuleElement, Resource {
 	
 	@Scala(code="resolver.OMLOps.lookupDescriptionBox(extent, descriptionBox())")
@@ -229,19 +207,6 @@ abstract class TerminologyInstanceAssertion extends ModuleElement, Resource {
 	@NotSchema
 	@Override
 	op IRI[?] iri() { null }
-	
-	/*
-	 * The UUID of a Term is a Version5 namespace UUID based on the terminology instance assertion's IRI.
-	 */
-	@Scala(code="
-	for {
-	  iri <- iri(extent)
-	} yield gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator.uuidFromURL(iri)")
-	@ImplicitExtent
-	@NotSchema 
-	@Override
-	op UUID[?] uuid() { null }
-
 }
 
 /*

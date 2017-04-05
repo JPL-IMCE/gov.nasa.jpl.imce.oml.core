@@ -34,12 +34,12 @@ limitations under the License.
 package gov.nasa.jpl.imce.oml.model.graphs
 
 import gov.nasa.jpl.imce.oml.model.common.CopyConstructor
+import gov.nasa.jpl.imce.oml.model.common.DerivedUUID
 import gov.nasa.jpl.imce.oml.model.common.Glossary
 import gov.nasa.jpl.imce.oml.model.common.ImplicitExtent
 import gov.nasa.jpl.imce.oml.model.common.NotSchema
 import gov.nasa.jpl.imce.oml.model.common.Override
 import gov.nasa.jpl.imce.oml.model.common.Scala
-import gov.nasa.jpl.imce.oml.model.common.UUID
 import gov.nasa.jpl.imce.oml.model.terminologies.Concept
 import gov.nasa.jpl.imce.oml.model.terminologies.TerminologyBox
 import gov.nasa.jpl.imce.oml.model.terminologies.TerminologyBoxAxiom
@@ -59,22 +59,8 @@ class TerminologyGraph extends TerminologyBox {
  * structure of the designated OML Concept can be defined. 
  */
 @Glossary
+@DerivedUUID
 class ConceptDesignationTerminologyAxiom extends TerminologyBoxAxiom {
-	
-	@Scala(code="
-	for {
-	  u1 <- tbox
-	  u2 <- designatedTerminology.uuid(extent)
-	  u3 <- designatedConcept.uuid(extent)
-	} yield gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator.derivedUUID(
-		\"ConceptDesignationTerminologyAxiom\",
-	    \"tbox\"->u1,
-		\"designatedTerminology\"->u2,
-		\"designatedConcept\"->u3)")
-	@ImplicitExtent
-	@NotSchema
-	@Override
-	op UUID[?] uuid() { null }
 	
 	@ImplicitExtent
 	@NotSchema
@@ -111,23 +97,9 @@ class ConceptDesignationTerminologyAxiom extends TerminologyBoxAxiom {
  * defined in the nested OML TerminologyGraph.
  */
 @Glossary
+@DerivedUUID
 class TerminologyNestingAxiom extends TerminologyBoxAxiom {
 
-	@Scala(code="
-	for {
-	  u1 <- tbox
-	  u2 <- nestingTerminology.uuid(extent)
-	  u3 <- nestingContext.uuid(extent)
-	} yield gov.nasa.jpl.imce.oml.uuid.OMLUUIDGenerator.derivedUUID(
-		\"TerminologyNestingAxiom\",
-	    \"tbox\"->u1,
-		\"nestingTerminology\"->u2,
-		\"nestingContext\"->u3)")
-	@ImplicitExtent
-	@NotSchema
-	@Override
-	op UUID[?] uuid() { null }
-	
   	@CopyConstructor
 	refers TerminologyBox[1] nestingTerminology
 
