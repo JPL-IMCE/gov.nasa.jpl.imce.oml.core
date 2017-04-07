@@ -6,6 +6,6 @@
 [subrepo]
 	remote = git@github.com:JPL-IMCE/gov.nasa.jpl.imce.oml.tables.git
 	branch = master
-	commit = 164abd417856ca35cdc94c004b414557b1efca3c
-	parent = 215dba6e167780e2f2708a69be9695ed94b19fb7
+	commit = e255b8479fb28af2a6fdbdff08ba217a95708e50
+	parent = d3b5dbe44359f560dff42ddf6ba54a0963cea700
 	cmdver = 0.3.1
