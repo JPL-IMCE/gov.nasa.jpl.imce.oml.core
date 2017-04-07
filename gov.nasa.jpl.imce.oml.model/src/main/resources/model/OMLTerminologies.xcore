@@ -35,7 +35,7 @@ package gov.nasa.jpl.imce.oml.model.terminologies
 
 import gov.nasa.jpl.imce.oml.model.common.Collection
 import gov.nasa.jpl.imce.oml.model.common.CopyConstructor
-import gov.nasa.jpl.imce.oml.model.common.Element
+import gov.nasa.jpl.imce.oml.model.common.DerivedUUID
 import gov.nasa.jpl.imce.oml.model.common.FunctionalInterface
 import gov.nasa.jpl.imce.oml.model.common.Glossary
 import gov.nasa.jpl.imce.oml.model.common.ImplicitExtent
@@ -48,6 +48,7 @@ import gov.nasa.jpl.imce.oml.model.common.LocalName
 import gov.nasa.jpl.imce.oml.model.common.Module
 import gov.nasa.jpl.imce.oml.model.common.ModuleEdge
 import gov.nasa.jpl.imce.oml.model.common.ModuleElement
+import gov.nasa.jpl.imce.oml.model.common.NamespaceUUID
 import gov.nasa.jpl.imce.oml.model.common.NotFunctionalAPI
 import gov.nasa.jpl.imce.oml.model.common.NotSchema
 import gov.nasa.jpl.imce.oml.model.common.Override
@@ -56,8 +57,6 @@ import gov.nasa.jpl.imce.oml.model.common.Pattern
 import gov.nasa.jpl.imce.oml.model.common.Resource
 import gov.nasa.jpl.imce.oml.model.common.Scala
 import gov.nasa.jpl.imce.oml.model.common.UUID
-import gov.nasa.jpl.imce.oml.model.common.NamespaceUUID
-import gov.nasa.jpl.imce.oml.model.common.DerivedUUID
 
 
 /*
@@ -132,12 +131,6 @@ abstract class TerminologyBox extends Module {
 	@NotSchema
 	@Collection(kind="Set")
 	contains TerminologyBoxStatement[] boxStatements opposite tbox
-	 
-	@NotSchema
-	@Scala(code="scala.collection.immutable.HashSet.empty[resolver.api.Element] ++ boxStatements + this")
-	@Collection(kind="Set")
-	@Override
-	op Element[] everything()
 }
 
 /*
@@ -159,21 +152,23 @@ abstract class TerminologyAxiom extends ModuleEdge {
 	/*
 	 * The source TerminologyBox
 	 */
-	@ImplicitExtent
 	@NotSchema
+	@ImplicitExtent
 	op TerminologyBox[?] source()
 	
 	@NotSchema
-	op Module[1] sourceModule() { source() }
+	@ImplicitExtent
+	op Module[?] sourceModule() { source() }
 	
 	/*
 	 * The target TerminologyBox
 	 */
-	@ImplicitExtent
 	@NotSchema
+	@ImplicitExtent
 	op TerminologyBox[1] target()
 	
 	@NotSchema
+	@ImplicitExtent
 	op Module[1] targetModule() { target() }
 }
 
@@ -197,7 +192,7 @@ abstract class TerminologyBoxAxiom extends TerminologyAxiom {
 @DerivedUUID
 class TerminologyExtensionAxiom extends TerminologyBoxAxiom {
 
-	@Scala(code="resolver.OMLOps.lookupTerminologyBox(extent, tbox)")
+	@Scala(code="extent.terminologyBoxOfTerminologyBoxAxiom.get(this)")
 	@ImplicitExtent
 	@NotSchema
 	op TerminologyBox[?] extendingTerminology() { null }
@@ -211,7 +206,7 @@ class TerminologyExtensionAxiom extends TerminologyBoxAxiom {
 	@ImplicitExtent
 	@NotSchema
 	@Override
-	op TerminologyBox[?] source() { extendingTerminology }
+	op TerminologyBox[?] source() { extendingTerminology() }
 	
 	/*
 	 * The extendedTerminology is the target
@@ -230,19 +225,18 @@ class TerminologyExtensionAxiom extends TerminologyBoxAxiom {
 @NamespaceUUID(namespace="tbox", factors="name")
 abstract class Term extends TerminologyBoxStatement, Resource {
 	
+	@Scala(code="extent.terminologyBoxOfTerminologyBoxStatement.get(this).flatMap(_.iri())")
+	@ImplicitExtent
+	@NotSchema
+	@Override
+	op IRI[?] iri() { null }
+	
 	@Override
 	id LocalName[1] name
 	
 	@NotFunctionalAPI
 	@NotSchema
 	op LocalName[1] name() { getName() }
-	
-	@Scala(code="extent.lookupModule(tbox).map(m => m.iri + \"#\" + name)")
-	@ImplicitExtent
-	@NotSchema
-	@Override
-	op IRI[?] iri() { null }
-	
 }
 
 /*

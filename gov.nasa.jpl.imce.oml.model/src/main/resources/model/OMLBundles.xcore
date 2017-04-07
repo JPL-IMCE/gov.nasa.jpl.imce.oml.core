@@ -36,7 +36,6 @@ package gov.nasa.jpl.imce.oml.model.bundles
 import gov.nasa.jpl.imce.oml.model.common.Collection
 import gov.nasa.jpl.imce.oml.model.common.CopyConstructor
 import gov.nasa.jpl.imce.oml.model.common.DerivedUUID
-import gov.nasa.jpl.imce.oml.model.common.Element
 import gov.nasa.jpl.imce.oml.model.common.FunctionalInterface
 import gov.nasa.jpl.imce.oml.model.common.Glossary
 import gov.nasa.jpl.imce.oml.model.common.ImplicitExtent
@@ -70,12 +69,6 @@ class Bundle extends TerminologyBox {
 	@NotSchema
 	@Collection(kind="Set")
 	contains TerminologyBundleAxiom[] bundleAxioms opposite bundle
-			
-	@NotSchema
-	@Scala(code="super.everything() ++ bundleStatements + this")
-	@Collection(kind="Set")
-	@Override
-	op Element[] everything()
 }
 
 /*
@@ -184,7 +177,7 @@ class BundledTerminologyAxiom extends TerminologyBundleAxiom {
 	/*
 	 * The bundle is the source
 	 */
-	@Scala(code="resolver.OMLOps.lookupBundle(extent, bundle)")
+	@Scala(code="extent.bundleOfTerminologyBundleAxiom.get(this)")
 	@ImplicitExtent
 	@NotSchema
 	@Override

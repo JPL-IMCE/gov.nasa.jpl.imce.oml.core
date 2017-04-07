@@ -5,11 +5,6 @@ There are no Eclipse metadata files (.classpath, .project, .settings, META-INF/M
 - Avoiding platform-specific files (e.g., .classpath)
 - Avoiding problems with re-generated files were the contents are syntactically different but logically equivalent
 
-## TODO:
-
-Move the uuid methods to the factory because the information pertaining to container references is not directly accessible from the contained class.
-
-
 ## To clean:
 
 	./gradlew clean cleanEclipse

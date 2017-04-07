@@ -202,9 +202,11 @@ abstract class ModuleElement extends Element {}
 abstract class ModuleEdge extends Element {
 	
 	@NotSchema
-	op Module[1] sourceModule()
+	@ImplicitExtent
+	op Module[?] sourceModule()
 	
 	@NotSchema
+	@ImplicitExtent
 	op Module[1] targetModule()
 }
 
@@ -336,7 +338,7 @@ abstract class Module extends Element, Resource {
 	
 	id IRI[1] iri
 	
-	@Scala(code="Some(iri)")
+	@Scala(code="scala.Some(iri)")
 	@ImplicitExtent
 	@NotSchema
 	@Override
@@ -352,8 +354,4 @@ abstract class Module extends Element, Resource {
 	@NotSchema
 	@Collection(kind="Set")
 	contains Annotation[] annotations opposite module
-	
-	@NotSchema
-	@Collection(kind="Set")
-	op Element[] everything()
 }
