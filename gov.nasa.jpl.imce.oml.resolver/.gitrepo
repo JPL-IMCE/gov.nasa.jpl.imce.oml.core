@@ -6,6 +6,6 @@
 [subrepo]
 	remote = git@github.com:JPL-IMCE/gov.nasa.jpl.imce.oml.resolver.git
 	branch = master
-	commit = 1964c69861817f93f1b30371dd3e717db68699eb
-	parent = c73085ef2088d642b3937da902c4ac25eea64768
+	commit = c324920f96d4289ba31554c7761d0e98d94c5825
+	parent = 228b0c3f55daabb4cda58b5b1a0d92aa217bca4a
 	cmdver = 0.3.1
