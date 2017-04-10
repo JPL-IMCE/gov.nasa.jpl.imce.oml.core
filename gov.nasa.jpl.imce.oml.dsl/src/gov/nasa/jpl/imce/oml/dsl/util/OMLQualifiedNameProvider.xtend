@@ -18,6 +18,7 @@
 package gov.nasa.jpl.imce.oml.dsl.util
 
 import com.google.inject.Inject
+import gov.nasa.jpl.imce.oml.model.common.Element
 import gov.nasa.jpl.imce.oml.model.common.Resource
 import org.eclipse.xtext.naming.DefaultDeclarativeQualifiedNameProvider
 import org.eclipse.xtext.naming.IQualifiedNameConverter
@@ -30,6 +31,10 @@ class OMLQualifiedNameProvider extends DefaultDeclarativeQualifiedNameProvider {
 
 	def QualifiedName qualifiedName(AnnotationProperty ap) {
 		return qnc.toQualifiedName('<'+ap.iri+'>')
+	}
+	
+	def QualifiedName qualifiedName(Element element) {
+		return qnc.toQualifiedName('<'+element.uuid()+'>')
 	}
 	
 	def QualifiedName qualifiedName(Resource resource) {

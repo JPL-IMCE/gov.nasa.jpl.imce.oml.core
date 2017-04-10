@@ -33,6 +33,8 @@ limitations under the License.
  
 package gov.nasa.jpl.imce.oml.model.terminologies
 
+import gov.nasa.jpl.imce.oml.model.extensions.OMLExtensions
+
 import gov.nasa.jpl.imce.oml.model.common.Collection
 import gov.nasa.jpl.imce.oml.model.common.CopyConstructor
 import gov.nasa.jpl.imce.oml.model.common.DerivedUUID
@@ -195,7 +197,7 @@ class TerminologyExtensionAxiom extends TerminologyBoxAxiom {
 	@Scala(code="extent.terminologyBoxOfTerminologyBoxAxiom.get(this)")
 	@ImplicitExtent
 	@NotSchema
-	op TerminologyBox[?] extendingTerminology() { null }
+	op TerminologyBox[?] extendingTerminology() { tbox }
 	
 	@CopyConstructor
   	refers TerminologyBox[1] extendedTerminology
@@ -216,6 +218,15 @@ class TerminologyExtensionAxiom extends TerminologyBoxAxiom {
 	@Override
 	op TerminologyBox[1] target() { extendedTerminology }
   	
+	@NotFunctionalAPI
+	@NotSchema
+	op UUID[1] uuid() {
+		OMLExtensions.derivedUUID(
+		"TerminologyExtensionAxiom", 
+		"tbox" -> tbox.uuid(),
+		"extendedTerminology" -> extendedTerminology.uuid()
+		).toString
+	}
 }
 
 /*
@@ -237,6 +248,12 @@ abstract class Term extends TerminologyBoxStatement, Resource {
 	@NotFunctionalAPI
 	@NotSchema
 	op LocalName[1] name() { getName() }
+	
+	@NotFunctionalAPI
+	@NotSchema
+	op UUID[1] uuid() {
+		OMLExtensions.namespaceUUID(tbox.uuid(), "name" -> name().toString()).toString
+	}
 }
 
 /*
@@ -606,6 +623,17 @@ abstract class EntityRestrictionAxiom extends TermAxiom {
 @DerivedUUID
 class EntityExistentialRestrictionAxiom extends EntityRestrictionAxiom {
 	
+	@NotFunctionalAPI
+	@NotSchema
+	op UUID[1] uuid() {
+		OMLExtensions.derivedUUID(
+		"EntityExistentialRestrictionAxiom", 
+		"tbox" -> tbox.uuid(),
+		"restrictedRelation" -> restrictedRelation.uuid().toString,
+		"restrictedDomain" -> restrictedDomain.uuid().toString, 
+		"restrictedRange" -> restrictedRange.uuid().toString
+		).toString
+	}
 }
 
 /*
@@ -615,6 +643,18 @@ class EntityExistentialRestrictionAxiom extends EntityRestrictionAxiom {
 @Glossary
 @DerivedUUID
 class EntityUniversalRestrictionAxiom extends EntityRestrictionAxiom {
+	
+	@NotFunctionalAPI
+	@NotSchema
+	op UUID[1] uuid() {
+		OMLExtensions.derivedUUID(
+		"EntityUniversalRestrictionAxiom", 
+		"tbox" -> tbox.uuid(),
+		"restrictedRelation" -> restrictedRelation.uuid().toString,
+		"restrictedDomain" -> restrictedDomain.uuid().toString, 
+		"restrictedRange" -> restrictedRange.uuid().toString
+		).toString
+	}
 	
 }
 
@@ -665,6 +705,17 @@ class AspectSpecializationAxiom extends SpecializationAxiom {
 	@NotSchema
 	@Override
 	op Entity[1] parent() { superAspect }
+	
+	@NotFunctionalAPI
+	@NotSchema
+	op UUID[1] uuid() {
+		OMLExtensions.derivedUUID(
+		"AspectSpecializationAxiom",  
+		"tbox" -> tbox.uuid(),
+		"superAspect" -> superAspect.uuid().toString,
+		"subEntity" -> subEntity.uuid().toString
+		).toString
+	}
 }
 
 /*
@@ -690,6 +741,17 @@ class ConceptSpecializationAxiom extends SpecializationAxiom {
 	@NotSchema
 	@Override
 	op Entity[1] parent() { superConcept }
+	
+	@NotFunctionalAPI
+	@NotSchema
+	op UUID[1] uuid() {
+		OMLExtensions.derivedUUID(
+		"ConceptSpecializationAxiom",
+		"tbox" -> tbox.uuid(),
+		"superConcept" -> superConcept.uuid().toString,
+		"subConcept" -> subConcept.uuid().toString
+		).toString
+	}
 }
 
 /*
@@ -724,6 +786,17 @@ class ReifiedRelationshipSpecializationAxiom extends SpecializationAxiom {
 	@NotSchema
 	@Override
 	op Entity[1] parent() { superRelationship }
+	
+	@NotFunctionalAPI
+	@NotSchema
+	op UUID[1] uuid() {
+		OMLExtensions.derivedUUID(
+		"ReifiedRelationshipSpecializationAxiom",
+		"tbox" -> tbox.uuid(),
+		"superRelationship" -> superRelationship.uuid().toString,
+		"subRelationship" -> subRelationship.uuid().toString
+		).toString
+	}
 }
 
 /*
@@ -746,6 +819,18 @@ class EntityScalarDataPropertyExistentialRestrictionAxiom
 extends EntityScalarDataPropertyRestrictionAxiom {
 	
   	refers DataRange[1] scalarRestriction
+  	
+	@NotFunctionalAPI
+	@NotSchema
+	op UUID[1] uuid() {
+		OMLExtensions.derivedUUID(
+		"EntityScalarDataPropertyExistentialRestrictionAxiom",
+		"tbox" -> tbox.uuid(),
+		"restrictedEntity" -> restrictedEntity.uuid().toString,
+		"scalarProperty" -> scalarProperty.uuid().toString,
+		"scalarRestriction" -> scalarRestriction.uuid().toString
+		).toString
+	}
 }
 
 /*
@@ -758,6 +843,18 @@ class EntityScalarDataPropertyUniversalRestrictionAxiom
 extends EntityScalarDataPropertyRestrictionAxiom {
 	
   	refers DataRange[1] scalarRestriction
+  	
+	@NotFunctionalAPI
+	@NotSchema
+	op UUID[1] uuid() {
+		OMLExtensions.derivedUUID(
+		"EntityScalarDataPropertyUniversalRestrictionAxiom",
+		"tbox" -> tbox.uuid(),
+		"restrictedEntity" -> restrictedEntity.uuid().toString,
+		"scalarProperty" -> scalarProperty.uuid().toString,
+		"scalarRestriction" -> scalarRestriction.uuid().toString
+		).toString
+	}
 }
 
 /**
@@ -769,6 +866,17 @@ class EntityScalarDataPropertyParticularRestrictionAxiom
 extends EntityScalarDataPropertyRestrictionAxiom {
 	
 	LexicalValue[1] literalValue
+  	
+	@NotFunctionalAPI
+	@NotSchema
+	op UUID[1] uuid() {
+		OMLExtensions.derivedUUID(
+		"EntityScalarDataPropertyParticularRestrictionAxiom",
+		"tbox" -> tbox.uuid(),
+		"restrictedEntity" -> restrictedEntity.uuid().toString,
+		"scalarProperty" -> scalarProperty.uuid().toString
+		).toString
+	}
 }
 
 /*
@@ -817,6 +925,12 @@ class BinaryScalarRestriction extends RestrictedDataRange {
 	 * The maximum length of the binary data
 	 */
 	int[?] maxLength
+	
+	@NotFunctionalAPI
+	@NotSchema
+	op UUID[1] uuid() {
+		OMLExtensions.namespaceUUID(tbox.uuid().toString, "name" -> name().toString).toString
+	}
 }
 
 /*
@@ -851,6 +965,12 @@ class IRIScalarRestriction extends RestrictedDataRange {
 	 * The pattern of the IRI (https://www.w3.org/TR/xmlschema-2/#regexs)
 	 */
 	Pattern[?] pattern
+	
+	@NotFunctionalAPI
+	@NotSchema
+	op UUID[1] uuid() {
+		OMLExtensions.namespaceUUID(tbox.uuid().toString, "name" -> name().toString).toString
+	}
 }
 
 /*
@@ -902,6 +1022,12 @@ class NumericScalarRestriction extends RestrictedDataRange {
 	 * The exclusive maximum value in the range
 	 */
 	LexicalNumber[?] maxExclusive
+	
+	@NotFunctionalAPI
+	@NotSchema
+	op UUID[1] uuid() {
+		OMLExtensions.namespaceUUID(tbox.uuid().toString, "name" -> name().toString).toString
+	}
 }
 
 /*
@@ -941,6 +1067,12 @@ class PlainLiteralScalarRestriction extends RestrictedDataRange {
 	 * The language of the plain literal (http://www.rfc-editor.org/rfc/bcp/bcp47.txt)
 	 */
 	LangRange[?] langRange
+	
+	@NotFunctionalAPI
+	@NotSchema
+	op UUID[1] uuid() {
+		OMLExtensions.namespaceUUID(tbox.uuid().toString, "name" -> name().toString).toString
+	}
 }
 
 /*
@@ -981,6 +1113,12 @@ class StringScalarRestriction extends RestrictedDataRange {
 	 * The pattern of the string (https://www.w3.org/TR/xmlschema-2/#regexs)
 	 */
 	Pattern[?] pattern
+	
+	@NotFunctionalAPI
+	@NotSchema
+	op UUID[1] uuid() {
+		OMLExtensions.namespaceUUID(tbox.uuid().toString, "name" -> name().toString).toString
+	}
 }
 
 /*
@@ -1016,6 +1154,12 @@ class TimeScalarRestriction extends RestrictedDataRange {
 	 * The exclusive maximum value in the range
 	 */
 	LexicalTime[?] maxExclusive
+	
+	@NotFunctionalAPI
+	@NotSchema
+	op UUID[1] uuid() {
+		OMLExtensions.namespaceUUID(tbox.uuid().toString, "name" -> name().toString).toString
+	}
 }
 
 /*
@@ -1024,6 +1168,11 @@ class TimeScalarRestriction extends RestrictedDataRange {
 @Glossary
 class SynonymScalarRestriction extends RestrictedDataRange {
 	
+	@NotFunctionalAPI
+	@NotSchema
+	op UUID[1] uuid() {
+		OMLExtensions.namespaceUUID(tbox.uuid().toString, "name" -> name().toString).toString
+	}
 }
 
 /*
@@ -1033,6 +1182,11 @@ class SynonymScalarRestriction extends RestrictedDataRange {
 @Glossary
 class ScalarOneOfRestriction extends RestrictedDataRange {
 
+	@NotFunctionalAPI
+	@NotSchema
+	op UUID[1] uuid() {
+		OMLExtensions.namespaceUUID(tbox.uuid().toString, "name" -> name().toString).toString
+	}
 }
 
 /*
@@ -1042,8 +1196,17 @@ class ScalarOneOfRestriction extends RestrictedDataRange {
 class ScalarOneOfLiteralAxiom extends TermAxiom {
 	
 	refers ScalarOneOfRestriction[1] axiom
+	
 	/*
 	 * The value of the literal from the restrictedScalar datatype
 	 */
 	LexicalValue[1] value
+	@NotFunctionalAPI
+	@NotSchema
+	op UUID[1] uuid() {
+		OMLExtensions.derivedUUID(
+		"ScalarOneOfLiteralAxiom",
+		"tbox" -> tbox.uuid().toString,
+		"axiom" -> axiom.uuid().toString).toString
+	}
 }

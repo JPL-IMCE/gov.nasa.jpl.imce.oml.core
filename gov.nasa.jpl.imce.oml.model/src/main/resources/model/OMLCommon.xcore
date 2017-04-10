@@ -33,6 +33,8 @@ limitations under the License.
  
 package gov.nasa.jpl.imce.oml.model.common
 
+import gov.nasa.jpl.imce.oml.model.extensions.OMLExtensions
+
 // This forward reference had to be commented out because it is unclear
 // how to properly load this model and resolve 
 // the proxy reference to TerminologyExtent in the OMLExtents.xcore resource.
@@ -166,8 +168,11 @@ abstract class Element {
 	
 	@ImplicitExtent
 	@IsOrderingKey
-	readonly UUID[1] uuid
+	derived readonly UUID[1] uuid get { uuid() }
 	
+	@NotFunctionalAPI
+	@NotSchema
+	op UUID[1] uuid()
 }
 
 /*
@@ -220,9 +225,15 @@ abstract class ModuleEdge extends Element {
 @NamespaceUUID(namespace="iri", factors="")
 class AnnotationProperty {
 
+	@NotFunctionalAPI
+	@NotSchema
+	container Extent[1] extent opposite annotationProperties
+	
 	@Scala(code="com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(iri)")
 	@IsOrderingKey
-	readonly UUID[1] uuid
+	derived UUID[1] uuid get {
+		OMLExtensions.namespaceUUID(iri).toString
+	}
 
 	IRI[1] iri
 	
@@ -324,6 +335,14 @@ class Annotation {
 @Glossary
 @ResolverAPI
 class Extent {
+	
+	@NotFunctionalAPI
+	@NotSchema
+	contains AnnotationProperty[] annotationProperties opposite extent
+	
+	@NotFunctionalAPI
+	@NotSchema
+	contains Module[] modules opposite extent
 }
 
 /*
@@ -335,6 +354,10 @@ class Extent {
 @ExtentManaged
 @NamespaceUUID(namespace="iri", factors="")
 abstract class Module extends Element, Resource {
+	
+	@NotFunctionalAPI
+	@NotSchema
+	container Extent[1] extent opposite modules
 	
 	id IRI[1] iri
 	
@@ -354,4 +377,10 @@ abstract class Module extends Element, Resource {
 	@NotSchema
 	@Collection(kind="Set")
 	contains Annotation[] annotations opposite module
+	
+	@NotFunctionalAPI
+	@NotSchema
+	op UUID[1] uuid() {
+		OMLExtensions.namespaceUUID(iri()).toString
+	}
 }

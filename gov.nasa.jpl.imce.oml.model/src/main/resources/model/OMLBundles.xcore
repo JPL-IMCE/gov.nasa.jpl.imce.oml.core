@@ -33,6 +33,8 @@ limitations under the License.
    
 package gov.nasa.jpl.imce.oml.model.bundles
 
+import gov.nasa.jpl.imce.oml.model.extensions.OMLExtensions
+
 import gov.nasa.jpl.imce.oml.model.common.Collection
 import gov.nasa.jpl.imce.oml.model.common.CopyConstructor
 import gov.nasa.jpl.imce.oml.model.common.DerivedUUID
@@ -40,6 +42,7 @@ import gov.nasa.jpl.imce.oml.model.common.FunctionalInterface
 import gov.nasa.jpl.imce.oml.model.common.Glossary
 import gov.nasa.jpl.imce.oml.model.common.ImplicitExtent
 import gov.nasa.jpl.imce.oml.model.common.ModuleElement
+import gov.nasa.jpl.imce.oml.model.common.NotFunctionalAPI
 import gov.nasa.jpl.imce.oml.model.common.NotSchema
 import gov.nasa.jpl.imce.oml.model.common.Override
 import gov.nasa.jpl.imce.oml.model.common.OverrideVal
@@ -129,6 +132,16 @@ class SpecificDisjointConceptAxiom extends DisjointUnionOfConceptsAxiom {
 	 * A Concept that is a disjoint leaf in a taxonomy tree.
 	 */
 	 refers Concept[1] disjointLeaf
+	
+	@NotFunctionalAPI
+	@NotSchema
+	op UUID[1] uuid() {
+		OMLExtensions.derivedUUID(
+		"SpecificDisjointConceptAxiom",
+		"bundle" -> bundle.uuid().toString,
+		"disjointLeaf" -> disjointLeaf.uuid().toString
+		).toString
+	}
 }
 
 /*
@@ -140,7 +153,12 @@ class AnonymousConceptTaxonomyAxiom extends DisjointUnionOfConceptsAxiom, Concep
 	
 	@FunctionalInterface
 	@OverrideVal
-	op UUID[1] uuid()
+	op UUID[1] uuid() {
+		OMLExtensions.derivedUUID(
+		"AnonymousConceptTaxonomyAxiom", 
+		"bundle" -> bundle.uuid().toString
+		).toString
+	}
 }
 
 /*
@@ -153,7 +171,13 @@ class RootConceptTaxonomyAxiom extends TerminologyBundleStatement, ConceptTreeDi
 	
 	@FunctionalInterface
 	@OverrideVal
-	op UUID[1] uuid()
+	op UUID[1] uuid() {
+		OMLExtensions.derivedUUID(
+		"RootConceptTaxonomyAxiom",
+		"bundle" -> bundle.uuid().toString,
+		"root" -> root.uuid().toString
+		).toString
+	}
 	
 	/*
 	 * The Concept that is at the root of a taxonomy of disjunctions.
@@ -190,4 +214,14 @@ class BundledTerminologyAxiom extends TerminologyBundleAxiom {
 	@NotSchema
 	@Override
 	op TerminologyBox[1] target() { bundledTerminology }
+	
+	@NotFunctionalAPI
+	@NotSchema
+	op UUID[1] uuid() {
+		OMLExtensions.derivedUUID(
+		"BundledTerminologyAxiom",
+		"bundledTerminology" -> bundledTerminology.uuid().toString,
+		"bundle" -> bundle.uuid().toString
+		).toString
+	}
 }

@@ -33,6 +33,8 @@ limitations under the License.
  
 package gov.nasa.jpl.imce.oml.model.descriptions
 
+import gov.nasa.jpl.imce.oml.model.extensions.OMLExtensions
+
 import gov.nasa.jpl.imce.oml.model.common.Collection
 import gov.nasa.jpl.imce.oml.model.common.CopyConstructor
 import gov.nasa.jpl.imce.oml.model.common.DerivedUUID
@@ -49,6 +51,7 @@ import gov.nasa.jpl.imce.oml.model.common.NotSchema
 import gov.nasa.jpl.imce.oml.model.common.Override
 import gov.nasa.jpl.imce.oml.model.common.Resource
 import gov.nasa.jpl.imce.oml.model.common.Scala
+import gov.nasa.jpl.imce.oml.model.common.UUID
 import gov.nasa.jpl.imce.oml.model.terminologies.Concept
 import gov.nasa.jpl.imce.oml.model.terminologies.ConceptualEntity
 import gov.nasa.jpl.imce.oml.model.terminologies.DataRelationshipToScalar
@@ -148,6 +151,16 @@ class DescriptionBoxExtendsClosedWorldDefinitions extends DescriptionBoxRelation
 	@NotSchema
 	@ImplicitExtent
 	op Module[1] targetModule() { closedWorldDefinitions }
+	
+	@NotFunctionalAPI
+	@NotSchema
+	op UUID[1] uuid() {
+		OMLExtensions.derivedUUID(
+		"DescriptionBoxExtendsClosedWorldDefinitions",
+		"descriptionBox" -> descriptionBox.uuid().toString,
+		"closedWorldDefinitions" -> closedWorldDefinitions.uuid().toString
+		).toString
+	}
 }
 
 /*
@@ -171,6 +184,16 @@ class DescriptionBoxRefinement extends DescriptionBoxRelationship {
 	@NotSchema
 	@ImplicitExtent
 	op Module[1] targetModule() { refinedDescriptionBox }
+	
+	@NotFunctionalAPI
+	@NotSchema
+	op UUID[1] uuid() {
+		OMLExtensions.derivedUUID(
+		"DescriptionBoxRefinement",
+		"refiningDescriptionBox" -> refiningDescriptionBox.uuid().toString,
+		"refinedDescriptionBox" -> refinedDescriptionBox.uuid().toString
+		).toString
+	}
 }
 
 /*
@@ -228,6 +251,12 @@ class ScalarDataPropertyValue extends TerminologyInstanceAssertion {
 	@ImplicitExtent
 	@NotSchema
 	op DescriptionBox[?] descriptionBox()
+	
+	@NotFunctionalAPI
+	@NotSchema
+	op UUID[1] uuid() {
+		OMLExtensions.namespaceUUID(singletonInstance.uuid().toString, "name" -> name().toString).toString
+	}
 }
 
 /*
@@ -247,6 +276,12 @@ class StructuredDataPropertyValue extends TerminologyInstanceAssertion {
 	@ImplicitExtent
 	@NotSchema
 	op DescriptionBox[?] descriptionBox()
+	
+	@NotFunctionalAPI
+	@NotSchema
+	op UUID[1] uuid() {
+		OMLExtensions.namespaceUUID(singletonInstance.uuid().toString, "name" -> name().toString).toString
+	}
 }
 
 /*
@@ -263,6 +298,12 @@ class DataStructureTuple extends SingletonInstance {
 	@ImplicitExtent
 	@NotSchema
 	op DescriptionBox[?] descriptionBox()
+	
+	@NotFunctionalAPI
+	@NotSchema
+	op UUID[1] uuid() {
+		OMLExtensions.namespaceUUID(structuredDataPropertyValue.uuid().toString, "name" -> name().toString).toString
+	}
 }
 
 /*
@@ -328,6 +369,12 @@ abstract class ConceptualEntitySingletonInstance extends SingletonInstance {
 			}]
 		.asEList
 	}
+	
+	@NotFunctionalAPI
+	@NotSchema
+	op UUID[1] uuid() {
+		OMLExtensions.namespaceUUID(descriptionBox.uuid().toString, "name" -> name().toString).toString
+	}
 }
 
 /*
@@ -388,7 +435,13 @@ class ReifiedRelationshipInstanceDomain extends TerminologyInstanceAssertion {
 	@Scala(code="extent.descriptionBoxOfReifiedRelationshipInstanceDomain.get(this)")
 	@ImplicitExtent
 	@NotSchema
-	op DescriptionBox[?] descriptionBox()
+	op DescriptionBox[?] descriptionBox() { getDescriptionBox }
+	
+	@NotFunctionalAPI
+	@NotSchema
+	op UUID[1] uuid() {
+		OMLExtensions.namespaceUUID(descriptionBox().uuid().toString, "name" -> name().toString).toString
+	}
 }
 
 /*
@@ -409,7 +462,13 @@ class ReifiedRelationshipInstanceRange extends TerminologyInstanceAssertion {
 	@Scala(code="extent.descriptionBoxOfReifiedRelationshipInstanceRange.get(this)")
 	@ImplicitExtent
 	@NotSchema
-	op DescriptionBox[?] descriptionBox()
+	op DescriptionBox[?] descriptionBox() { getDescriptionBox }
+	
+	@NotFunctionalAPI
+	@NotSchema
+	op UUID[1] uuid() {
+		OMLExtensions.namespaceUUID(descriptionBox().uuid().toString, "name" -> name().toString).toString
+	}
 }
 
 /*
@@ -432,5 +491,11 @@ class UnreifiedRelationshipInstanceTuple extends TerminologyInstanceAssertion {
 	@Scala(code="extent.descriptionBoxOfUnreifiedRelationshipInstanceTuple.get(this)")
 	@ImplicitExtent
 	@NotSchema
-	op DescriptionBox[?] descriptionBox()
+	op DescriptionBox[?] descriptionBox() { getDescriptionBox }
+	
+	@NotFunctionalAPI
+	@NotSchema
+	op UUID[1] uuid() {
+		OMLExtensions.namespaceUUID(descriptionBox().uuid().toString, "name" -> name().toString).toString
+	}
 }

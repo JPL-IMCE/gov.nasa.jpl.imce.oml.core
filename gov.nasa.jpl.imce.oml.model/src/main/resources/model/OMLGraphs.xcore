@@ -33,13 +33,17 @@ limitations under the License.
  
 package gov.nasa.jpl.imce.oml.model.graphs
 
+import gov.nasa.jpl.imce.oml.model.extensions.OMLExtensions
+
 import gov.nasa.jpl.imce.oml.model.common.CopyConstructor
 import gov.nasa.jpl.imce.oml.model.common.DerivedUUID
 import gov.nasa.jpl.imce.oml.model.common.Glossary
 import gov.nasa.jpl.imce.oml.model.common.ImplicitExtent
+import gov.nasa.jpl.imce.oml.model.common.NotFunctionalAPI
 import gov.nasa.jpl.imce.oml.model.common.NotSchema
 import gov.nasa.jpl.imce.oml.model.common.Override
 import gov.nasa.jpl.imce.oml.model.common.Scala
+import gov.nasa.jpl.imce.oml.model.common.UUID
 import gov.nasa.jpl.imce.oml.model.terminologies.Concept
 import gov.nasa.jpl.imce.oml.model.terminologies.TerminologyBox
 import gov.nasa.jpl.imce.oml.model.terminologies.TerminologyBoxAxiom
@@ -90,6 +94,17 @@ class ConceptDesignationTerminologyAxiom extends TerminologyBoxAxiom {
 	@NotSchema
 	@Override
 	op TerminologyBox[1] target() { designatedTerminology }
+	
+	@NotFunctionalAPI
+	@NotSchema
+	op UUID[1] uuid() {
+		OMLExtensions.derivedUUID(
+		"ConceptDesignationTerminologyAxiom",
+		"tbox" -> tbox.uuid().toString,
+		"designatedConcept" -> designatedConcept.uuid().toString,
+		"designatedTerminology" -> designatedTerminology.uuid().toString
+		).toString
+	}
 }
 
 /*
@@ -133,4 +148,14 @@ class TerminologyNestingAxiom extends TerminologyBoxAxiom {
 	@Override
 	op TerminologyBox[1] target() { nestingTerminology }
   	
+	@NotFunctionalAPI
+	@NotSchema
+	op UUID[1] uuid() {
+		OMLExtensions.derivedUUID(
+		"TerminologyNestingAxiom",
+		"tbox" -> tbox.uuid().toString,
+		"nestingTerminology" -> nestingTerminology.uuid().toString,
+		"nestingContext" -> nestingContext.uuid().toString
+		).toString
+	}
 }
