@@ -78,3 +78,7 @@ See [gradle/wrapper/gradle-wrapper.properties](gradle/wrapper/gradle-wrapper.pro
 The gradle distribution is based on the gradle-script-kotlin integration.
 See the development builds available here: 
 https://repo.gradle.org/gradle/webapp/#/artifacts/browse/tree/General/dist-snapshots
+
+For release notes:
+https://github.com/gradle/gradle-script-kotlin/releases
+

@@ -1,4 +1,7 @@
 include 'gov.nasa.jpl.imce.oml.model'
 include 'gov.nasa.jpl.imce.oml.dsl'
+include 'gov.nasa.jpl.imce.oml.dsl.ide'
 include 'gov.nasa.jpl.imce.oml.dsl.tests'
+include 'gov.nasa.jpl.imce.oml.dsl.ui'
+include 'gov.nasa.jpl.imce.oml.dsl.ui.tests'
 include 'gov.nasa.jpl.imce.oml.generators'

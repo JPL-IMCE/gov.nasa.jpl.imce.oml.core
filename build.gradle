@@ -32,10 +32,51 @@ buildScan {
 
 System.setProperty('file.encoding', 'UTF-8')
 
+switch(System.getProperty("os.name")){
+	case ~/Mac OS X/: System.setProperty('osgi.platform', 'cocoa.macosx.x86_64');break;
+	case ~/Windows.*/: println "Windows support not done yet here";break;
+	case ~/Linux/: System.setProperty('osgi.platform', 'gtk.linux.x86_64');break;
+}
+
 subprojects {
+
 	ext.xtextVersion = '2.11.0'
+
+	// see http://services.typefox.io/open-source/jenkins/job/xtext-eclipse/job/maintenance_2.11/lastSuccessfulBuild/artifact/build/p2-repository/plugins/
+	ext.xtextUIVersion = '2.11.1.v20170201-1233'
+
+	// see http://services.typefox.io/open-source/jenkins/job/xtext-xtend/job/maintenance_2.11/lastSuccessfulBuild/artifact/build/p2-repository/plugins/
+	ext.xtendVersion = '2.11.1.v20170201-1447'
+
+	// see http://download.eclipse.org/eclipse/updates/4.6/R-4.6.3-201703010400/
+	ext.emfVersion = '2.11.0.v20160420-0247'
+
 	repositories {
 		jcenter()
+		mavenCentral()
+
+		ivy {
+			url "http://services.typefox.io/open-source/jenkins/job/xtext-xtend/job/maintenance_2.11/lastSuccessfulBuild/artifact/build/p2-repository/"
+			layout "pattern", {
+				artifact "plugins/[artifact]_[revision].[ext]"
+			}
+		}
+
+		ivy {
+			url "http://services.typefox.io/open-source/jenkins/job/xtext-eclipse/job/maintenance_2.11/lastSuccessfulBuild/artifact/build/p2-repository/"
+			layout "pattern", {
+				artifact "plugins/[artifact]_[revision].[ext]"
+			}
+		}
+
+		// See versions here: http://download.eclipse.org/eclipse/downloads/
+		ivy {
+			url "http://download.eclipse.org/eclipse/updates/4.6/R-4.6.3-201703010400/"
+			layout "pattern", {
+				artifact "plugins/[artifact]_[revision].[ext]"
+			}
+		}
+
 	}
 
 	apply plugin: 'java'
@@ -56,13 +97,18 @@ subprojects {
 
 	configurations.all {
 		exclude group: 'asm'
+
+		resolutionStrategy {
+			dependencySubstitution {
+				// Handle dependency on a variable.
+				substitute module('org.eclipse.platform:org.eclipse.swt.${osgi.platform}') with module("org.eclipse.platform:org.eclipse.swt.${System.getProperty('osgi.platform')}:3.+")
+
+				substitute module('org.eclipse.emf:org.eclipse.emf.ecore.change:[2.5.0,)') with module("org.eclipse.emf:org.eclipse.emf.ecore.change:${emfVersion}")
+			}
+		}
 	}
-
 }
 
-repositories {
-	mavenCentral()
-}
 
 dependencies {
 	compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"

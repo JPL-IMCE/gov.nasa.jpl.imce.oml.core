@@ -1,0 +1,86 @@
+dependencies {
+    compile project(':gov.nasa.jpl.imce.oml.dsl')
+    compile "org.eclipse.xtext:org.eclipse.xtext.ide:${xtextVersion}"
+    compile "org.eclipse.xtext:org.eclipse.xtext.xbase.ide:${xtextVersion}"
+    compile "org.eclipse.xtend:org.eclipse.xtend.core:${xtendVersion}"
+}
+
+
+sourceSets {
+    main {
+        mkdir('src-gen')
+        mkdir('xtend-gen')
+        output.classesDir = 'build/classes/main/'
+        java.srcDirs = ['src', 'src-gen', 'xtend-gen']
+        resources.srcDirs = ['src', 'src-gen']
+        xtendOutputDir = 'xtend-gen'
+    }
+    test {
+        java.srcDirs = []
+        resources.srcDirs = []
+    }
+}
+
+ext.eclipseManifest = manifest {
+    attributes(
+            "Manifest-Version": "1.0",
+            "Bundle-ManifestVersion": "2",
+            "Bundle-Name": "%pluginName",
+            "Bundle-SymbolicName": "${project.name};singleton:=true",
+            "Bundle-Version": "${project.version}",
+            "Bundle-ClassPath": ".",
+            "Bundle-Vendor": "%providerName",
+            "Bundle-Localization": "plugin",
+            "Bundle-RequiredExecutionEnvironment": "JavaSE-1.8",
+            "Export-Package": '''gov.nasa.jpl.imce.oml.dsl.ide,
+ gov.nasa.jpl.imce.oml.dsl.ide.contentassist,
+ gov.nasa.jpl.imce.oml.dsl.ide.contentassist.antlr''',
+            "Require-Bundle": '''org.eclipse.xtext.xbase.lib,
+ org.eclipse.xtext.ide,
+ org.eclipse.xtext.xbase.ide,
+ gov.nasa.jpl.imce.oml.dsl''',
+            "Bundle-ActivationPolicy": "lazy"
+    )
+}
+
+jar {
+    manifestContentCharset = 'UTF-8'
+    manifest = eclipseManifest
+    from('src-gen') {
+        include 'META-INF/*.*'
+    }
+}
+
+eclipse {
+    pathVariables 'GRADLE_HOME': gradle.gradleUserHomeDir
+    project {
+        natures 'org.eclipse.pde.PluginNature', 'org.eclipse.xtext.ui.shared.xtextNature', 'org.eclipse.pde.PluginNature'
+        buildCommand 'org.eclipse.jdt.core.javabuilder'
+        buildCommand 'org.eclipse.pde.ManifestBuilder'
+        buildCommand 'org.eclipse.pde.SchemaBuilder'
+        buildCommand 'org.eclipse.xtext.ui.shared.xtextBuilder'
+    }
+    classpath {
+        defaultOutputDir file('build/classes/main/')
+    }
+}
+
+tasks.clean.doLast {
+    file('src-gen').deleteDir()
+    file('xtend-gen').deleteDir()
+}
+
+clean.dependsOn(cleanEclipse)
+
+tasks.cleanEclipse.doLast {
+    file('META-INF').deleteDir()
+}
+
+tasks.eclipse.doFirst {
+    file('src-gen').mkdir()
+    file('xtend-gen').mkdir()
+}
+
+tasks.eclipse.doLast {
+    eclipseManifest.writeTo('META-INF/MANIFEST.MF')
+}

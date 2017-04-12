@@ -1,0 +1,120 @@
+dependencies {
+    compile project(':gov.nasa.jpl.imce.oml.dsl.ide')
+    compile "org.eclipse.xtext:org.eclipse.xtext.ui:${xtextUIVersion}"
+    compile "org.eclipse.xtext:org.eclipse.xtext.ui.shared:${xtextUIVersion}"
+    compile "org.eclipse.xtext:org.eclipse.xtext.ui.codetemplates.ui:${xtextUIVersion}"
+    compile 'org.eclipse.platform:org.eclipse.ui.editors:+'
+    compile 'org.eclipse.platform:org.eclipse.ui.ide:+'
+    compile 'org.eclipse.platform:org.eclipse.ui:+'
+}
+
+configurations.all {
+    resolutionStrategy {
+        dependencySubstitution {
+            // Somehow, the dependency on "org.eclipse.xtext:org.eclipse.xtext.ui:${xtextUIVersion}" seems to chop the last component of the version.
+            // Gradle build fails with this error: "Could not find org.eclipse.xtend:org.eclipse.xtend.core:1233."
+            // The version, 1233, happens to be the last segment of xtextUIVersion, i.e., 2.11.1.v20170201-1233
+
+            // This seems to be a bug; is there a way to work around it?
+
+            // Attempt 1
+            substitute module('org.eclipse.xtend:org.eclipse.xtend.core:1233') with module("org.eclipse.xtend:org.eclipse.xtend.core:${xtendVersion}")
+
+            // Attempt 2
+            force "org.eclipse.xtend:org.eclipse.xtend.core:${xtendVersion}"
+        }
+    }
+}
+
+// This only finds statically-defined configurations; not dynamically-created configurations like 'detachedConfiguration<N>'
+project.getConfigurations().all  { config ->
+    println "** dsl.ui - config: $config - ${config.resolutionStrategy}"
+    config.resolutionStrategy.eachDependency { org.gradle.api.artifacts.DependencyResolveDetails details ->
+        def r = details.requested
+       if (r.group == "org.eclipse.xtend" && r.name == "org.eclipse.xtend.core") {
+           println "** dsl.ui -- $r"
+           if (r.version == "1233") {
+               details.useVersion(xtendVersion)
+           }
+       }
+    }
+}
+
+sourceSets {
+    main {
+        mkdir('src-gen')
+        mkdir('xtend-gen')
+        output.classesDir = 'build/classes/main/'
+        java.srcDirs = ['src', 'src-gen', 'xtend-gen']
+        resources.srcDirs = ['src', 'src-gen']
+        xtendOutputDir = 'xtend-gen'
+    }
+    test {
+        java.srcDirs = []
+        resources.srcDirs = []
+    }
+}
+
+ext.eclipseManifest = manifest {
+    attributes(
+            "Manifest-Version": "1.0",
+            "Bundle-ManifestVersion": "2",
+            "Bundle-Name": "%pluginName",
+            "Bundle-SymbolicName": "${project.name};singleton:=true",
+            "Bundle-Version": "${project.version}",
+            "Bundle-ClassPath": ".",
+            "Bundle-Vendor": "%providerName",
+            "Bundle-Localization": "plugin",
+            "Bundle-RequiredExecutionEnvironment": "JavaSE-1.8",
+            "Export-Package": '''gov.nasa.jpl.imce.oml.dsl.ui''',
+            "Require-Bundle": '''org.eclipse.xtext.ui,
+ org.eclipse.xtext.ui.shared,
+ org.eclipse.ui.editors;bundle-version="3.5.0",
+ org.eclipse.ui.ide;bundle-version="3.5.0",
+ org.eclipse.ui,
+ org.eclipse.compare,
+ org.eclipse.xtext.builder,
+ org.eclipse.xtend.lib,
+ org.eclipse.xtext.xbase.lib''',
+            "Bundle-ActivationPolicy": "lazy"
+    )
+}
+
+jar {
+    manifestContentCharset = 'UTF-8'
+    manifest = eclipseManifest
+}
+
+eclipse {
+    pathVariables 'GRADLE_HOME': gradle.gradleUserHomeDir
+    project {
+        natures 'org.eclipse.pde.PluginNature', 'org.eclipse.xtext.ui.shared.xtextNature', 'org.eclipse.pde.PluginNature'
+        buildCommand 'org.eclipse.jdt.core.javabuilder'
+        buildCommand 'org.eclipse.pde.ManifestBuilder'
+        buildCommand 'org.eclipse.pde.SchemaBuilder'
+        buildCommand 'org.eclipse.xtext.ui.shared.xtextBuilder'
+    }
+    classpath {
+        defaultOutputDir file('build/classes/main/')
+    }
+}
+
+tasks.clean.doLast {
+    file('src-gen').deleteDir()
+    file('xtend-gen').deleteDir()
+}
+
+clean.dependsOn(cleanEclipse)
+
+tasks.cleanEclipse.doLast {
+    file('META-INF').deleteDir()
+}
+
+tasks.eclipse.doFirst {
+    file('src-gen').mkdir()
+    file('xtend-gen').mkdir()
+}
+
+tasks.eclipse.doLast {
+    eclipseManifest.writeTo('META-INF/MANIFEST.MF')
+}
