@@ -634,6 +634,7 @@ terminal RCURLY: '}';
 
 terminal EQUAL: '=';
 
+@Override
 terminal STRING: 
 	'"' ( '\\' . /* ('b'|'t'|'n'|'f'|'r'|'u'|'"'|"'"|'\\') */ | !('\\'|'"') )* '"'? |
 	"'" ( '\\' . /* ('b'|'t'|'n'|'f'|'r'|'u'|'"'|"'"|'\\') */ | !('\\'|"'") )* "'"?;
@@ -642,6 +643,7 @@ terminal STRING:
 terminal IRI:
 	'<' (!'>')* '>';
 
+@Override
 terminal ID:
 	'^'? ('a'..'z'|'A'..'Z'|'$'|'_') ('a'..'z'|'A'..'Z'|'$'|'_'|'0'..'9')*;
 
@@ -669,6 +671,7 @@ terminal HEX:
 	('0x'|'0X') ('0'..'9'|'a'..'f'|'A'..'F'|'_')+ 
 	('#' (('b'|'B')('i'|'I') | ('l'|'L')))?;
 	
+@Override
 terminal INT returns ecore::EInt:
 	'0'..'9' ('0'..'9'|'_')*; 
 
@@ -677,11 +680,14 @@ terminal DECIMAL:
 	(('e'|'E') ('+'|'-')? INT)? 
 	(('b'|'B')('i'|'I'|'d'|'D') | ('l'|'L'|'d'|'D'|'f'|'F'))?;
 
+@Override
 terminal ML_COMMENT  : 
  	'/*' -> '*/';
  
+@Override
 terminal SL_COMMENT : 
  	'//' !('\n'|'\r')* ('\r'? '\n')?;
  
+@Override
 terminal WS  : 
  	(' '|'\t'|'\r'|'\n')+;

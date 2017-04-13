@@ -57,7 +57,8 @@ subprojects {
 	// see http://builds.gradle.org:8000/eclipse/update-site/mirror/releases-neon/plugins/
 	ext.emfUIVersion = '2.12.0.v20160526-0356'
 	ext.log4jVersion = '1.2.15.v201012070815'
-
+	ext.junitVersion = '4.12.0.v201504281640'
+    junitVersion
 	repositories {
 		jcenter()
 		mavenCentral()

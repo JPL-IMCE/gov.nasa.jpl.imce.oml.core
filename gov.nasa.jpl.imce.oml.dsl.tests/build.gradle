@@ -9,7 +9,7 @@ dependencies {
     testCompile 'org.eclipse.emf:org.eclipse.emf.mwe.utils:+'
 
     testCompile 'org.eclipse.xtext:org.eclipse.xtext.xbase.junit:+'
-	testCompile 'org.junit:org.junit:+'
+	testCompile "org.junit:org.junit:${junitVersion}"
 
     compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
 
@@ -29,6 +29,8 @@ sourceSets {
         resources.srcDirs = []
 	}
 	test {
+		mkdir('src-gen')
+		mkdir('xtend-gen')
 		output.classesDir = 'build/classes/test/'
 		java.srcDirs = ['src', 'src-gen', 'xtend-gen']
         resources.srcDirs = ['resources', 'src', 'src-gen']
@@ -91,13 +93,11 @@ tasks.cleanEclipse.doLast {
     file('META-INF').deleteDir()
 }
 
+tasks.eclipseClasspath.doFirst {
+	file('src-gen').mkdir()
+	file('xtend-gen').mkdir()
+}
+
 tasks.eclipse.doLast {
     eclipseManifest.writeTo('META-INF/MANIFEST.MF')
 }
-
-tasks.clean.doLast {
-	file('src-gen').deleteDir()
-	file('xtend-gen').deleteDir()
-}
-
-clean.dependsOn(cleanEclipse)

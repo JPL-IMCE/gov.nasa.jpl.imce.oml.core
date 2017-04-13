@@ -24,6 +24,8 @@ dependencies {
 
 sourceSets {
     main {
+        mkdir('src-gen')
+        mkdir('xtend-gen')
         output.classesDir = 'build/classes/main/'
         java.srcDirs = ['src', 'src-gen', 'xtend-gen']
         resources.srcDirs = ['src', 'src-gen']
@@ -98,6 +100,11 @@ clean.dependsOn(cleanEclipse)
 
 tasks.cleanEclipse.doLast {
     file('META-INF').deleteDir()
+}
+
+tasks.eclipseClasspath.doFirst {
+    file('src-gen').mkdir()
+    file('xtend-gen').mkdir()
 }
 
 tasks.eclipse.doLast {
