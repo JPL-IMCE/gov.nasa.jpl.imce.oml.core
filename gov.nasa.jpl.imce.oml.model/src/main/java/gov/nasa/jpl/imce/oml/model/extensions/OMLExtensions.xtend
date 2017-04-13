@@ -35,6 +35,48 @@ import gov.nasa.jpl.imce.oml.model.terminologies.TerminologyExtensionAxiom
 import org.eclipse.emf.ecore.util.EcoreUtil
 import java.util.ArrayList
 import java.util.UUID
+import gov.nasa.jpl.imce.oml.model.common.Element
+import gov.nasa.jpl.imce.oml.model.descriptions.DescriptionBox
+import gov.nasa.jpl.imce.oml.model.descriptions.DescriptionBoxExtendsClosedWorldDefinitions
+import gov.nasa.jpl.imce.oml.model.descriptions.DescriptionBoxRefinement
+import gov.nasa.jpl.imce.oml.model.graphs.ConceptDesignationTerminologyAxiom
+import gov.nasa.jpl.imce.oml.model.graphs.TerminologyNestingAxiom
+import gov.nasa.jpl.imce.oml.model.bundles.BundledTerminologyAxiom
+import gov.nasa.jpl.imce.oml.model.terminologies.EntityExistentialRestrictionAxiom
+import gov.nasa.jpl.imce.oml.model.terminologies.EntityUniversalRestrictionAxiom
+import gov.nasa.jpl.imce.oml.model.terminologies.EntityScalarDataPropertyExistentialRestrictionAxiom
+import gov.nasa.jpl.imce.oml.model.terminologies.EntityScalarDataPropertyParticularRestrictionAxiom
+import gov.nasa.jpl.imce.oml.model.terminologies.EntityScalarDataPropertyUniversalRestrictionAxiom
+import gov.nasa.jpl.imce.oml.model.terminologies.ScalarOneOfLiteralAxiom
+import gov.nasa.jpl.imce.oml.model.terminologies.AspectSpecializationAxiom
+import gov.nasa.jpl.imce.oml.model.terminologies.ConceptSpecializationAxiom
+import gov.nasa.jpl.imce.oml.model.terminologies.ReifiedRelationshipSpecializationAxiom
+import gov.nasa.jpl.imce.oml.model.bundles.AnonymousConceptTaxonomyAxiom
+import gov.nasa.jpl.imce.oml.model.bundles.SpecificDisjointConceptAxiom
+import gov.nasa.jpl.imce.oml.model.bundles.RootConceptTaxonomyAxiom
+import gov.nasa.jpl.imce.oml.model.descriptions.ReifiedRelationshipInstanceDomain
+import gov.nasa.jpl.imce.oml.model.descriptions.ReifiedRelationshipInstanceRange
+import gov.nasa.jpl.imce.oml.model.descriptions.ScalarDataPropertyValue
+import gov.nasa.jpl.imce.oml.model.descriptions.ConceptInstance
+import gov.nasa.jpl.imce.oml.model.descriptions.ReifiedRelationshipInstance
+import gov.nasa.jpl.imce.oml.model.descriptions.DataStructureTuple
+import gov.nasa.jpl.imce.oml.model.descriptions.StructuredDataPropertyValue
+import gov.nasa.jpl.imce.oml.model.descriptions.UnreifiedRelationshipInstanceTuple
+import gov.nasa.jpl.imce.oml.model.terminologies.EntityScalarDataProperty
+import gov.nasa.jpl.imce.oml.model.terminologies.EntityStructuredDataProperty
+import gov.nasa.jpl.imce.oml.model.terminologies.ScalarDataProperty
+import gov.nasa.jpl.imce.oml.model.terminologies.StructuredDataProperty
+import gov.nasa.jpl.imce.oml.model.terminologies.BinaryScalarRestriction
+import gov.nasa.jpl.imce.oml.model.terminologies.IRIScalarRestriction
+import gov.nasa.jpl.imce.oml.model.terminologies.NumericScalarRestriction
+import gov.nasa.jpl.imce.oml.model.terminologies.PlainLiteralScalarRestriction
+import gov.nasa.jpl.imce.oml.model.terminologies.ScalarOneOfRestriction
+import gov.nasa.jpl.imce.oml.model.terminologies.StringScalarRestriction
+import gov.nasa.jpl.imce.oml.model.terminologies.SynonymScalarRestriction
+import gov.nasa.jpl.imce.oml.model.terminologies.TimeScalarRestriction
+import gov.nasa.jpl.imce.oml.model.terminologies.Scalar
+import gov.nasa.jpl.imce.oml.model.terminologies.Structure
+import gov.nasa.jpl.imce.oml.model.terminologies.UnreifiedRelationship
 
 class OMLExtensions {
 	
@@ -222,5 +264,106 @@ class OMLExtensions {
 	
 	def Iterable<ReifiedRelationship> allReifiedRelationships(TerminologyBox it) {
 		localReifiedRelationships + allImportedTerminologies(it).map[localReifiedRelationships].flatten
+	}
+	
+	static def String kind(Element e) {
+		switch e {
+			case DescriptionBox:
+				'DescriptionBox'
+			case TerminologyGraph:
+				'TerminologyGraph'
+			case Bundle:
+				'Bundle'
+			case DescriptionBoxExtendsClosedWorldDefinitions:
+				'DescriptionBoxExtendsClosedWorldDefinitions'
+			case DescriptionBoxRefinement:
+				'DescriptionBoxRefinement'
+			case ConceptDesignationTerminologyAxiom:
+				'ConceptDesignationTerminologyAxiom'
+			case TerminologyExtensionAxiom:
+				'TerminologyExtensionAxiom'
+			case TerminologyNestingAxiom:
+				'TerminologyNestingAxiom'
+			case BundledTerminologyAxiom:
+				'BundledTerminologyAxiom'
+			case EntityExistentialRestrictionAxiom:
+				'EntityExistentialRestrictionAxiom'
+			case EntityUniversalRestrictionAxiom:
+				'EntityUniversalRestrictionAxiom'
+			case EntityScalarDataPropertyExistentialRestrictionAxiom:
+				'EntityScalarDataPropertyExistentialRestrictionAxiom'
+			case EntityScalarDataPropertyParticularRestrictionAxiom:
+				'EntityScalarDataPropertyParticularRestrictionAxiom'
+			case EntityScalarDataPropertyUniversalRestrictionAxiom:
+				'EntityScalarDataPropertyUniversalRestrictionAxiom'
+			case ScalarOneOfLiteralAxiom:
+				'ScalarOneOfLiteralAxiom'
+			case AspectSpecializationAxiom:
+				'AspectSpecializationAxiom'
+			case ConceptSpecializationAxiom:
+				'ConceptSpecializationAxiom'
+			case ReifiedRelationshipSpecializationAxiom:
+				'ReifiedRelationshipSpecializationAxiom'
+			case AnonymousConceptTaxonomyAxiom:
+				'AnonymousConceptTaxonomyAxiom'
+			case SpecificDisjointConceptAxiom:
+				'SpecificDisjointConceptAxiom'
+			case RootConceptTaxonomyAxiom:
+				'RootConceptTaxonomyAxiom'
+			case ReifiedRelationshipInstanceDomain:
+				'ReifiedRelationshipInstanceDomain'
+			case ReifiedRelationshipInstanceRange:
+				'ReifiedRelationshipInstanceRange'
+			case ScalarDataPropertyValue:
+				'ScalarDataPropertyValue'
+			case ConceptInstance:
+				'ConceptInstance'
+			case ReifiedRelationshipInstance:
+				'ReifiedRelationshipInstance'
+			case DataStructureTuple:
+				'DataStructureTuple'
+			case StructuredDataPropertyValue:
+				'StructuredDataPropertyValue'
+			case UnreifiedRelationshipInstanceTuple:
+				'UnreifiedRelationshipInstanceTuple'
+			case EntityScalarDataProperty:
+				'EntityScalarDataProperty'
+			case EntityStructuredDataProperty:
+				'EntityStructuredDataProperty'
+			case ScalarDataProperty:
+				'ScalarDataProperty'
+			case StructuredDataProperty:
+				'StructuredDataProperty'
+			case BinaryScalarRestriction:
+				'BinaryScalarRestriction'
+			case IRIScalarRestriction:
+				'IRIScalarRestriction'
+			case NumericScalarRestriction:
+				'NumericScalarRestriction'
+			case PlainLiteralScalarRestriction:
+				'PlainLiteralScalarRestriction'
+			case ScalarOneOfRestriction:
+				'ScalarOneOfRestriction'
+			case StringScalarRestriction:
+				'StringScalarRestriction'
+			case SynonymScalarRestriction:
+				'SynonymScalarRestriction'
+			case TimeScalarRestriction:
+				'TimeScalarRestriction'
+			case Scalar:
+				'Scalar'
+			case Structure:
+				'Structure'
+			case Aspect:
+				'Aspect'
+			case Concept:
+				'Concept'
+			case ReifiedRelationship:
+				'ReifiedRelationship'
+			case UnreifiedRelationship:
+				'UnreifiedRelationship'
+			default:
+				'Other'
+		}
 	}
 }

@@ -12,6 +12,7 @@ dependencies {
     compile 'org.eclipse.emf:org.eclipse.emf.ecore.xcore.lib:+'
     compile 'org.eclipse.emf:org.eclipse.emf.ecore.xcore:+'
     compile 'com.fasterxml.uuid:java-uuid-generator:+'
+    runtime "org.apache:org.apache.log4j:${log4jVersion}"
 
     // See https://github.com/ghillairet/cdo-maven
     compile 'org.eclipselabs:cdo.p2:4.6.0.v20170210-0100:repackaged@jar'
@@ -66,14 +67,16 @@ ext.eclipseManifest = manifest {
  gov.nasa.jpl.imce.fm, 
  gov.nasa.jpl.imce.fm.impl, 
  gov.nasa.jpl.imce.fm.util''',
-        "Require-Bundle": '''org.eclipse.core.runtime;visibility:=reexport, 
+        "Require-Bundle": '''gov.nasa.jpl.imce.oml.uuid;visibility:=reexport,
+ org.eclipse.core.runtime;visibility:=reexport, 
  org.eclipse.core.resources;visibility:=reexport, 
  org.eclipse.emf.ecore;visibility:=reexport, 
  org.eclipse.xtext.xbase.lib;visibility:=reexport, 
  org.eclipse.emf.ecore.xcore.lib;visibility:=reexport, 
  org.eclipse.emf.ecore.xcore;visibility:=reexport, 
  org.eclipse.emf.cdo;visibility:=reexport, 
- org.eclipse.emf.ecore.xmi;visibility:=reexport''',
+ org.eclipse.emf.ecore.xmi;visibility:=reexport,
+ org.apache.log4j;visibility:=reexport''',
         "Bundle-ActivationPolicy": "lazy"
     )
     contentCharset = 'UTF-8'

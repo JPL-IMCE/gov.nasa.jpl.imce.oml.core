@@ -33,12 +33,12 @@ ext.eclipseManifest = manifest {
             "Bundle-Localization": "plugin",
             "Bundle-RequiredExecutionEnvironment": "JavaSE-1.8",
             "Export-Package": '''gov.nasa.jpl.imce.oml.dsl.ide,
- gov.nasa.jpl.imce.oml.dsl.ide.contentassist,
- gov.nasa.jpl.imce.oml.dsl.ide.contentassist.antlr''',
-            "Require-Bundle": '''org.eclipse.xtext.xbase.lib,
- org.eclipse.xtext.ide,
- org.eclipse.xtext.xbase.ide,
- gov.nasa.jpl.imce.oml.dsl''',
+ gov.nasa.jpl.imce.oml.dsl.ide.contentassist.antlr,
+ gov.nasa.jpl.imce.oml.dsl.ide.contentassist.antlr.internal''',
+            "Require-Bundle": '''org.eclipse.xtext.xbase.lib;visibility:=reexport,
+ org.eclipse.xtext.ide;visibility:=reexport,
+ org.eclipse.xtext.xbase.ide;visibility:=reexport,
+ gov.nasa.jpl.imce.oml.dsl;visibility:=reexport''',
             "Bundle-ActivationPolicy": "lazy"
     )
 }

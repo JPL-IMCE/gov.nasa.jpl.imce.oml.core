@@ -9,6 +9,7 @@ dependencies {
     testCompile 'org.eclipse.emf:org.eclipse.emf.mwe.utils:+'
 
     testCompile 'org.eclipse.xtext:org.eclipse.xtext.xbase.junit:+'
+	testCompile 'org.junit:org.junit:+'
 
     compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
 
@@ -55,7 +56,10 @@ ext.eclipseManifest = manifest {
             org.junit.runner;version="4.5.0",
             org.junit.runners.model;version="4.5.0",
             org.junit.runners;version="4.5.0",
-            org.junit;version="4.5.0'''
+            org.junit;version="4.5.0''',
+            "Require-Bundle": '''gov.nasa.jpl.imce.oml.dsl,
+ org.eclipse.xtext.testing,
+ org.eclipse.xtext.xbase.junit'''
     )
 }
 

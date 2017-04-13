@@ -42,6 +42,9 @@ subprojects {
 
 	ext.xtextVersion = '2.11.0'
 
+	// see http://services.typefox.io/open-source/jenkins/job/xtext-core/job/maintenance_2.11/lastSuccessfulBuild/artifact/build/p2-repository/plugins/
+	ext.xtextCoreVersion = '2.11.1.v20170223-0955'
+
 	// see http://services.typefox.io/open-source/jenkins/job/xtext-eclipse/job/maintenance_2.11/lastSuccessfulBuild/artifact/build/p2-repository/plugins/
 	ext.xtextUIVersion = '2.11.1.v20170201-1233'
 
@@ -51,10 +54,15 @@ subprojects {
 	// see http://download.eclipse.org/eclipse/updates/4.6/R-4.6.3-201703010400/
 	ext.emfVersion = '2.11.0.v20160420-0247'
 
+	// see http://builds.gradle.org:8000/eclipse/update-site/mirror/releases-neon/plugins/
+	ext.emfUIVersion = '2.12.0.v20160526-0356'
+	ext.log4jVersion = '1.2.15.v201012070815'
+
 	repositories {
 		jcenter()
 		mavenCentral()
 
+		// for resolving org.eclipse.xtend.*
 		ivy {
 			url "http://services.typefox.io/open-source/jenkins/job/xtext-xtend/job/maintenance_2.11/lastSuccessfulBuild/artifact/build/p2-repository/"
 			layout "pattern", {
@@ -62,6 +70,7 @@ subprojects {
 			}
 		}
 
+		// for resolving org.eclipse.xtext.*
 		ivy {
 			url "http://services.typefox.io/open-source/jenkins/job/xtext-eclipse/job/maintenance_2.11/lastSuccessfulBuild/artifact/build/p2-repository/"
 			layout "pattern", {
@@ -69,6 +78,14 @@ subprojects {
 			}
 		}
 
+		// for resolving org.eclipse.xtext.{ide,testing}
+		ivy {
+			url "http://services.typefox.io/open-source/jenkins/job/xtext-core/job/maintenance_2.11/lastSuccessfulBuild/artifact/build/p2-repository/"
+			layout "pattern", {
+				artifact "plugins/[artifact]_[revision].[ext]"
+			}
+		}
+		// for resolving Eclipse SDK plugins
 		// See versions here: http://download.eclipse.org/eclipse/downloads/
 		ivy {
 			url "http://download.eclipse.org/eclipse/updates/4.6/R-4.6.3-201703010400/"
@@ -77,6 +94,13 @@ subprojects {
 			}
 		}
 
+		// for resolving org.eclipse.emf.*.ui* and orbit plugins
+		ivy {
+			url "http://builds.gradle.org:8000/eclipse/update-site/mirror/releases-neon/"
+			layout "pattern", {
+				artifact "plugins/[artifact]_[revision].[ext]"
+			}
+		}
 	}
 
 	apply plugin: 'java'

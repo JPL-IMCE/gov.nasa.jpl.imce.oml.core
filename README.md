@@ -5,6 +5,21 @@ There are no Eclipse metadata files (.classpath, .project, .settings, META-INF/M
 - Avoiding platform-specific files (e.g., .classpath)
 - Avoiding problems with re-generated files were the contents are syntactically different but logically equivalent
 
+## Eclipse
+
+- Install Eclipse Neon.3 from: https://www.eclipse.org/downloads/download.php?file=/technology/epp/downloads/release/neon/3
+- Add the Xtext update site: http://download.eclipse.org/modeling/tmf/xtext/updates/composite/releases/
+- Install Xtext SDK 2.11 (this should be an update) and Xtend SDK 2.11
+
+- Add the Scala IDE update site: http://download.scala-ide.org/sdk/lithium/e46/scala212/dev/site
+- Install everything from the Scala IDE
+- Install Scala 2.11 (on mac: brew install scala@2.11)
+- ln -s /usr/local/Cellar/scala@2.11/2.11.8_1 scala2.11
+- In Eclipse preferences, set the location for Scala 2.11
+- In Eclipse preferences, set a Java classpath variable: GRADLE_HOME = ~/.gradle
+
+- Install Eclipse CDO
+
 ## To clean:
 
 	./gradlew clean cleanEclipse

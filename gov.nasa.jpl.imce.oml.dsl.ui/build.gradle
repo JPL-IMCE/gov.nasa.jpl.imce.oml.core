@@ -1,43 +1,29 @@
 dependencies {
     compile project(':gov.nasa.jpl.imce.oml.dsl.ide')
+    compile "org.eclipse.xtext:org.eclipse.xtext.builder:${xtextUIVersion}"
     compile "org.eclipse.xtext:org.eclipse.xtext.ui:${xtextUIVersion}"
     compile "org.eclipse.xtext:org.eclipse.xtext.ui.shared:${xtextUIVersion}"
     compile "org.eclipse.xtext:org.eclipse.xtext.ui.codetemplates.ui:${xtextUIVersion}"
     compile 'org.eclipse.platform:org.eclipse.ui.editors:+'
     compile 'org.eclipse.platform:org.eclipse.ui.ide:+'
     compile 'org.eclipse.platform:org.eclipse.ui:+'
+    compile 'org.eclipse.platform:org.eclipse.compare:+'
+    compile "org.eclipse.emf:org.eclipse.emf.edit:${emfUIVersion}"
+    compile "org.eclipse.emf:org.eclipse.emf.edit.ui:${emfUIVersion}"
+
+    xtextLanguages "org.eclipse.emf:org.eclipse.emf.mwe2.launch:2.8.3"
+    xtextLanguages "org.eclipse.emf:org.eclipse.emf.mwe2.runtime:2.8.3"
 }
 
-configurations.all {
-    resolutionStrategy {
-        dependencySubstitution {
-            // Somehow, the dependency on "org.eclipse.xtext:org.eclipse.xtext.ui:${xtextUIVersion}" seems to chop the last component of the version.
-            // Gradle build fails with this error: "Could not find org.eclipse.xtend:org.eclipse.xtend.core:1233."
-            // The version, 1233, happens to be the last segment of xtextUIVersion, i.e., 2.11.1.v20170201-1233
-
-            // This seems to be a bug; is there a way to work around it?
-
-            // Attempt 1
-            substitute module('org.eclipse.xtend:org.eclipse.xtend.core:1233') with module("org.eclipse.xtend:org.eclipse.xtend.core:${xtendVersion}")
-
-            // Attempt 2
-            force "org.eclipse.xtend:org.eclipse.xtend.core:${xtendVersion}"
-        }
+configurations {
+    mwe2 {
+        extendsFrom compile
     }
-}
-
-// This only finds statically-defined configurations; not dynamically-created configurations like 'detachedConfiguration<N>'
-project.getConfigurations().all  { config ->
-    println "** dsl.ui - config: $config - ${config.resolutionStrategy}"
-    config.resolutionStrategy.eachDependency { org.gradle.api.artifacts.DependencyResolveDetails details ->
-        def r = details.requested
-       if (r.group == "org.eclipse.xtend" && r.name == "org.eclipse.xtend.core") {
-           println "** dsl.ui -- $r"
-           if (r.version == "1233") {
-               details.useVersion(xtendVersion)
-           }
-       }
+    xtextLanguages {
+        extendsFrom compile
     }
+    compile.transitive = true
+    testCompile.transitive = true
 }
 
 sourceSets {
@@ -55,6 +41,28 @@ sourceSets {
     }
 }
 
+xtext {
+    version = "${xtextVersion}"
+    languages {
+        ecore {
+            setup = 'org.eclipse.xtext.ecore.EcoreSupport'
+        }
+        codegen {
+            setup = 'org.eclipse.emf.codegen.ecore.xtext.GenModelSupport'
+        }
+        xcore {
+            setup = 'org.eclipse.emf.ecore.xcore.XcoreStandaloneSetup'
+            generator {
+                javaSourceLevel = '1.8'
+                outlet {
+                    producesJava = true
+                    cleanAutomatically = true
+                }
+            }
+        }
+    }
+}
+
 ext.eclipseManifest = manifest {
     attributes(
             "Manifest-Version": "1.0",
@@ -67,16 +75,23 @@ ext.eclipseManifest = manifest {
             "Bundle-Localization": "plugin",
             "Bundle-RequiredExecutionEnvironment": "JavaSE-1.8",
             "Export-Package": '''gov.nasa.jpl.imce.oml.dsl.ui''',
-            "Require-Bundle": '''org.eclipse.xtext.ui,
- org.eclipse.xtext.ui.shared,
- org.eclipse.ui.editors;bundle-version="3.5.0",
- org.eclipse.ui.ide;bundle-version="3.5.0",
- org.eclipse.ui,
- org.eclipse.compare,
- org.eclipse.xtext.builder,
- org.eclipse.xtend.lib,
- org.eclipse.xtext.xbase.lib''',
-            "Bundle-ActivationPolicy": "lazy"
+            "Require-Bundle": '''org.eclipse.xtext.ui;visibility:=reexport,
+ org.eclipse.xtext.ui.codetemplates.ui;visibility:=reexport,
+ org.eclipse.xtext.ui.shared;visibility:=reexport,
+ org.eclipse.xtext.builder;visibility:=reexport,
+ org.eclipse.ui.editors;bundle-version="3.5.0";visibility:=reexport,
+ org.eclipse.ui.ide;bundle-version="3.5.0";visibility:=reexport,
+ org.eclipse.ui;visibility:=reexport,
+ org.eclipse.emf.edit.ui;visibility:=reexport,
+ org.eclipse.emf.edit;visibility:=reexport,
+ org.eclipse.compare;visibility:=reexport,
+ org.eclipse.xtext.builder;visibility:=reexport,
+ org.eclipse.xtend.lib;visibility:=reexport,
+ org.eclipse.xtext.xbase.lib;visibility:=reexport,
+ gov.nasa.jpl.imce.oml.dsl.ide;visibility:=reexport''',
+            "Bundle-ActivationPolicy": "lazy",
+            "Bundle-Activator": "gov.nasa.jpl.imce.oml.dsl.ui.internal.DslActivator"
+
     )
 }
 
@@ -102,6 +117,9 @@ eclipse {
 tasks.clean.doLast {
     file('src-gen').deleteDir()
     file('xtend-gen').deleteDir()
+    file('plugin.properties').delete()
+    file('plugin.xml').delete()
+    file('plugin.xml_gen').delete()
 }
 
 clean.dependsOn(cleanEclipse)
@@ -110,7 +128,7 @@ tasks.cleanEclipse.doLast {
     file('META-INF').deleteDir()
 }
 
-tasks.eclipse.doFirst {
+tasks.eclipseClasspath.doFirst {
     file('src-gen').mkdir()
     file('xtend-gen').mkdir()
 }

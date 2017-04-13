@@ -18,26 +18,47 @@
 package gov.nasa.jpl.imce.oml.dsl.util
 
 import com.google.inject.Inject
-import gov.nasa.jpl.imce.oml.model.common.Element
-import gov.nasa.jpl.imce.oml.model.common.Resource
+import gov.nasa.jpl.imce.oml.model.bundles.Bundle
+import gov.nasa.jpl.imce.oml.model.common.AnnotationProperty
+import gov.nasa.jpl.imce.oml.model.common.ModuleEdge
+import gov.nasa.jpl.imce.oml.model.descriptions.DescriptionBox
+import gov.nasa.jpl.imce.oml.model.descriptions.TerminologyInstanceAssertion
+import gov.nasa.jpl.imce.oml.model.extensions.OMLExtensions
+import gov.nasa.jpl.imce.oml.model.graphs.TerminologyGraph
+import gov.nasa.jpl.imce.oml.model.terminologies.Term
 import org.eclipse.xtext.naming.DefaultDeclarativeQualifiedNameProvider
 import org.eclipse.xtext.naming.IQualifiedNameConverter
 import org.eclipse.xtext.naming.QualifiedName
-import gov.nasa.jpl.imce.oml.model.common.AnnotationProperty
 
 class OMLQualifiedNameProvider extends DefaultDeclarativeQualifiedNameProvider {
 
 	@Inject IQualifiedNameConverter qnc
 
 	def QualifiedName qualifiedName(AnnotationProperty ap) {
-		return qnc.toQualifiedName('<'+ap.iri+'>')
+		return qnc.toQualifiedName('AnnotationProperty<'+ap.iri+'>')
 	}
 	
-	def QualifiedName qualifiedName(Element element) {
-		return qnc.toQualifiedName('<'+element.uuid()+'>')
+	def QualifiedName qualifiedName(Term term) {
+		return qnc.toQualifiedName(OMLExtensions.kind(term)+'<'+term.iri()+'>')
 	}
 	
-	def QualifiedName qualifiedName(Resource resource) {
-		return qnc.toQualifiedName('<'+resource.iri+'>')
+	def QualifiedName qualifiedName(TerminologyInstanceAssertion i) {
+		return qnc.toQualifiedName(OMLExtensions.kind(i)+'<'+i.iri()+'>')
+	}
+	
+	def QualifiedName qualifiedName(ModuleEdge edge) {
+		return qnc.toQualifiedName(OMLExtensions.kind(edge)+'('+edge.sourceModule().iri()+'->'+edge.targetModule().iri()+')')
+	}
+	
+	def QualifiedName qualifiedName(DescriptionBox m) {
+		return qnc.toQualifiedName(m.kind.toString+' '+OMLExtensions.kind(m)+'<'+m.iri()+'>')
+	}
+	
+	def QualifiedName qualifiedName(Bundle m) {
+		return qnc.toQualifiedName(m.kind.toString+' '+OMLExtensions.kind(m)+'<'+m.iri()+'>')
+	}
+	
+	def QualifiedName qualifiedName(TerminologyGraph m) {
+		return qnc.toQualifiedName(m.kind.toString+' '+OMLExtensions.kind(m)+'<'+m.iri()+'>')
 	}
 }
