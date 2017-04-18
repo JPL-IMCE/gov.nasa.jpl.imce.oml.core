@@ -56,10 +56,10 @@ class OMLFileTests extends OMLTest {
 		val topURL = OMLFileTests.getResource("/")
 		System.out.println("topURL="+topURL)
 		
-		val baseURL = OMLFileTests.getResource("/ModuleTests/base.oml")
+		val baseURL = OMLFileTests.getResource("/ModuleTests/imce.jpl.nasa.gov/foundation/base/base.oml")
 		System.out.println("baseURL="+baseURL)
 		
-		testFile("ModuleTests/base.oml")
+		testFile("ModuleTests/imce.jpl.nasa.gov/foundation/base/base.oml")
 	}
 	
 	@Test 
@@ -67,13 +67,10 @@ class OMLFileTests extends OMLTest {
 		val topURL = OMLFileTests.getResource("/")
 		System.out.println("topURL="+topURL)
 		
-		val missionURL = OMLFileTests.getResource("/ModuleTests/mission.oml")
+		val missionURL = OMLFileTests.getResource("/ModuleTests/imce.jpl.nasa.gov/foundation/mission/mission.oml")
 		System.out.println("missionURL="+missionURL)
 		
-		// need support for multi-file cross-references.
-		//testFile("ModuleTests/mission.oml", "ModuleTests/base.oml")
-		
-		testFile("ModuleTests/mission.oml")
+		testFile("ModuleTests/imce.jpl.nasa.gov/foundation/mission/mission.oml", "ModuleTests/imce.jpl.nasa.gov/foundation/base/base.oml")
 	}
 	
 	@Test 

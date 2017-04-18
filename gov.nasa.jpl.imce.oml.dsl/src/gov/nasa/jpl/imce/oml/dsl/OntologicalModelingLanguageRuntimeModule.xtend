@@ -31,6 +31,8 @@ import gov.nasa.jpl.imce.oml.dsl.util.OMLValueConverterService
 import gov.nasa.jpl.imce.oml.dsl.util.OMLQualifiedNameConverter
 import gov.nasa.jpl.imce.oml.dsl.util.OMLQualifiedNameProvider
 import gov.nasa.jpl.imce.oml.dsl.services.OntologicalModelingLanguageGrammarAccess
+import org.eclipse.xtext.serializer.tokens.ICrossReferenceSerializer
+import gov.nasa.jpl.imce.oml.dsl.serializer.OntologicalModelingLanguageCrossReferenceSerializer
 
 /**
  * Use this class to register components to be used at runtime / without the Equinox extension registry.
@@ -63,5 +65,9 @@ class OntologicalModelingLanguageRuntimeModule extends AbstractOntologicalModeli
 	
 	override def Class<? extends IFormatter2> bindIFormatter2() {
 		OntologicalModelingLanguageFormatter
+	}
+	
+	def Class<? extends ICrossReferenceSerializer> bindICrossReferenceSerializer() {
+		OntologicalModelingLanguageCrossReferenceSerializer
 	}
 }

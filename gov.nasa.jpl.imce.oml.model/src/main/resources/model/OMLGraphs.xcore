@@ -72,7 +72,14 @@ class ConceptDesignationTerminologyAxiom extends TerminologyBoxAxiom {
       case scala.Some(g: resolver.api.TerminologyGraph) => scala.Some(g)
       case _ => scala.None
     }")
-	op TerminologyGraph[?] designationTerminologyGraph() { null }
+	op TerminologyGraph[?] designationTerminologyGraph() { 
+		switch tbox {
+			TerminologyGraph:
+				TerminologyGraph.cast(tbox)
+			default:
+				null
+		}
+	}
 	 
 	refers TerminologyBox[1] designatedTerminology
 	
@@ -85,7 +92,7 @@ class ConceptDesignationTerminologyAxiom extends TerminologyBoxAxiom {
 	@ImplicitExtent
 	@NotSchema
 	@Override
-	op TerminologyBox[?] source() { null }
+	op TerminologyBox[?] source() { designationTerminologyGraph }
 	
 	/*
 	 * The TerminologyBox that asserts the designatedConcept is the target
@@ -127,7 +134,14 @@ class TerminologyNestingAxiom extends TerminologyBoxAxiom {
     }")
 	@NotSchema
 	@ImplicitExtent
-	op TerminologyGraph[?] nestedTerminology() { null }
+	op TerminologyGraph[?] nestedTerminology() { 
+		switch tbox {
+			TerminologyGraph:
+				TerminologyGraph.cast(tbox)
+			default:
+				null
+		}
+	 }
 
   	refers Concept[1] nestingContext
   	
@@ -138,7 +152,7 @@ class TerminologyNestingAxiom extends TerminologyBoxAxiom {
 	@ImplicitExtent
 	@NotSchema
 	@Override
-	op TerminologyBox[?] source() { null }
+	op TerminologyBox[?] source() { nestedTerminology }
 	
 	/*
 	 * The nestingTerminology is the target

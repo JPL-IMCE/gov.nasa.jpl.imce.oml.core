@@ -38,10 +38,13 @@ import gov.nasa.jpl.imce.oml.model.extensions.OMLExtensions
 import gov.nasa.jpl.imce.oml.model.common.Collection
 import gov.nasa.jpl.imce.oml.model.common.CopyConstructor
 import gov.nasa.jpl.imce.oml.model.common.DerivedUUID
+import gov.nasa.jpl.imce.oml.model.common.Element
 import gov.nasa.jpl.imce.oml.model.common.FunctionalInterface
 import gov.nasa.jpl.imce.oml.model.common.Glossary
 import gov.nasa.jpl.imce.oml.model.common.ImplicitExtent
+import gov.nasa.jpl.imce.oml.model.common.LocalName
 import gov.nasa.jpl.imce.oml.model.common.ModuleElement
+import gov.nasa.jpl.imce.oml.model.common.NamespaceUUID
 import gov.nasa.jpl.imce.oml.model.common.NotFunctionalAPI
 import gov.nasa.jpl.imce.oml.model.common.NotSchema
 import gov.nasa.jpl.imce.oml.model.common.Override
@@ -81,6 +84,7 @@ class Bundle extends TerminologyBox {
 @Glossary
 abstract class TerminologyBundleStatement extends ModuleElement {
 	
+	@CopyConstructor
 	container Bundle[1] bundle opposite bundleStatements
 }
 
@@ -101,10 +105,13 @@ abstract class TerminologyBundleAxiom extends TerminologyAxiom {
  * - Non-leaf nodes are AnonymousConceptTaxonomyAxioms.
  */
 @Glossary
-abstract class ConceptTreeDisjunction {
-
-	@FunctionalInterface
-	op UUID[1] uuid()
+abstract class ConceptTreeDisjunction extends Element {
+	
+	@Collection(kind="Set")
+	contains DisjointUnionOfConceptsAxiom[] disjunctions opposite disjointTaxonomyParent
+	
+	@NotSchema
+	op Bundle[1] bundleContainer()
 }
 
 /*
@@ -113,12 +120,19 @@ abstract class ConceptTreeDisjunction {
  * - Each leaf nodes is an OML SpecificDisjointConceptAxiom.
  */
 @Glossary
-abstract class DisjointUnionOfConceptsAxiom extends TerminologyBundleStatement {
+abstract class DisjointUnionOfConceptsAxiom extends Element {
 	
 	/*
 	 * The parent of this node in a disjoint concept taxonomy tree.
 	 */
-	refers ConceptTreeDisjunction[1] disjointTaxonomyParent
+	@CopyConstructor
+	container ConceptTreeDisjunction[1] disjointTaxonomyParent opposite disjunctions
+	
+	@Scala(code="extent.conceptTreeDisjunctionOfDisjointUnionOfConceptsAxiom.get(this)")
+	@ImplicitExtent
+	@NotSchema
+	op ConceptTreeDisjunction[?] conceptTreeDisjunctionParent() { disjointTaxonomyParent }
+	
 }
 
 /*
@@ -126,19 +140,19 @@ abstract class DisjointUnionOfConceptsAxiom extends TerminologyBundleStatement {
  */
 @Glossary
 @DerivedUUID
-class SpecificDisjointConceptAxiom extends DisjointUnionOfConceptsAxiom {
+class SpecificDisjointConceptAxiom extends DisjointUnionOfConceptsAxiom, Element {
 	
 	/*
 	 * A Concept that is a disjoint leaf in a taxonomy tree.
 	 */
-	 refers Concept[1] disjointLeaf
+	refers Concept[1] disjointLeaf
 	
-	@NotFunctionalAPI
-	@NotSchema
+	@FunctionalInterface
+	@OverrideVal
 	op UUID[1] uuid() {
 		OMLExtensions.derivedUUID(
 		"SpecificDisjointConceptAxiom",
-		"bundle" -> bundle.uuid().toString,
+		"disjointTaxonomyParent" -> disjointTaxonomyParent.uuid().toString,
 		"disjointLeaf" -> disjointLeaf.uuid().toString
 		).toString
 	}
@@ -148,17 +162,20 @@ class SpecificDisjointConceptAxiom extends DisjointUnionOfConceptsAxiom {
  * An OML AnonymousConceptTaxonomyAxiom is an anonymous taxonomy tree of DisjointUnionOfEntityAxioms.
  */
 @Glossary
-@DerivedUUID
-class AnonymousConceptTaxonomyAxiom extends DisjointUnionOfConceptsAxiom, ConceptTreeDisjunction {
+@NamespaceUUID(namespace="disjointTaxonomyParent", factors="name")
+class AnonymousConceptTaxonomyAxiom extends DisjointUnionOfConceptsAxiom, ConceptTreeDisjunction, Element {
+	
+	LocalName[1] name
 	
 	@FunctionalInterface
 	@OverrideVal
 	op UUID[1] uuid() {
-		OMLExtensions.derivedUUID(
-		"AnonymousConceptTaxonomyAxiom", 
-		"bundle" -> bundle.uuid().toString
-		).toString
+		OMLExtensions.namespaceUUID(disjointTaxonomyParent.uuid().toString, "name" -> name.toString).toString
 	}
+	
+	@NotSchema
+	@Override
+	op Bundle[1] bundleContainer() { disjointTaxonomyParent.bundleContainer() }
 }
 
 /*
@@ -183,6 +200,10 @@ class RootConceptTaxonomyAxiom extends TerminologyBundleStatement, ConceptTreeDi
 	 * The Concept that is at the root of a taxonomy of disjunctions.
 	 */
 	refers Concept[1] root
+	
+	@NotSchema
+	@Override
+	op Bundle[1] bundleContainer() { bundle }
 }
 
 /*
@@ -205,7 +226,7 @@ class BundledTerminologyAxiom extends TerminologyBundleAxiom {
 	@ImplicitExtent
 	@NotSchema
 	@Override
-	op TerminologyBox[?] source() { null }
+	op TerminologyBox[?] source() { bundle }
 	
 	/*
 	 * The bundledTerminology is the target

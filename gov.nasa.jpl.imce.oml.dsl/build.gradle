@@ -1,6 +1,8 @@
 dependencies {
 	compile project(':gov.nasa.jpl.imce.oml.model')
 	compile "org.eclipse.xtext:org.eclipse.xtext:${xtextVersion}"
+    compile 'com.fasterxml.uuid:java-uuid-generator:+'
+    compile 'xml-resolver:xml-resolver:1.2'
 }	
 
 configurations {

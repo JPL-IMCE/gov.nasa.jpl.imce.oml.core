@@ -19,6 +19,20 @@ package gov.nasa.jpl.imce.oml.dsl.ui.labeling
 import com.google.inject.Inject
 import org.eclipse.emf.edit.ui.provider.AdapterFactoryLabelProvider
 import org.eclipse.xtext.ui.label.DefaultEObjectLabelProvider
+import gov.nasa.jpl.imce.oml.model.common.AnnotationProperty
+import gov.nasa.jpl.imce.oml.model.terminologies.Term
+import gov.nasa.jpl.imce.oml.model.extensions.OMLExtensions
+import gov.nasa.jpl.imce.oml.model.common.ModuleEdge
+import gov.nasa.jpl.imce.oml.model.descriptions.DescriptionBox
+import gov.nasa.jpl.imce.oml.model.bundles.Bundle
+import gov.nasa.jpl.imce.oml.model.graphs.TerminologyGraph
+import gov.nasa.jpl.imce.oml.model.terminologies.EntityRestrictionAxiom
+import gov.nasa.jpl.imce.oml.model.terminologies.EntityScalarDataPropertyExistentialRestrictionAxiom
+import gov.nasa.jpl.imce.oml.model.terminologies.EntityScalarDataPropertyUniversalRestrictionAxiom
+import gov.nasa.jpl.imce.oml.model.terminologies.EntityScalarDataPropertyParticularRestrictionAxiom
+import gov.nasa.jpl.imce.oml.model.terminologies.ScalarOneOfLiteralAxiom
+import gov.nasa.jpl.imce.oml.model.terminologies.SpecializationAxiom
+import gov.nasa.jpl.imce.oml.model.descriptions.ConceptualEntitySingletonInstance
 
 /**
  * Provides labels for EObjects.
@@ -32,13 +46,60 @@ class OntologicalModelingLanguageLabelProvider extends DefaultEObjectLabelProvid
 		super(delegate);
 	}
 
-	// Labels and icons can be computed like this:
+	def text(AnnotationProperty e) {
+		'AnnotationProperty<'+e.iri+'>'
+	}
 	
-//	def text(Greeting ele) {
-//		'A greeting to ' + ele.name
-//	}
-//
-//	def image(Greeting ele) {
-//		'Greeting.gif'
-//	}
+	def text(Term e) {
+		OMLExtensions.kind(e)+'<'+e.iri()+'>'
+	}
+	
+	def text(ConceptualEntitySingletonInstance e) {
+		OMLExtensions.kind(e)+'<'+e.iri()+'>'
+	}
+	
+	def text(ModuleEdge e) {
+		OMLExtensions.kind(e)+'('+e.sourceModule().iri()+'->'+e.targetModule().iri()+')'
+	}
+	
+	def text(DescriptionBox m) {
+		m.kind.toString+' '+OMLExtensions.kind(m)+'<'+m.iri()+'>'
+	}
+	
+	def text(Bundle m) {
+		m.kind.toString+' '+OMLExtensions.kind(m)+'<'+m.iri()+'>'
+	}
+	
+	def text(TerminologyGraph m) {
+		m.kind.toString+' '+OMLExtensions.kind(m)+'<'+m.iri()+'>'
+	}
+	
+	def text(EntityRestrictionAxiom ax) {
+		OMLExtensions.kind(ax)+'('+ax.restrictedRelation.iri()+') : '+ax.restrictedDomain.iri() + ' -> '+ax.restrictedRange.iri()
+	}
+	
+	def text(EntityScalarDataPropertyExistentialRestrictionAxiom ax) {
+		OMLExtensions.kind(ax)+'('+ax.scalarProperty.iri()+') : '+ax.restrictedEntity.iri() + ' -> '+ax.scalarRestriction.iri()
+	}
+	
+	def text(EntityScalarDataPropertyUniversalRestrictionAxiom ax) {
+		OMLExtensions.kind(ax)+'('+ax.scalarProperty.iri()+') : '+ax.restrictedEntity.iri() + ' -> '+ax.scalarRestriction.iri()
+	}
+	
+	def text(EntityScalarDataPropertyParticularRestrictionAxiom ax) {
+		OMLExtensions.kind(ax)+'('+ax.scalarProperty.iri()+') : '+ax.restrictedEntity.iri() + ' -> '+ax.literalValue
+	}
+	
+	def text(ScalarOneOfLiteralAxiom ax) {
+		OMLExtensions.kind(ax)+'('+text(ax.axiom)+') : '+ax.value
+	}
+	
+	def text(SpecializationAxiom ax) {
+		OMLExtensions.kind(ax)+' '+ax.child().iri()+' <: '+ax.parent().iri()
+	}
+	
+	
+	
+	
+	
 }

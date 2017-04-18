@@ -20,16 +20,15 @@ package gov.nasa.jpl.imce.oml.dsl.scoping
 import com.google.common.base.Function
 import com.google.common.collect.Lists
 import com.google.inject.Inject
-import java.util.ArrayList
-import gov.nasa.jpl.imce.oml.model.common.Annotation
-import gov.nasa.jpl.imce.oml.model.terminologies.AspectSpecializationAxiom
 import gov.nasa.jpl.imce.oml.model.bundles.BundledTerminologyAxiom
-import gov.nasa.jpl.imce.oml.model.graphs.ConceptDesignationTerminologyAxiom
-import gov.nasa.jpl.imce.oml.model.terminologies.EntityRelationship
+import gov.nasa.jpl.imce.oml.model.common.Annotation
+import gov.nasa.jpl.imce.oml.model.common.Element
 import gov.nasa.jpl.imce.oml.model.common.Resource
+import gov.nasa.jpl.imce.oml.model.extensions.OMLExtensions
+import gov.nasa.jpl.imce.oml.model.graphs.ConceptDesignationTerminologyAxiom
 import gov.nasa.jpl.imce.oml.model.terminologies.TerminologyBox
 import gov.nasa.jpl.imce.oml.model.terminologies.TerminologyExtensionAxiom
-import gov.nasa.jpl.imce.oml.model.common.Element
+import java.util.ArrayList
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.xtext.naming.IQualifiedNameConverter
 import org.eclipse.xtext.naming.QualifiedName
@@ -37,7 +36,8 @@ import org.eclipse.xtext.resource.IEObjectDescription
 import org.eclipse.xtext.scoping.IScope
 import org.eclipse.xtext.scoping.Scopes
 import org.eclipse.xtext.scoping.impl.SimpleScope
-import gov.nasa.jpl.imce.oml.model.extensions.OMLExtensions
+import gov.nasa.jpl.imce.oml.model.bundles.Bundle
+import gov.nasa.jpl.imce.oml.model.common.Extent
 
 class OMLScopeExtensions {
 	
@@ -51,30 +51,28 @@ class OMLScopeExtensions {
 	 * in terms of the abbrevIRI of each AnnotationProperty in the TerminologyExtent.
 	 */
 	def scope_Annotation_property(Annotation annotation, EReference eRef) {
+		val exts = annotation.eResource.resourceSet.resources.map[contents.filter(Extent)].flatten
+		val annoationProperties = exts.map[annotationProperties].flatten
 		Scopes.scopeFor(
-			annotation.module.extent.annotationProperties,
+			annoationProperties,
 			[ qnc.toQualifiedName(it.abbrevIRI) ],
 			IScope.NULLSCOPE)	
 	}
 	
-	def scope_AspectSpecializationAxiom_subEntity(AspectSpecializationAxiom context) {
-		context.getTbox.allEntitiesScope
-	}
-	
-	def scope_AspectSpecializationAxiom_superAspect(AspectSpecializationAxiom context) {
-		context.getTbox.allAspectsScope
-	}
-	
 	def scope_BundledTerminologyAxiom_bundledTerminology(BundledTerminologyAxiom context) {
+		val exts = context.eResource.resourceSet.resources.map[contents.filter(Extent)].flatten
+		val tboxes = exts.map[terminologyGraphs + bundles].flatten
 		Scopes.scopeFor(
-			context.bundle.extent.terminologies,
+			tboxes,
 			[ qnc.toQualifiedName(it.nsPrefix) ],
 			IScope.NULLSCOPE)	
 	}
 	
 	def scope_ConceptDesignationTerminologyAxiom_designatedTerminology(ConceptDesignationTerminologyAxiom context) {
+		val exts = context.eResource.resourceSet.resources.map[contents.filter(Extent)].flatten
+		val tboxes = exts.map[terminologyGraphs + bundles].flatten
 		Scopes.scopeFor(
-			context.getTbox.extent.terminologies,
+			tboxes,
 			[ qnc.toQualifiedName(it.nsPrefix) ],
 			IScope.NULLSCOPE)	
 	}
@@ -83,19 +81,14 @@ class OMLScopeExtensions {
 		context.designatedTerminology.allConceptsScope
 	}
 	
-	def scope_EntityRelationship(EntityRelationship context) {
-		context.getTbox.allEntitiesScope
-	}
-	
-	
 	/*
 	 * The syntax of TerminologyExtensionAxioms involves "extends <extended terminology prefix>".
 	 * Therefore, construct the resolvable scope of TerminologyBoxes
 	 * in terms of the nsPrefix of each TerminologyBox in the TerminologyExtent.
 	 */
 	def scope_TerminologyExtensionAxiom_extendedTerminology(TerminologyExtensionAxiom context, EReference eRef) {
-		val ext = context.getTbox.extent
-		val tboxes = ext.terminologyGraphs + ext.bundles
+		val exts = context.eResource.resourceSet.resources.map[contents.filter(Extent)].flatten
+		val tboxes = exts.map[terminologyGraphs + bundles].flatten
 		Scopes.scopeFor(
 			tboxes,
 			[qnc.toQualifiedName(it.nsPrefix) ], 
@@ -127,8 +120,20 @@ class OMLScopeExtensions {
 		qnc.toQualifiedName(p.key.nsPrefix + ":" + p.value.name())
 	}
 	
+	def <T extends Resource> QualifiedName importedBundleNameFunction(Pair<Bundle, T> p) {
+		qnc.toQualifiedName(p.key.nsPrefix + ":" + p.value.name())
+	}
+	
 	def IScope allEntitiesScope(TerminologyBox tbox) {
 		terminologyScope(tbox, [localEntities], [importedResourceNameFunction])
+	}
+	
+	def IScope allRangesScope(TerminologyBox tbox) {
+		terminologyScope(tbox, [localRanges], [importedResourceNameFunction])
+	}
+	
+	def IScope allStructuresScope(TerminologyBox tbox) {
+		terminologyScope(tbox, [localStructures], [importedResourceNameFunction])
 	}
 	
 	def IScope allAspectsScope(TerminologyBox tbox) {
@@ -141,6 +146,34 @@ class OMLScopeExtensions {
 	
 	def IScope allReifiedRelationshipsScope(TerminologyBox tbox) {
 		terminologyScope(tbox, [localReifiedRelationships], [importedResourceNameFunction])
+	}
+	
+	def IScope allEntityRelationshipsScope(TerminologyBox tbox) {
+		terminologyScope(tbox, [localEntityRelationships], [importedResourceNameFunction])
+	}
+	
+	def IScope allEntityScalarDataPropertiesScope(TerminologyBox tbox) {
+		terminologyScope(tbox, [localEntityScalarDataProperties], [importedResourceNameFunction])
+	}
+	
+	def IScope allScalarOneOfRestrictionsScope(TerminologyBox tbox) {
+		terminologyScope(tbox, [localScalarOneOfRestrictions], [importedResourceNameFunction])
+	}
+	
+	def <T extends Element> IScope bundleScope(
+		Bundle bundle,
+		Function<Bundle, Iterable<T>> localScopeFunction,
+		Function<Pair<Bundle, T>, QualifiedName> nameFunction
+	) {
+		val ArrayList<IEObjectDescription> result = Lists.newArrayList()
+		result.addAll(Scopes.scopedElementsFor(localScopeFunction.apply(bundle)))
+		result.addAll(bundle.allImportedBundles.map[importedTbox|
+			Scopes.scopedElementsFor(
+				localScopeFunction.apply(importedTbox), 
+				[importedThing| nameFunction.apply(Pair.of(importedTbox, importedThing)) ]
+			)
+		].flatten)
+		new SimpleScope(result)
 	}
 	
 }

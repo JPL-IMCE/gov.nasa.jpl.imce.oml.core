@@ -35,6 +35,8 @@ class OMLValueConverterService extends DefaultTerminalConverters {
 
 	@Inject OMLIRIValueConverter iriValueConverter;
 
+	@Inject OMLExternalReferenceValueConverter externalReferenceValueConverter;
+	
 	@Inject OMLSL_COMMENTValueConverter sl_CommentValueConverter;
 
 	@Inject KeywordAlternativeConverter validIDValueConverter;
@@ -61,6 +63,11 @@ class OMLValueConverterService extends DefaultTerminalConverters {
 		iriValueConverter;
 	}
 
+	@ValueConverter(rule="ExternalReference")
+	def IValueConverter<String> ExternalReference() {
+		externalReferenceValueConverter;
+	}
+	
 	@ValueConverter(rule="SL_COMMENT")
 	def IValueConverter<String> SL_COMMENT() {
 		sl_CommentValueConverter;

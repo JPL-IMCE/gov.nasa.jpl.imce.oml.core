@@ -20,75 +20,150 @@
 
 import com.fasterxml.uuid.Generators
 import com.fasterxml.uuid.impl.NameBasedGenerator
-
 import com.google.common.collect.Lists
-import gov.nasa.jpl.imce.oml.model.common.Extent
+import gov.nasa.jpl.imce.oml.model.bundles.AnonymousConceptTaxonomyAxiom
 import gov.nasa.jpl.imce.oml.model.bundles.Bundle
-import gov.nasa.jpl.imce.oml.model.graphs.TerminologyGraph
-import gov.nasa.jpl.imce.oml.model.terminologies.Aspect
-import gov.nasa.jpl.imce.oml.model.terminologies.Concept
-import gov.nasa.jpl.imce.oml.model.terminologies.Entity
-import gov.nasa.jpl.imce.oml.model.terminologies.ReifiedRelationship
-import gov.nasa.jpl.imce.oml.model.terminologies.SpecializationAxiom
-import gov.nasa.jpl.imce.oml.model.terminologies.TerminologyBox
-import gov.nasa.jpl.imce.oml.model.terminologies.TerminologyExtensionAxiom
-import org.eclipse.emf.ecore.util.EcoreUtil
-import java.util.ArrayList
-import java.util.UUID
+import gov.nasa.jpl.imce.oml.model.bundles.BundledTerminologyAxiom
+import gov.nasa.jpl.imce.oml.model.bundles.RootConceptTaxonomyAxiom
+import gov.nasa.jpl.imce.oml.model.bundles.SpecificDisjointConceptAxiom
 import gov.nasa.jpl.imce.oml.model.common.Element
+import gov.nasa.jpl.imce.oml.model.common.Extent
+import gov.nasa.jpl.imce.oml.model.descriptions.ConceptInstance
+import gov.nasa.jpl.imce.oml.model.descriptions.DataStructureTuple
 import gov.nasa.jpl.imce.oml.model.descriptions.DescriptionBox
 import gov.nasa.jpl.imce.oml.model.descriptions.DescriptionBoxExtendsClosedWorldDefinitions
 import gov.nasa.jpl.imce.oml.model.descriptions.DescriptionBoxRefinement
-import gov.nasa.jpl.imce.oml.model.graphs.ConceptDesignationTerminologyAxiom
-import gov.nasa.jpl.imce.oml.model.graphs.TerminologyNestingAxiom
-import gov.nasa.jpl.imce.oml.model.bundles.BundledTerminologyAxiom
-import gov.nasa.jpl.imce.oml.model.terminologies.EntityExistentialRestrictionAxiom
-import gov.nasa.jpl.imce.oml.model.terminologies.EntityUniversalRestrictionAxiom
-import gov.nasa.jpl.imce.oml.model.terminologies.EntityScalarDataPropertyExistentialRestrictionAxiom
-import gov.nasa.jpl.imce.oml.model.terminologies.EntityScalarDataPropertyParticularRestrictionAxiom
-import gov.nasa.jpl.imce.oml.model.terminologies.EntityScalarDataPropertyUniversalRestrictionAxiom
-import gov.nasa.jpl.imce.oml.model.terminologies.ScalarOneOfLiteralAxiom
-import gov.nasa.jpl.imce.oml.model.terminologies.AspectSpecializationAxiom
-import gov.nasa.jpl.imce.oml.model.terminologies.ConceptSpecializationAxiom
-import gov.nasa.jpl.imce.oml.model.terminologies.ReifiedRelationshipSpecializationAxiom
-import gov.nasa.jpl.imce.oml.model.bundles.AnonymousConceptTaxonomyAxiom
-import gov.nasa.jpl.imce.oml.model.bundles.SpecificDisjointConceptAxiom
-import gov.nasa.jpl.imce.oml.model.bundles.RootConceptTaxonomyAxiom
+import gov.nasa.jpl.imce.oml.model.descriptions.ReifiedRelationshipInstance
 import gov.nasa.jpl.imce.oml.model.descriptions.ReifiedRelationshipInstanceDomain
 import gov.nasa.jpl.imce.oml.model.descriptions.ReifiedRelationshipInstanceRange
 import gov.nasa.jpl.imce.oml.model.descriptions.ScalarDataPropertyValue
-import gov.nasa.jpl.imce.oml.model.descriptions.ConceptInstance
-import gov.nasa.jpl.imce.oml.model.descriptions.ReifiedRelationshipInstance
-import gov.nasa.jpl.imce.oml.model.descriptions.DataStructureTuple
 import gov.nasa.jpl.imce.oml.model.descriptions.StructuredDataPropertyValue
 import gov.nasa.jpl.imce.oml.model.descriptions.UnreifiedRelationshipInstanceTuple
-import gov.nasa.jpl.imce.oml.model.terminologies.EntityScalarDataProperty
-import gov.nasa.jpl.imce.oml.model.terminologies.EntityStructuredDataProperty
-import gov.nasa.jpl.imce.oml.model.terminologies.ScalarDataProperty
-import gov.nasa.jpl.imce.oml.model.terminologies.StructuredDataProperty
+import gov.nasa.jpl.imce.oml.model.graphs.ConceptDesignationTerminologyAxiom
+import gov.nasa.jpl.imce.oml.model.graphs.TerminologyGraph
+import gov.nasa.jpl.imce.oml.model.graphs.TerminologyNestingAxiom
+import gov.nasa.jpl.imce.oml.model.terminologies.Aspect
+import gov.nasa.jpl.imce.oml.model.terminologies.AspectSpecializationAxiom
 import gov.nasa.jpl.imce.oml.model.terminologies.BinaryScalarRestriction
+import gov.nasa.jpl.imce.oml.model.terminologies.Concept
+import gov.nasa.jpl.imce.oml.model.terminologies.ConceptSpecializationAxiom
+import gov.nasa.jpl.imce.oml.model.terminologies.DataRange
+import gov.nasa.jpl.imce.oml.model.terminologies.Entity
+import gov.nasa.jpl.imce.oml.model.terminologies.EntityExistentialRestrictionAxiom
+import gov.nasa.jpl.imce.oml.model.terminologies.EntityRelationship
+import gov.nasa.jpl.imce.oml.model.terminologies.EntityScalarDataProperty
+import gov.nasa.jpl.imce.oml.model.terminologies.EntityScalarDataPropertyExistentialRestrictionAxiom
+import gov.nasa.jpl.imce.oml.model.terminologies.EntityScalarDataPropertyParticularRestrictionAxiom
+import gov.nasa.jpl.imce.oml.model.terminologies.EntityScalarDataPropertyUniversalRestrictionAxiom
+import gov.nasa.jpl.imce.oml.model.terminologies.EntityStructuredDataProperty
+import gov.nasa.jpl.imce.oml.model.terminologies.EntityUniversalRestrictionAxiom
 import gov.nasa.jpl.imce.oml.model.terminologies.IRIScalarRestriction
 import gov.nasa.jpl.imce.oml.model.terminologies.NumericScalarRestriction
 import gov.nasa.jpl.imce.oml.model.terminologies.PlainLiteralScalarRestriction
-import gov.nasa.jpl.imce.oml.model.terminologies.ScalarOneOfRestriction
-import gov.nasa.jpl.imce.oml.model.terminologies.StringScalarRestriction
-import gov.nasa.jpl.imce.oml.model.terminologies.SynonymScalarRestriction
-import gov.nasa.jpl.imce.oml.model.terminologies.TimeScalarRestriction
+import gov.nasa.jpl.imce.oml.model.terminologies.ReifiedRelationship
+import gov.nasa.jpl.imce.oml.model.terminologies.ReifiedRelationshipSpecializationAxiom
 import gov.nasa.jpl.imce.oml.model.terminologies.Scalar
+import gov.nasa.jpl.imce.oml.model.terminologies.ScalarDataProperty
+import gov.nasa.jpl.imce.oml.model.terminologies.ScalarOneOfLiteralAxiom
+import gov.nasa.jpl.imce.oml.model.terminologies.ScalarOneOfRestriction
+import gov.nasa.jpl.imce.oml.model.terminologies.SpecializationAxiom
+import gov.nasa.jpl.imce.oml.model.terminologies.StringScalarRestriction
 import gov.nasa.jpl.imce.oml.model.terminologies.Structure
+import gov.nasa.jpl.imce.oml.model.terminologies.StructuredDataProperty
+import gov.nasa.jpl.imce.oml.model.terminologies.SynonymScalarRestriction
+import gov.nasa.jpl.imce.oml.model.terminologies.TerminologyBox
+import gov.nasa.jpl.imce.oml.model.terminologies.TerminologyExtensionAxiom
+import gov.nasa.jpl.imce.oml.model.terminologies.TimeScalarRestriction
 import gov.nasa.jpl.imce.oml.model.terminologies.UnreifiedRelationship
+import java.io.IOException
+import java.net.URL
+import java.util.ArrayList
+import java.util.UUID
+import org.apache.xml.resolver.Catalog
+import org.apache.xml.resolver.CatalogManager
+import org.apache.xml.resolver.tools.CatalogResolver
+import org.eclipse.emf.common.CommonPlugin
+import org.eclipse.emf.common.util.URI
+import org.eclipse.emf.ecore.resource.Resource
+import org.eclipse.emf.ecore.resource.ResourceSet
+import org.eclipse.emf.ecore.util.EcoreUtil
 
 class OMLExtensions {
 	
+	static val String RESOURCE_SET_CATALOG_MANAGER = "RESOURCE_SET_CATALOG_MANAGER"
+	static val String RESOURCE_SET_CATALOG_RESOLVER = "RESOURCE_SET_CATALOG_RESOLVER"
+	static val String RESOURCE_SET_CATALOG_INSTANCE = "RESOURCE_SET_CATALOG_INSTANCE"
+	
+	static def CatalogManager getOrCreateCatalogManager(ResourceSet rs) {
+		val cm = rs.loadOptions.getOrDefault(RESOURCE_SET_CATALOG_MANAGER, new CatalogManager())
+		if (CatalogManager.isInstance(cm)) {
+			rs.loadOptions.putIfAbsent(RESOURCE_SET_CATALOG_MANAGER, cm)
+			return CatalogManager.cast(cm)
+		} else {
+			return null
+		}
+	}
+	
+	static def CatalogResolver getOrCreateCatalogResolver(ResourceSet rs) {
+		val cr = rs.loadOptions.getOrDefault(RESOURCE_SET_CATALOG_RESOLVER, new CatalogResolver(getOrCreateCatalogManager(rs)))
+		if (CatalogResolver.isInstance(cr)) {
+			rs.loadOptions.putIfAbsent(RESOURCE_SET_CATALOG_RESOLVER, cr)
+			return CatalogResolver.cast(cr)
+		} else {
+			return null
+		}
+	}
+	
+	static def Catalog getCatalog(ResourceSet rs) {
+		val c = rs.loadOptions.getOrDefault(RESOURCE_SET_CATALOG_INSTANCE, getOrCreateCatalogResolver(rs).catalog)
+		if (Catalog.isInstance(c)) {
+			rs.loadOptions.putIfAbsent(RESOURCE_SET_CATALOG_INSTANCE, c)
+			return Catalog.cast(c)
+		} else {
+			return null
+		}
+	}
+	
+	static def Catalog findCatalogIfExists(Resource r) {
+		val rs = r.resourceSet
+		val uri = rs.URIConverter.normalize(r.URI)
+		val ruri = CommonPlugin.resolve(uri)
+		val luri = CommonPlugin.asLocalURI(ruri)
+		findCatalogIfExists(rs, luri.trimSegments(1))
+	}
+	
+	static def Catalog findCatalogIfExists(ResourceSet rs, URI path) {
+		val c = rs.catalog
+		var current = path
+		while (current.segmentCount > 0) {
+			try {
+				System.out.println("# Searching for OML catalog in: " + current)
+				val omlC = current.appendSegment("oml.catalog.xml")
+				val omlURL = new URL(omlC.toString)
+				
+				// check the catalog file can be opened.
+				val omlS = omlURL.openStream
+				omlS.close
+				
+				c.parseCatalog(new URL(omlC.toString))
+				System.out.println("# Found catalog: " + omlC)
+				return c
+			} catch (IOException ex) {
+				current = current.trimSegments(1)
+			}
+		}
+		return null
+	}
+	
   	static def UUID namespaceUUID(String namespace) {
-  		namespaceUUID(namespace, new java.util.ArrayList<Pair<String,String>>())
+  		namespaceUUID(namespace, new ArrayList<Pair<String,String>>())
   	}
 	
   	static def UUID namespaceUUID(
   		String namespace, 
   		Pair<String,String> factor1
   	) {
-  		val factors = new java.util.ArrayList<Pair<String,String>>()
+  		val factors = new ArrayList<Pair<String,String>>()
   		factors.add(factor1)
   		namespaceUUID(namespace, factors)
   	}
@@ -98,7 +173,7 @@ class OMLExtensions {
   		Pair<String,String> factor1,
   		Pair<String,String> factor2
   	) {
-  		val factors = new java.util.ArrayList<Pair<String,String>>()
+  		val factors = new ArrayList<Pair<String,String>>()
   		factors.add(factor1)
   		factors.add(factor2)
   		namespaceUUID(namespace, factors)
@@ -110,14 +185,14 @@ class OMLExtensions {
   	}
 
   	static def UUID derivedUUID(String context) {
-  		derivedUUID(context, new java.util.ArrayList<Pair<String,String>>())
+  		derivedUUID(context, new ArrayList<Pair<String,String>>())
   	}
   	
   	static def UUID derivedUUID(
   		String context, 
   		Pair<String,String> factor1
   	) {
-  		val factors = new java.util.ArrayList<Pair<String,String>>()
+  		val factors = new ArrayList<Pair<String,String>>()
   		factors.add(factor1)
   		derivedUUID(context, factors)
   	}
@@ -127,7 +202,7 @@ class OMLExtensions {
   		Pair<String,String> factor1,
   		Pair<String,String> factor2
   	) {
-  		val factors = new java.util.ArrayList<Pair<String,String>>()
+  		val factors = new ArrayList<Pair<String,String>>()
   		factors.add(factor1)
   		factors.add(factor2)
   		derivedUUID(context, factors)
@@ -139,7 +214,7 @@ class OMLExtensions {
   		Pair<String,String> factor2,
   		Pair<String,String> factor3
   	) {
-  		val factors = new java.util.ArrayList<Pair<String,String>>()
+  		val factors = new ArrayList<Pair<String,String>>()
   		factors.add(factor1)
   		factors.add(factor2)
   		factors.add(factor3)
@@ -153,7 +228,7 @@ class OMLExtensions {
   		Pair<String,String> factor3,
   		Pair<String,String> factor4
   	) {
-  		val factors = new java.util.ArrayList<Pair<String,String>>()
+  		val factors = new ArrayList<Pair<String,String>>()
   		factors.add(factor1)
   		factors.add(factor2)
   		factors.add(factor3)
@@ -169,7 +244,7 @@ class OMLExtensions {
   		Pair<String,String> factor4,
   		Pair<String,String> factor5
   	) {
-  		val factors = new java.util.ArrayList<Pair<String,String>>()
+  		val factors = new ArrayList<Pair<String,String>>()
   		factors.add(factor1)
   		factors.add(factor2)
   		factors.add(factor3)
@@ -264,6 +339,59 @@ class OMLExtensions {
 	
 	def Iterable<ReifiedRelationship> allReifiedRelationships(TerminologyBox it) {
 		localReifiedRelationships + allImportedTerminologies(it).map[localReifiedRelationships].flatten
+	}
+	
+	def Iterable<EntityRelationship> localEntityRelationships(TerminologyBox it) {
+		boxStatements.filter(EntityRelationship)
+	}
+	
+	def Iterable<EntityRelationship> allEntityRelationships(TerminologyBox it) {
+		localEntityRelationships + allImportedTerminologies(it).map[localEntityRelationships].flatten
+	}
+	
+	def Iterable<DataRange> localRanges(TerminologyBox it) {
+		boxStatements.filter(DataRange)
+	}
+	
+	def Iterable<Structure> localStructures(TerminologyBox it) {
+		boxStatements.filter(Structure)
+	}
+	
+	def Iterable<EntityScalarDataProperty> localEntityScalarDataProperties(TerminologyBox it) {
+		boxStatements.filter(EntityScalarDataProperty)
+	}
+	
+	def Iterable<ScalarOneOfRestriction> localScalarOneOfRestrictions(TerminologyBox it) {
+		boxStatements.filter(ScalarOneOfRestriction)
+	}
+	
+	def Iterable<Bundle> allImportedBundles(Bundle it) {
+		collectAllImportedBundles(Lists.newArrayList(it), Lists.newArrayList())
+	}
+	
+	final def Iterable<Bundle> collectAllImportedBundles(
+		ArrayList<Bundle> queue, 
+		ArrayList<Bundle> acc
+	) {
+		if (queue.isEmpty)
+			return acc
+		
+		val bundle = queue.head
+		queue.remove(bundle)
+		
+		val inc = bundle.bundleAxioms.map[target].filter(Bundle)
+		queue.addAll(inc)
+		acc.addAll(inc)
+		
+		collectAllImportedBundles(queue, acc)
+	}
+	
+	def Iterable<AnonymousConceptTaxonomyAxiom> localAnonymousConceptTaxonomyAxioms(Bundle it) {
+		bundleStatements.filter(AnonymousConceptTaxonomyAxiom)	
+	}
+	
+	def Iterable<RootConceptTaxonomyAxiom> localRootConceptTaxonomyAxioms(Bundle it) {
+		bundleStatements.filter(RootConceptTaxonomyAxiom)	
 	}
 	
 	static def String kind(Element e) {
@@ -363,7 +491,7 @@ class OMLExtensions {
 			case UnreifiedRelationship:
 				'UnreifiedRelationship'
 			default:
-				'Other'
+				e.eClass.name
 		}
 	}
 }

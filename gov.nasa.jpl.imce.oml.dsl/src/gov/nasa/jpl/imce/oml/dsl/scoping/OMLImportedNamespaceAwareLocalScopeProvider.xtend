@@ -18,44 +18,43 @@
 package gov.nasa.jpl.imce.oml.dsl.scoping
 
 import com.google.inject.Inject
+import gov.nasa.jpl.imce.oml.dsl.util.OMLImportNormalizer
+import gov.nasa.jpl.imce.oml.model.bundles.BundledTerminologyAxiom
+import gov.nasa.jpl.imce.oml.model.bundles.BundlesPackage
+import gov.nasa.jpl.imce.oml.model.bundles.DisjointUnionOfConceptsAxiom
+import gov.nasa.jpl.imce.oml.model.bundles.RootConceptTaxonomyAxiom
+import gov.nasa.jpl.imce.oml.model.bundles.SpecificDisjointConceptAxiom
+import gov.nasa.jpl.imce.oml.model.common.Annotation
+import gov.nasa.jpl.imce.oml.model.common.CommonPackage
+import gov.nasa.jpl.imce.oml.model.common.Extent
+import gov.nasa.jpl.imce.oml.model.graphs.ConceptDesignationTerminologyAxiom
+import gov.nasa.jpl.imce.oml.model.graphs.GraphsPackage
+import gov.nasa.jpl.imce.oml.model.graphs.TerminologyNestingAxiom
+import gov.nasa.jpl.imce.oml.model.terminologies.AspectSpecializationAxiom
+import gov.nasa.jpl.imce.oml.model.terminologies.ConceptSpecializationAxiom
+import gov.nasa.jpl.imce.oml.model.terminologies.EntityRelationship
+import gov.nasa.jpl.imce.oml.model.terminologies.EntityRestrictionAxiom
+import gov.nasa.jpl.imce.oml.model.terminologies.EntityScalarDataProperty
+import gov.nasa.jpl.imce.oml.model.terminologies.EntityScalarDataPropertyExistentialRestrictionAxiom
+import gov.nasa.jpl.imce.oml.model.terminologies.EntityScalarDataPropertyRestrictionAxiom
+import gov.nasa.jpl.imce.oml.model.terminologies.EntityScalarDataPropertyUniversalRestrictionAxiom
+import gov.nasa.jpl.imce.oml.model.terminologies.EntityStructuredDataProperty
+import gov.nasa.jpl.imce.oml.model.terminologies.ReifiedRelationshipSpecializationAxiom
+import gov.nasa.jpl.imce.oml.model.terminologies.RestrictedDataRange
+import gov.nasa.jpl.imce.oml.model.terminologies.ScalarDataProperty
+import gov.nasa.jpl.imce.oml.model.terminologies.ScalarOneOfLiteralAxiom
+import gov.nasa.jpl.imce.oml.model.terminologies.StructuredDataProperty
+import gov.nasa.jpl.imce.oml.model.terminologies.TerminologiesPackage
+import gov.nasa.jpl.imce.oml.model.terminologies.TerminologyBox
+import gov.nasa.jpl.imce.oml.model.terminologies.TerminologyExtensionAxiom
 import java.util.ArrayList
 import java.util.List
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.xtext.naming.IQualifiedNameConverter
+import org.eclipse.xtext.scoping.IScope
 import org.eclipse.xtext.scoping.impl.ImportNormalizer
 import org.eclipse.xtext.scoping.impl.ImportedNamespaceAwareLocalScopeProvider
-
-import gov.nasa.jpl.imce.oml.model.terminologies.TerminologyBox
-import gov.nasa.jpl.imce.oml.model.common.Extent
-import org.eclipse.xtext.scoping.IScope
-import gov.nasa.jpl.imce.oml.model.common.Annotation
-import gov.nasa.jpl.imce.oml.model.terminologies.AspectSpecializationAxiom
-import gov.nasa.jpl.imce.oml.model.bundles.BundledTerminologyAxiom
-import gov.nasa.jpl.imce.oml.model.graphs.ConceptDesignationTerminologyAxiom
-import gov.nasa.jpl.imce.oml.model.terminologies.ConceptSpecializationAxiom
-import gov.nasa.jpl.imce.oml.model.terminologies.DataRelationshipFromEntity
-import gov.nasa.jpl.imce.oml.model.terminologies.DataRelationshipFromStructure
-import gov.nasa.jpl.imce.oml.model.terminologies.DataRelationshipToScalar
-import gov.nasa.jpl.imce.oml.model.terminologies.DataRelationshipToStructure
-import gov.nasa.jpl.imce.oml.model.bundles.DisjointUnionOfConceptsAxiom
-import gov.nasa.jpl.imce.oml.model.terminologies.EntityRelationship
-import gov.nasa.jpl.imce.oml.model.terminologies.EntityRestrictionAxiom
-import gov.nasa.jpl.imce.oml.model.terminologies.EntityScalarDataPropertyRestrictionAxiom
-import gov.nasa.jpl.imce.oml.model.terminologies.EntityScalarDataPropertyExistentialRestrictionAxiom
-import gov.nasa.jpl.imce.oml.model.terminologies.EntityScalarDataPropertyUniversalRestrictionAxiom
-import gov.nasa.jpl.imce.oml.model.terminologies.ReifiedRelationshipSpecializationAxiom
-import gov.nasa.jpl.imce.oml.model.terminologies.RestrictedDataRange
-import gov.nasa.jpl.imce.oml.model.bundles.RootConceptTaxonomyAxiom
-import gov.nasa.jpl.imce.oml.model.terminologies.ScalarOneOfLiteralAxiom
-import gov.nasa.jpl.imce.oml.model.bundles.SpecificDisjointConceptAxiom
-import gov.nasa.jpl.imce.oml.model.terminologies.TerminologyExtensionAxiom
-import gov.nasa.jpl.imce.oml.model.graphs.TerminologyNestingAxiom
-import gov.nasa.jpl.imce.oml.model.common.CommonPackage
-import gov.nasa.jpl.imce.oml.model.terminologies.TerminologiesPackage
-import gov.nasa.jpl.imce.oml.model.bundles.BundlesPackage
-import gov.nasa.jpl.imce.oml.model.graphs.GraphsPackage
-import gov.nasa.jpl.imce.oml.dsl.util.OMLImportNormalizer
 
 class OMLImportedNamespaceAwareLocalScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 	
@@ -94,45 +93,88 @@ class OMLImportedNamespaceAwareLocalScopeProvider extends ImportedNamespaceAware
 			EntityRelationship:
 				if (reference == TerminologiesPackage.eINSTANCE.entityRelationship_Source ||
 					reference == TerminologiesPackage.eINSTANCE.entityRelationship_Target)
-					scope = scope_EntityRelationship(context)
+					scope = context.tbox.allEntitiesScope
 					
 			AspectSpecializationAxiom:
 				if (reference == TerminologiesPackage.eINSTANCE.aspectSpecializationAxiom_SubEntity)
-					scope = scope_AspectSpecializationAxiom_subEntity(context)
+					scope = context.tbox.allEntitiesScope
 				else if (reference == TerminologiesPackage.eINSTANCE.aspectSpecializationAxiom_SuperAspect)
-					scope = scope_AspectSpecializationAxiom_superAspect(context)
+					scope = context.getTbox.allAspectsScope
+					
 			ConceptSpecializationAxiom:
-				{}
+				if (reference == TerminologiesPackage.eINSTANCE.conceptSpecializationAxiom_SubConcept)
+					scope = context.tbox.allConceptsScope
+				else if (reference == TerminologiesPackage.eINSTANCE.conceptSpecializationAxiom_SuperConcept)
+					scope = context.tbox.allConceptsScope
+					
 			ReifiedRelationshipSpecializationAxiom:
-				{}
+				if (reference == TerminologiesPackage.eINSTANCE.reifiedRelationshipSpecializationAxiom_SubRelationship)
+					scope = context.tbox.allReifiedRelationshipsScope
+				else if (reference == TerminologiesPackage.eINSTANCE.reifiedRelationshipSpecializationAxiom_SuperRelationship)
+					scope = context.tbox.allReifiedRelationshipsScope
+					
 			RestrictedDataRange:
-				{}
+				if (reference == TerminologiesPackage.eINSTANCE.restrictedDataRange_RestrictedRange)
+					scope = context.tbox.allRangesScope
 				
-			DataRelationshipFromEntity:
-				{}
-			DataRelationshipFromStructure:
-				{}
-			DataRelationshipToScalar:
-				{}
-			DataRelationshipToStructure:
-				{}
+			EntityScalarDataProperty:
+				if (reference == TerminologiesPackage.eINSTANCE.dataRelationshipFromEntity_Domain)
+					scope = context.tbox.allEntitiesScope
+				else if (reference == TerminologiesPackage.eINSTANCE.dataRelationshipToScalar_Range)
+					scope = context.tbox.allRangesScope
+					
+			EntityStructuredDataProperty:
+				if (reference == TerminologiesPackage.eINSTANCE.dataRelationshipFromEntity_Domain)
+					scope = context.tbox.allEntitiesScope
+				else if (reference == TerminologiesPackage.eINSTANCE.dataRelationshipToStructure_Range)
+					scope = context.tbox.allStructuresScope
+					
+			ScalarDataProperty:
+				if (reference == TerminologiesPackage.eINSTANCE.dataRelationshipFromStructure_Domain)
+					scope = context.tbox.allStructuresScope
+				else if (reference == TerminologiesPackage.eINSTANCE.dataRelationshipToScalar_Range)
+					scope = context.tbox.allRangesScope
+				
+			StructuredDataProperty:
+				if (reference == TerminologiesPackage.eINSTANCE.dataRelationshipFromStructure_Domain)
+					scope = context.tbox.allStructuresScope
+				else if (reference == TerminologiesPackage.eINSTANCE.dataRelationshipToStructure_Range)
+					scope = context.tbox.allStructuresScope
 				
 			EntityRestrictionAxiom:
-				{}
+				if (reference == TerminologiesPackage.eINSTANCE.entityRestrictionAxiom_RestrictedRelation)
+					scope = context.tbox.allEntityRelationshipsScope
+				else if (reference == TerminologiesPackage.eINSTANCE.entityRestrictionAxiom_RestrictedDomain)
+					scope = context.tbox.allEntitiesScope
+				else if (reference == TerminologiesPackage.eINSTANCE.entityRestrictionAxiom_RestrictedRange)
+					scope = context.tbox.allEntitiesScope
+				
 			EntityScalarDataPropertyExistentialRestrictionAxiom:
-				{}
+				if (reference == TerminologiesPackage.eINSTANCE.entityScalarDataPropertyExistentialRestrictionAxiom_ScalarRestriction)
+					scope = context.tbox.allRangesScope
+				
 			EntityScalarDataPropertyUniversalRestrictionAxiom:
-				{}
+				if (reference == TerminologiesPackage.eINSTANCE.entityScalarDataPropertyUniversalRestrictionAxiom_ScalarRestriction)
+					scope = context.tbox.allRangesScope
+				
 			EntityScalarDataPropertyRestrictionAxiom:
-				{}
+				if (reference == TerminologiesPackage.eINSTANCE.entityScalarDataPropertyRestrictionAxiom_RestrictedEntity)
+					scope = context.tbox.allEntitiesScope
+				else if (reference == TerminologiesPackage.eINSTANCE.entityScalarDataPropertyRestrictionAxiom_ScalarProperty)
+					scope = context.tbox.allEntityScalarDataPropertiesScope
 				
 			ScalarOneOfLiteralAxiom:
-				{}
+				if (reference == TerminologiesPackage.eINSTANCE.scalarOneOfLiteralAxiom_Axiom)
+					scope = context.tbox.allScalarOneOfRestrictionsScope
 				
 			RootConceptTaxonomyAxiom:
-				{}
+				if (reference == BundlesPackage.eINSTANCE.rootConceptTaxonomyAxiom_Root)
+					scope = context.bundle.allConceptsScope
+					
 			SpecificDisjointConceptAxiom:
-				{}
+				if (reference == BundlesPackage.eINSTANCE.specificDisjointConceptAxiom_DisjointLeaf)
+					scope = context.disjointTaxonomyParent.bundleContainer().allConceptsScope
+				
 			DisjointUnionOfConceptsAxiom:
 				{}
 				

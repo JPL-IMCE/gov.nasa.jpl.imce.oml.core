@@ -38,6 +38,7 @@ import gov.nasa.jpl.imce.oml.model.extensions.OMLExtensions
 import gov.nasa.jpl.imce.oml.model.common.Collection
 import gov.nasa.jpl.imce.oml.model.common.CopyConstructor
 import gov.nasa.jpl.imce.oml.model.common.DerivedUUID
+import gov.nasa.jpl.imce.oml.model.common.Element
 import gov.nasa.jpl.imce.oml.model.common.Glossary
 import gov.nasa.jpl.imce.oml.model.common.ImplicitExtent
 import gov.nasa.jpl.imce.oml.model.common.IRI
@@ -139,12 +140,13 @@ abstract class DescriptionBoxRelationship extends ModuleEdge {
 @DerivedUUID
 class DescriptionBoxExtendsClosedWorldDefinitions extends DescriptionBoxRelationship {
 	
+	@CopyConstructor
 	container DescriptionBox[1] descriptionBox opposite closedWorldDefinitions
 	
 	@Scala(code="extent.descriptionBoxOfDescriptionBoxExtendsClosedWorldDefinitions.get(this)")
 	@ImplicitExtent
 	@NotSchema
-	op DescriptionBox[?] descriptionDomain() { null }
+	op DescriptionBox[?] descriptionDomain() { descriptionBox }
 	
 	refers TerminologyBox[1] closedWorldDefinitions
 	
@@ -172,12 +174,13 @@ class DescriptionBoxExtendsClosedWorldDefinitions extends DescriptionBoxRelation
 @DerivedUUID
 class DescriptionBoxRefinement extends DescriptionBoxRelationship {
 	
+	@CopyConstructor
 	container DescriptionBox[1] refiningDescriptionBox opposite descriptionBoxRefinements
 	
 	@Scala(code="extent.descriptionBoxOfDescriptionBoxRefinement.get(this)")
 	@ImplicitExtent
 	@NotSchema
-	op DescriptionBox[?] descriptionDomain() { null }
+	op DescriptionBox[?] descriptionDomain() { refiningDescriptionBox }
 	
 	refers DescriptionBox[1] refinedDescriptionBox
 	
@@ -200,31 +203,14 @@ class DescriptionBoxRefinement extends DescriptionBoxRelationship {
  * An OML TerminologyInstanceAssertion is a logical OML ModuleElement defined in an OML TerminologyDescription.
  */
 @Glossary
-abstract class TerminologyInstanceAssertion extends ModuleElement, Resource {
-	
-	@Scala(code="descriptionBox().flatMap(_.iri())")
-	@ImplicitExtent
-	@NotSchema
-	@Override
-	op IRI[?] iri() { null }
-	
-	@ImplicitExtent
-	@NotSchema
-	op DescriptionBox[?] descriptionBox()
-	
-	@Override
-	id LocalName[1] name
-	
-	@NotFunctionalAPI
-	@NotSchema
-	op LocalName[1] name() { getName() }
-}
+abstract class TerminologyInstanceAssertion extends ModuleElement {}
+
 
 /*
  * An OML SingletonInstance defines an instance of either an OML ConceptualEntity or of an OML Structure.
  */
 @Glossary
-abstract class SingletonInstance extends TerminologyInstanceAssertion {
+abstract class SingletonInstance extends Element {
 	
 	@CopyConstructor
 	@Collection(kind="Set")
@@ -233,6 +219,7 @@ abstract class SingletonInstance extends TerminologyInstanceAssertion {
 	@CopyConstructor
 	@Collection(kind="Set")
 	contains StructuredDataPropertyValue[] structuredDataPropertyValues opposite singletonInstance
+	
 }
 
 /*
@@ -240,11 +227,14 @@ abstract class SingletonInstance extends TerminologyInstanceAssertion {
  * of an OML DataRelationshipToScalar for a particular OML SingletonInstance.
  */
 @Glossary
-@NamespaceUUID(namespace="singletonInstance", factors="name")
-class ScalarDataPropertyValue extends TerminologyInstanceAssertion {
+@DerivedUUID
+class ScalarDataPropertyValue extends Element {
 	
+	@CopyConstructor
 	container SingletonInstance[1] singletonInstance opposite scalarDataPropertyValues
+	
 	refers DataRelationshipToScalar[1] scalarDataProperty
+	
 	String[1] scalarPropertyValue
 	
 	@Scala(code="extent.singletonInstanceOfScalarDataPropertyValue.get(this).flatMap(_.descriptionBox())")
@@ -255,7 +245,11 @@ class ScalarDataPropertyValue extends TerminologyInstanceAssertion {
 	@NotFunctionalAPI
 	@NotSchema
 	op UUID[1] uuid() {
-		OMLExtensions.namespaceUUID(singletonInstance.uuid().toString, "name" -> name().toString).toString
+		OMLExtensions.derivedUUID(
+		"ScalarDataPropertyValue", 
+		"singletonInstance" -> singletonInstance.uuid().toString(),
+		"scalarDataProperty" -> scalarDataProperty.uuid().toString()
+		).toString
 	}
 }
 
@@ -265,11 +259,14 @@ class ScalarDataPropertyValue extends TerminologyInstanceAssertion {
  * of an OML DataRelationshipToStructure for a particular OML SingletonInstance.
  */
 @Glossary
-@NamespaceUUID(namespace="singletonInstance", factors="name")
-class StructuredDataPropertyValue extends TerminologyInstanceAssertion {
+@DerivedUUID
+class StructuredDataPropertyValue extends Element {
 	
+	@CopyConstructor
 	container SingletonInstance[1] singletonInstance opposite structuredDataPropertyValues
+	
 	refers DataRelationshipToStructure[1] structuredDataProperty
+	
 	contains DataStructureTuple[1] structuredPropertyTuple opposite structuredDataPropertyValue
 	
 	@Scala(code="extent.singletonInstanceOfStructuredDataPropertyValue.get(this).flatMap(_.descriptionBox())")
@@ -280,7 +277,11 @@ class StructuredDataPropertyValue extends TerminologyInstanceAssertion {
 	@NotFunctionalAPI
 	@NotSchema
 	op UUID[1] uuid() {
-		OMLExtensions.namespaceUUID(singletonInstance.uuid().toString, "name" -> name().toString).toString
+		OMLExtensions.derivedUUID(
+		"StructuredDataPropertyValue", 
+		"singletonInstance" -> singletonInstance.uuid().toString(),
+		"structuredDataProperty" -> structuredDataProperty.uuid().toString()
+		).toString
 	}
 }
 
@@ -288,10 +289,12 @@ class StructuredDataPropertyValue extends TerminologyInstanceAssertion {
  * An OML DataStructureTuple defines an structured tuple instance of an OML Structure.
  */
 @Glossary
-@NamespaceUUID(namespace="structuredDataPropertyValue", factors="name")
-class DataStructureTuple extends SingletonInstance {
+@DerivedUUID
+class DataStructureTuple extends SingletonInstance, Element {
 	
+	@CopyConstructor
 	container StructuredDataPropertyValue[1] structuredDataPropertyValue opposite structuredPropertyTuple
+	
 	refers Structure[1] dataStructureType
 	
 	@Scala(code="extent.structuredDataPropertyValueOfDataStructureTuple.get(this).flatMap(_.descriptionBox())")
@@ -302,7 +305,11 @@ class DataStructureTuple extends SingletonInstance {
 	@NotFunctionalAPI
 	@NotSchema
 	op UUID[1] uuid() {
-		OMLExtensions.namespaceUUID(structuredDataPropertyValue.uuid().toString, "name" -> name().toString).toString
+		OMLExtensions.derivedUUID(
+		"DataStructureTuple", 
+		"structuredDataPropertyValue" -> structuredDataPropertyValue.uuid().toString(),
+		"dataStructureType" -> dataStructureType.uuid().toString()
+		).toString
 	}
 }
 
@@ -320,7 +327,24 @@ class DataStructureTuple extends SingletonInstance {
  */
 @Glossary
 @NamespaceUUID(namespace="descriptionBox", factors="name")
-abstract class ConceptualEntitySingletonInstance extends SingletonInstance {
+abstract class ConceptualEntitySingletonInstance extends SingletonInstance, TerminologyInstanceAssertion, Resource {
+	
+	@Scala(code="descriptionBox().flatMap(_.iri())")
+	@ImplicitExtent
+	@NotSchema
+	@Override
+	op IRI[?] iri() { descriptionBox.iri()+'#'+name() }
+	
+	@ImplicitExtent
+	@NotSchema
+	op DescriptionBox[?] descriptionBox()
+	
+	@Override
+	LocalName[1] name
+	
+	@NotFunctionalAPI
+	@NotSchema
+	op LocalName[1] name() { getName() }
 	
 	@NotSchema
 	op ConceptualEntity[1] conceptualEntitySingletonClassifier()
@@ -383,6 +407,7 @@ abstract class ConceptualEntitySingletonInstance extends SingletonInstance {
 @Glossary
 class ConceptInstance extends ConceptualEntitySingletonInstance {
 	
+	@CopyConstructor
 	container DescriptionBox[1] descriptionBox opposite conceptInstances
 	
 	refers Concept[1] singletonConceptClassifier
@@ -403,6 +428,7 @@ class ConceptInstance extends ConceptualEntitySingletonInstance {
 @Glossary
 class ReifiedRelationshipInstance extends ConceptualEntitySingletonInstance {
 	
+	@CopyConstructor
 	container DescriptionBox[1] descriptionBox opposite reifiedRelationshipInstances
 	
 	refers ReifiedRelationship[1] singletonReifiedRelationshipClassifier
@@ -425,23 +451,20 @@ class ReifiedRelationshipInstance extends ConceptualEntitySingletonInstance {
  * to another OML ReifiedRelationshipInstanceDomain referencing the same property and domain.
  */
 @Glossary
-@NamespaceUUID(namespace="descriptionBox", factors="name")
+@DerivedUUID
 class ReifiedRelationshipInstanceDomain extends TerminologyInstanceAssertion {
 	
+	@CopyConstructor
 	container DescriptionBox[1] descriptionBox opposite reifiedRelationshipInstanceDomains
+	
 	refers ReifiedRelationshipInstance[1] reifiedRelationshipInstance
+	
 	refers ConceptualEntitySingletonInstance[1] domain
 	
 	@Scala(code="extent.descriptionBoxOfReifiedRelationshipInstanceDomain.get(this)")
 	@ImplicitExtent
 	@NotSchema
 	op DescriptionBox[?] descriptionBox() { getDescriptionBox }
-	
-	@NotFunctionalAPI
-	@NotSchema
-	op UUID[1] uuid() {
-		OMLExtensions.namespaceUUID(descriptionBox().uuid().toString, "name" -> name().toString).toString
-	}
 }
 
 /*
@@ -452,23 +475,20 @@ class ReifiedRelationshipInstanceDomain extends TerminologyInstanceAssertion {
  * to another OML ReifiedRelationshipInstanceRange referencing the same property and range.
  */
 @Glossary
-@NamespaceUUID(namespace="descriptionBox", factors="name")
+@DerivedUUID
 class ReifiedRelationshipInstanceRange extends TerminologyInstanceAssertion {
 	
+	@CopyConstructor
 	container DescriptionBox[1] descriptionBox opposite reifiedRelationshipInstanceRanges
+	
 	refers ReifiedRelationshipInstance[1] reifiedRelationshipInstance
+	
 	refers ConceptualEntitySingletonInstance[1] range
 	
 	@Scala(code="extent.descriptionBoxOfReifiedRelationshipInstanceRange.get(this)")
 	@ImplicitExtent
 	@NotSchema
 	op DescriptionBox[?] descriptionBox() { getDescriptionBox }
-	
-	@NotFunctionalAPI
-	@NotSchema
-	op UUID[1] uuid() {
-		OMLExtensions.namespaceUUID(descriptionBox().uuid().toString, "name" -> name().toString).toString
-	}
 }
 
 /*
@@ -480,12 +500,16 @@ class ReifiedRelationshipInstanceRange extends TerminologyInstanceAssertion {
  * to another OML UnreifiedRelationshipInstanceTuple referencing the same domain, property and range.
  */
 @Glossary
-@NamespaceUUID(namespace="descriptionBox", factors="name")
+@DerivedUUID
 class UnreifiedRelationshipInstanceTuple extends TerminologyInstanceAssertion {
 	
+	@CopyConstructor
 	container DescriptionBox[1] descriptionBox opposite unreifiedRelationshipInstanceTuples
+	
 	refers UnreifiedRelationship[1] unreifiedRelationship
+	
 	refers ConceptualEntitySingletonInstance[1] domain
+	
 	refers ConceptualEntitySingletonInstance[1] range
 	
 	@Scala(code="extent.descriptionBoxOfUnreifiedRelationshipInstanceTuple.get(this)")
@@ -493,9 +517,4 @@ class UnreifiedRelationshipInstanceTuple extends TerminologyInstanceAssertion {
 	@NotSchema
 	op DescriptionBox[?] descriptionBox() { getDescriptionBox }
 	
-	@NotFunctionalAPI
-	@NotSchema
-	op UUID[1] uuid() {
-		OMLExtensions.namespaceUUID(descriptionBox().uuid().toString, "name" -> name().toString).toString
-	}
 }

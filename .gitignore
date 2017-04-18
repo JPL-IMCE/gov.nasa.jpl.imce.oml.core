@@ -11,3 +11,4 @@ src-gen
 xtend-gen
 META-INF
 */.gitignore
+*.log

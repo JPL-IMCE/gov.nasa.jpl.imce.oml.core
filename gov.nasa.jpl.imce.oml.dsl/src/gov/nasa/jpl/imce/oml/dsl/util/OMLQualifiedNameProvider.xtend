@@ -22,13 +22,13 @@ import gov.nasa.jpl.imce.oml.model.bundles.Bundle
 import gov.nasa.jpl.imce.oml.model.common.AnnotationProperty
 import gov.nasa.jpl.imce.oml.model.common.ModuleEdge
 import gov.nasa.jpl.imce.oml.model.descriptions.DescriptionBox
-import gov.nasa.jpl.imce.oml.model.descriptions.TerminologyInstanceAssertion
 import gov.nasa.jpl.imce.oml.model.extensions.OMLExtensions
 import gov.nasa.jpl.imce.oml.model.graphs.TerminologyGraph
 import gov.nasa.jpl.imce.oml.model.terminologies.Term
 import org.eclipse.xtext.naming.DefaultDeclarativeQualifiedNameProvider
 import org.eclipse.xtext.naming.IQualifiedNameConverter
 import org.eclipse.xtext.naming.QualifiedName
+import gov.nasa.jpl.imce.oml.model.descriptions.ConceptualEntitySingletonInstance
 
 class OMLQualifiedNameProvider extends DefaultDeclarativeQualifiedNameProvider {
 
@@ -42,7 +42,7 @@ class OMLQualifiedNameProvider extends DefaultDeclarativeQualifiedNameProvider {
 		return qnc.toQualifiedName(OMLExtensions.kind(term)+'<'+term.iri()+'>')
 	}
 	
-	def QualifiedName qualifiedName(TerminologyInstanceAssertion i) {
+	def QualifiedName qualifiedName(ConceptualEntitySingletonInstance i) {
 		return qnc.toQualifiedName(OMLExtensions.kind(i)+'<'+i.iri()+'>')
 	}
 	

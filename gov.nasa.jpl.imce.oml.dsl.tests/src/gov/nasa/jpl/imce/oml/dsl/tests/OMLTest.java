@@ -134,7 +134,10 @@ public class OMLTest {
             buff.append("\n" + problems.size() + " problems:");
             buff.append("\n");
             for (Issue problem : problems) {
-                buff.append(FluentIssueCollection.getIssueSummary(r, problem));
+            	if (null == problem.getUriToProblem())
+            		buff.append(problem.getMessage());
+            	else
+            		buff.append(FluentIssueCollection.getIssueSummary(r, problem));
                 buff.append("\n");
             }
 			Assert.fail(buff.toString());

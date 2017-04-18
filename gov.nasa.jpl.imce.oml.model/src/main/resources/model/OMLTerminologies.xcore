@@ -38,6 +38,7 @@ import gov.nasa.jpl.imce.oml.model.extensions.OMLExtensions
 import gov.nasa.jpl.imce.oml.model.common.Collection
 import gov.nasa.jpl.imce.oml.model.common.CopyConstructor
 import gov.nasa.jpl.imce.oml.model.common.DerivedUUID
+import gov.nasa.jpl.imce.oml.model.common.Element
 import gov.nasa.jpl.imce.oml.model.common.FunctionalInterface
 import gov.nasa.jpl.imce.oml.model.common.Glossary
 import gov.nasa.jpl.imce.oml.model.common.ImplicitExtent
@@ -240,10 +241,10 @@ abstract class Term extends TerminologyBoxStatement, Resource {
 	@ImplicitExtent
 	@NotSchema
 	@Override
-	op IRI[?] iri() { null }
+	op IRI[?] iri() { tbox.iri()+'#'+name() }
 	
 	@Override
-	id LocalName[1] name
+	LocalName[1] name
 	
 	@NotFunctionalAPI
 	@NotSchema
@@ -442,10 +443,7 @@ abstract class DataRelationship extends Term, DirectedBinaryRelationshipKind {
  * for the domain of an OML DataRelationship
  */
 @Glossary
-abstract class DataRelationshipDomain {
-	
-	@FunctionalInterface
-	op UUID[1] uuid()
+abstract class DataRelationshipDomain extends Element {
 }
 
 /*
@@ -481,10 +479,7 @@ abstract class DataRelationshipFromStructure extends DataRelationshipDomain {
  * for the range of an OML DataRelationship
  */
 @Glossary
-abstract class DataRelationshipRange {
-
-	@FunctionalInterface
-	op UUID[1] uuid()
+abstract class DataRelationshipRange extends Element {
 }
 
 /*

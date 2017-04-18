@@ -12,6 +12,7 @@ dependencies {
     compile 'org.eclipse.emf:org.eclipse.emf.ecore.xcore.lib:+'
     compile 'org.eclipse.emf:org.eclipse.emf.ecore.xcore:+'
     compile 'com.fasterxml.uuid:java-uuid-generator:+'
+    compile 'xml-resolver:xml-resolver:1.2'
     runtime "org.apache:org.apache.log4j:${log4jVersion}"
 
     // See https://github.com/ghillairet/cdo-maven
@@ -98,7 +99,6 @@ eclipse {
         file {
             whenMerged { classpath ->
                 def res = classpath.entries.find { entry -> entry.kind == 'src' && entry.path == 'src/main/resources' }
-                res.excludes = ['**/*.xcore']
                 res.output = 'build/resources/main'
             }
         }
