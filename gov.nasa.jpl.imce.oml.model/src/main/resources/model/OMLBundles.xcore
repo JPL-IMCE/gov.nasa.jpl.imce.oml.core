@@ -110,6 +110,7 @@ abstract class ConceptTreeDisjunction extends Element {
 	@Collection(kind="Set")
 	contains DisjointUnionOfConceptsAxiom[] disjunctions opposite disjointTaxonomyParent
 	
+	@ImplicitExtent
 	@NotSchema
 	op Bundle[1] bundleContainer()
 }
@@ -174,6 +175,7 @@ class AnonymousConceptTaxonomyAxiom extends DisjointUnionOfConceptsAxiom, Concep
 	}
 	
 	@NotSchema
+	@ImplicitExtent
 	@Override
 	op Bundle[1] bundleContainer() { disjointTaxonomyParent.bundleContainer() }
 }
@@ -201,7 +203,9 @@ class RootConceptTaxonomyAxiom extends TerminologyBundleStatement, ConceptTreeDi
 	 */
 	refers Concept[1] root
 	
+	@Scala(code="extent.structuredDataPropertyValueOfDataStructureTuple.get(this).flatMap(_.descriptionBox())")
 	@NotSchema
+	@ImplicitExtent
 	@Override
 	op Bundle[1] bundleContainer() { bundle }
 }

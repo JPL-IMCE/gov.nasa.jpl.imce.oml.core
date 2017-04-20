@@ -212,6 +212,10 @@ abstract class TerminologyInstanceAssertion extends ModuleElement {}
 @Glossary
 abstract class SingletonInstance extends Element {
 	
+	@ImplicitExtent
+	@NotSchema
+	op DescriptionBox[?] descriptionBox()
+	
 	@CopyConstructor
 	@Collection(kind="Set")
 	contains ScalarDataPropertyValue[] scalarDataPropertyValues opposite singletonInstance
@@ -219,7 +223,6 @@ abstract class SingletonInstance extends Element {
 	@CopyConstructor
 	@Collection(kind="Set")
 	contains StructuredDataPropertyValue[] structuredDataPropertyValues opposite singletonInstance
-	
 }
 
 /*
@@ -240,7 +243,7 @@ class ScalarDataPropertyValue extends Element {
 	@Scala(code="extent.singletonInstanceOfScalarDataPropertyValue.get(this).flatMap(_.descriptionBox())")
 	@ImplicitExtent
 	@NotSchema
-	op DescriptionBox[?] descriptionBox()
+	op DescriptionBox[?] descriptionBox() { singletonInstance.descriptionBox }
 	
 	@NotFunctionalAPI
 	@NotSchema
@@ -272,7 +275,7 @@ class StructuredDataPropertyValue extends Element {
 	@Scala(code="extent.singletonInstanceOfStructuredDataPropertyValue.get(this).flatMap(_.descriptionBox())")
 	@ImplicitExtent
 	@NotSchema
-	op DescriptionBox[?] descriptionBox()
+	op DescriptionBox[?] descriptionBox() { singletonInstance.descriptionBox }
 	
 	@NotFunctionalAPI
 	@NotSchema
@@ -300,7 +303,8 @@ class DataStructureTuple extends SingletonInstance, Element {
 	@Scala(code="extent.structuredDataPropertyValueOfDataStructureTuple.get(this).flatMap(_.descriptionBox())")
 	@ImplicitExtent
 	@NotSchema
-	op DescriptionBox[?] descriptionBox()
+	@Override
+	op DescriptionBox[?] descriptionBox() { structuredDataPropertyValue.descriptionBox }
 	
 	@NotFunctionalAPI
 	@NotSchema
@@ -334,10 +338,6 @@ abstract class ConceptualEntitySingletonInstance extends SingletonInstance, Term
 	@NotSchema
 	@Override
 	op IRI[?] iri() { descriptionBox.iri()+'#'+name() }
-	
-	@ImplicitExtent
-	@NotSchema
-	op DescriptionBox[?] descriptionBox()
 	
 	@Override
 	LocalName[1] name
@@ -419,7 +419,7 @@ class ConceptInstance extends ConceptualEntitySingletonInstance {
 	@Scala(code="extent.descriptionBoxOfConceptInstance.get(this)")
 	@ImplicitExtent
 	@NotSchema
-	op DescriptionBox[?] descriptionBox()
+	op DescriptionBox[?] descriptionBox() { getDescriptionBox }
 }
 
 /*
@@ -440,7 +440,7 @@ class ReifiedRelationshipInstance extends ConceptualEntitySingletonInstance {
 	@Scala(code="extent.descriptionBoxOfReifiedRelationshipInstance.get(this)")
 	@ImplicitExtent
 	@NotSchema
-	op DescriptionBox[?] descriptionBox()
+	op DescriptionBox[?] descriptionBox() { getDescriptionBox }
 }
 
 /*
