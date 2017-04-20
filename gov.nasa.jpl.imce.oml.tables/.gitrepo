@@ -7,5 +7,5 @@
 	remote = git@github.com:JPL-IMCE/gov.nasa.jpl.imce.oml.tables.git
 	branch = master
 	commit = 1f6bb280c22941966ccf3358ce0c564a2d02688b
-	parent = c297307b7e546af4f18173d2c803442d902bab90
+	parent = db50af9ceb06288e61fcc4de4987a188bfc28035
 	cmdver = 0.3.1
