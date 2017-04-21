@@ -12,3 +12,5 @@ set -ev
 
 # TODO...
 #./gradlew build :gov.nasa.jpl.imce.oml.specification.repository:bintrayUpload --info --stacktrace
+
+./gradlew build :gov.nasa.jpl.imce.oml.model:bintrayUpload
