@@ -47,7 +47,7 @@ class OMLQualifiedNameProvider extends DefaultDeclarativeQualifiedNameProvider {
 	}
 	
 	def QualifiedName qualifiedName(ModuleEdge edge) {
-		return qnc.toQualifiedName(OMLExtensions.kind(edge)+'('+edge.sourceModule().iri()+'->'+edge.targetModule().iri()+')')
+		return qnc.toQualifiedName(OMLExtensions.kind(edge)+'('+edge.sourceModule()?.iri()+'->'+edge.targetModule()?.iri()+')')
 	}
 	
 	def QualifiedName qualifiedName(DescriptionBox m) {

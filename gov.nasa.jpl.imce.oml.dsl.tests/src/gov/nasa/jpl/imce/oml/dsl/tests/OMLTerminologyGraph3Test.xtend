@@ -49,7 +49,7 @@ open terminology <http://imce.jpl.nasa.gov/foundation/base/base> {
 }
 
 open terminology <http://imce.jpl.nasa.gov/foundation/mission/mission> {
- extends base
+ extends <http://imce.jpl.nasa.gov/foundation/base/base>
 
  aspect PerformingElement
  @rdfs:label = "PerformingElement"

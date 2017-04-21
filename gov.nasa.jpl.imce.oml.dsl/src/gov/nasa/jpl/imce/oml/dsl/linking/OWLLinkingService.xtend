@@ -37,12 +37,10 @@ import gov.nasa.jpl.imce.oml.model.common.Annotation
 import gov.nasa.jpl.imce.oml.model.common.Element
 import gov.nasa.jpl.imce.oml.model.extensions.OMLExtensions
 import org.apache.xml.resolver.Catalog
-import org.eclipse.xtext.resource.XtextResourceSet
 import org.eclipse.emf.common.util.URI
 import gov.nasa.jpl.imce.oml.model.common.Extent
 import gov.nasa.jpl.imce.oml.model.terminologies.TerminologyBox
 import gov.nasa.jpl.imce.oml.model.descriptions.DescriptionBox
-import gov.nasa.jpl.imce.oml.model.terminologies.Term
 import gov.nasa.jpl.imce.oml.model.terminologies.TerminologiesPackage
 import gov.nasa.jpl.imce.oml.model.descriptions.DescriptionsPackage
 
@@ -92,44 +90,39 @@ class OWLLinkingService extends DefaultLinkingService {
 			return Collections.emptyList()
 
 		if (crossRefString.startsWith("<") && crossRefString.endsWith(">")) {
+			
+			val rs = context.eResource.resourceSet
+			if (null === rs)
+				return Collections.emptyList()
+				
 			val crossRefIRI = crossRefString.substring(1, crossRefString.length - 1)
 			val fragmentIndex = crossRefIRI.indexOf('#')
 
-			val Catalog catalog = OMLExtensions.findCatalogIfExists(context.eResource)
-			if (null === catalog)
-				return Collections.emptyList()
-
 			val resourceIRI = if(-1 == fragmentIndex) crossRefIRI else crossRefIRI.substring(1, fragmentIndex - 1)
-			val resourceFragment = if(-1 == fragmentIndex) null else crossRefIRI.substring(fragmentIndex + 1)
-			val resolvedIRI = catalog.resolveURI(resourceIRI)
-			if (null === resolvedIRI || resolvedIRI == resourceIRI)
-				return Collections.emptyList()
-
-			val rs = context.eResource.resourceSet
-			if (!XtextResourceSet.isInstance(rs))
-				return Collections.emptyList()
-
-			val resolvedOML = rs.getResource(URI.createURI(resolvedIRI + ".oml"), true)
-			val resolvedExt = resolvedOML.contents.filter(Extent).head
+			if (fragmentIndex > 0) 
+				throw new IllegalNodeException(node, "Cross-reference cannot specify a fragment OML Entity: "+crossRefIRI)
+			
+			val Catalog catalog = OMLExtensions.findCatalogIfExists(context.eResource)
+			if (null !== catalog) {
+				val resolvedIRI = catalog.resolveURI(resourceIRI+".oml")
+				if (null === resolvedIRI || resolvedIRI == resourceIRI)
+					return Collections.emptyList()
+				
+				val resolvedOML = rs.getResource(URI.createURI(resolvedIRI), true)
+				if (!resolvedOML.errors.isEmpty) {
+					throw new IllegalNodeException(node, "Problem loading: "+resolvedIRI)
+				}
+			}
 			val refType = ref.EType
 			switch refType {
 				case TerminologiesPackage.eINSTANCE.terminologyBox: {
-					val tbox = resolvedExt.modules.filter(TerminologyBox).findFirst[tbox|tbox.iri() == resourceIRI]
+					val tbox = rs.resources.map[contents.filter(Extent).map[modules.filter(TerminologyBox)].flatten].flatten.findFirst[tbox|tbox.iri() == resourceIRI]
 					return if(null === tbox) Collections.emptyList() else Collections.singletonList(tbox)
 				}
 				case DescriptionsPackage.eINSTANCE.descriptionBox: {
-					val dbox = resolvedExt.modules.filter(DescriptionBox).findFirst[dbox|dbox.iri() == resourceIRI]
+					val dbox = rs.resources.map[contents.filter(Extent).map[modules.filter(DescriptionBox)].flatten].flatten.findFirst[dbox|dbox.iri() == resourceIRI]
 					return if(null === dbox) Collections.emptyList() else Collections.singletonList(dbox)
 				}
-				case TerminologiesPackage.eINSTANCE.term:
-					if (null === resourceFragment)
-						return Collections.emptyList()
-					else {
-						val term = resolvedExt.modules.filter(TerminologyBox).map [
-							boxStatements.filter(Term).findFirst[t|t.name() == resourceFragment]
-						].filterNull.head
-						return if(null === term) Collections.emptyList() else Collections.singletonList(term)
-					}
 				default:
 					return Collections.emptyList()
 			}
@@ -138,9 +131,9 @@ class OWLLinkingService extends DefaultLinkingService {
 		val IScope scope = getScope(context, ref)
 		val QualifiedName qualifiedLinkName = qualifiedNameConverter.toQualifiedName(crossRefString)
 		val IEObjectDescription eObjectDescription = scope.getSingleElement(qualifiedLinkName)
-		if (null === eObjectDescription)
-			return Collections.emptyList()
-
+		if (null === eObjectDescription) {
+			throw new IllegalNodeException(node, "getLinkedObjects: failed to resolve reference '"+crossRefString+" for "+ref.name+":"+requiredType.name)	
+		}
 		val e = eObjectDescription.getEObjectOrProxy()
 
 		switch context {

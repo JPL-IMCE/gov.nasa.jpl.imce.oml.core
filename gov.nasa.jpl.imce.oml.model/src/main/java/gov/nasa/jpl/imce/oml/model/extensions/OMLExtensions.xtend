@@ -302,7 +302,7 @@ class OMLExtensions {
 		val tbox = queue.head
 		queue.remove(tbox)
 		
-		val inc = tbox.boxAxioms.map[target]
+		val inc = tbox.boxAxioms.map[target].filterNull
 		queue.addAll(inc)
 		acc.addAll(inc)
 		
