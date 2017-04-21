@@ -34,6 +34,10 @@ The following usually suffices to avoid this problem:
     ./gradlew :gov.nasa.jpl.imce.oml.model:generateXtext
     ./gradlew build
 
+## Gradle task dependencies
+
+    ./gradlew :<subproject>:<task> :<subproject>:taskTree
+    
 ## To import in Intellij:
 
 1) `New > Project from existing sources...`
