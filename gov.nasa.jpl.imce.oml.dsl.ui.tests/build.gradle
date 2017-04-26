@@ -3,7 +3,7 @@ dependencies {
 	
 	testCompile 'junit:junit:4.12'
 	
-	compile project(':gov.nasa.jpl.imce.oml.model')
+	compile project(':gov.nasa.jpl.imce.oml.dsl.ui')
 	testCompile project(':gov.nasa.jpl.imce.oml.dsl')
     testCompile 'org.eclipse.xtext:org.eclipse.xtext.testing:+'
     testCompile 'org.eclipse.emf:org.eclipse.emf.mwe.utils:+'
@@ -30,11 +30,9 @@ sourceSets {
 	}
 	test {
 		mkdir('src-gen')
-		mkdir('xtend-gen')
 		output.classesDir = 'build/classes/test/'
-		java.srcDirs = ['src', 'src-gen', 'xtend-gen']
-        resources.srcDirs = ['resources', 'src', 'src-gen']
-		xtendOutputDir = 'xtend-gen'
+		java.srcDirs = ['src-gen']
+        resources.srcDirs = []
 	}
 }
 
@@ -50,8 +48,7 @@ ext.eclipseManifest = manifest {
 			"Bundle-Localization": "plugin",
 			"Bundle-RequiredExecutionEnvironment": "JavaSE-1.8",
 			"Bundle-ActivationPolicy": "lazy",
-			"Export-Package": '''com.itemis.xtext.testing,
- gov.nasa.jpl.imce.oml.dsl.tests''',
+			"Export-Package": '''gov.nasa.jpl.imce.oml.dsl.ui.tests''',
 			"Import-Package": '''org.hamcrest.core,
             org.junit.runner.manipulation;version="4.5.0",
             org.junit.runner.notification;version="4.5.0",
@@ -59,7 +56,7 @@ ext.eclipseManifest = manifest {
             org.junit.runners.model;version="4.5.0",
             org.junit.runners;version="4.5.0",
             org.junit;version="4.5.0''',
-			"Require-Bundle": '''gov.nasa.jpl.imce.oml.dsl,
+			"Require-Bundle": '''gov.nasa.jpl.imce.oml.dsl.ui,
  org.eclipse.xtext.testing,
  org.eclipse.xtext.xbase.junit'''
 	)
@@ -93,7 +90,6 @@ eclipse {
 
 tasks.clean.doLast {
     file('src-gen').deleteDir()
-    file('xtend-gen').deleteDir()
 }
 
 clean.dependsOn(cleanEclipse)
@@ -106,5 +102,4 @@ tasks.eclipse.dependsOn(eclipseManifest)
 
 tasks.eclipseClasspath.doFirst {
 	file('src-gen').mkdir()
-	file('xtend-gen').mkdir()
 }

@@ -71,9 +71,18 @@ ext.eclipseManifest = manifest {
     )
 }
 
-jar {
+task eclipseManifest {
+    inputs.property("bundleName", project.name)
+    inputs.property("bundleVersion", project.version)
+    outputs.file('META-INF/MANIFEST.MF')
+    doLast {
+        project.eclipseManifest.writeTo('META-INF/MANIFEST.MF')
+    }
+}
+
+task makeJar (type: Jar, dependsOn: eclipseManifest) {
     manifestContentCharset = 'UTF-8'
-    manifest = eclipseManifest
+    manifest = project.eclipseManifest
     from('src-gen') {
         include '**/*.g'
     }
@@ -104,13 +113,11 @@ tasks.cleanEclipse.doLast {
     file('META-INF').deleteDir()
 }
 
+tasks.eclipse.dependsOn(eclipseManifest)
+
 tasks.eclipseClasspath.doFirst {
     file('src-gen').mkdir()
     file('xtend-gen').mkdir()
-}
-
-tasks.eclipse.doLast {
-    eclipseManifest.writeTo('META-INF/MANIFEST.MF')
 }
 
 task generateXtextLanguage(type: JavaExec) {
@@ -129,6 +136,23 @@ generateXtext.dependsOn(generateXtextLanguage)
 clean.dependsOn(cleanGenerateXtextLanguage)
 eclipse.classpath.plusConfigurations += [configurations.mwe2]
 
+def pomConfig = {
+    licenses {
+        license {
+            name "The Apache Software License, Version 2.0"
+            url "http://www.apache.org/licenses/LICENSE-2.0.txt"
+            distribution "repo"
+        }
+    }
+    developers {
+        developer {
+            id "NicolasRouquette"
+            name "Nicolas F. Rouquette"
+            email "nicolas.f.rouquette@jpl.nasa.gov"
+        }
+    }
+}
+
 publishing {
     publications {
         mavenPublication(MavenPublication) {
@@ -136,6 +160,14 @@ publishing {
             artifact sourcesJar
             artifact javadocJar
             artifactId project.name
+            version project.version
+            pom.withXml {
+                def root = asNode()
+                root.appendNode('description', 'XText concrete syntax grammar for the Ontological Modeling Language')
+                root.appendNode('name', project.name)
+                root.appendNode('url', 'https://github.com/JPL-IMCE/gov.nasa.jpl.imce.oml.core')
+                root.children().last() + pomConfig
+            }
         }
     }
 }
@@ -150,11 +182,11 @@ bintray {
         userOrg = 'jpl-imce'
         name = project.name
         licenses = ['Apache-2.0']
-        vcsUrl = 'https://github.com/jpl-imce/oml.core'
-        websiteUrl = 'https://github.com/JPL-IMCE/oml.core'
-        issueTrackerUrl = 'https://github.com/JPL-IMCE/oml.core/issues'
+        vcsUrl = 'https://github.com/JPL-IMCE/gov.nasa.jpl.imce.oml.core'
+        websiteUrl = 'https://github.com/JPL-IMCE/gov.nasa.jpl.imce.oml.core'
+        issueTrackerUrl = 'https://github.com/JPL-IMCE/gov.nasa.jpl.imce.oml.core/issues'
         desc = 'Ontological Modeling Language grammar & parser'
-        githubRepo = 'jpl-imce/oml.core'
+        githubRepo = 'JPL-IMCE/gov.nasa.jpl.imce.oml.core'
         githubReleaseNotesFile = 'README.md'
         version {
             gpg {

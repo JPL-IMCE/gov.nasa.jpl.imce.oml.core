@@ -118,7 +118,7 @@ subprojects {
     HelloTaskKt.declareHelloTask(project)
 
 	group = 'gov.nasa.jpl.imce.oml'
-	version = '0.4.0'
+	version = '0.5.0'
 
 	configurations.all {
 		exclude group: 'asm'
@@ -144,3 +144,18 @@ tasks.withType(AbstractArchiveTask) {
     preserveFileTimestamps = false
     reproducibleFileOrder = true
 }
+
+task updateVersion() {
+	doLast {
+		println("Updated")
+	}
+}
+
+tasks.updateVersion.dependsOn ':gov.nasa.jpl.imce.oml.dsl:eclipseManifest'
+tasks.updateVersion.dependsOn ':gov.nasa.jpl.imce.oml.dsl.ide:eclipseManifest'
+tasks.updateVersion.dependsOn ':gov.nasa.jpl.imce.oml.dsl.tests:eclipseManifest'
+tasks.updateVersion.dependsOn ':gov.nasa.jpl.imce.oml.dsl.ui:eclipseManifest'
+tasks.updateVersion.dependsOn ':gov.nasa.jpl.imce.oml.dsl.ui.tests:eclipseManifest'
+tasks.updateVersion.dependsOn ':gov.nasa.jpl.imce.oml.feature:eclipseFeature'
+tasks.updateVersion.dependsOn ':gov.nasa.jpl.imce.oml.model:eclipseManifest'
+tasks.updateVersion.dependsOn ':gov.nasa.jpl.imce.oml.updateSite:eclipseSite'

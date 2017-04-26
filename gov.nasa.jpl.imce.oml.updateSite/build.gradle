@@ -1,0 +1,63 @@
+import groovy.xml.XmlUtil
+
+task eclipseSite() {
+    inputs.property("project.name", project.name)
+    inputs.property("project.version", project.version)
+    outputs.file('site.xml')
+
+    doLast {
+
+        def descriptor = """
+<site>
+   <feature url="features/gov.nasa.jpl.imce.oml.feature_${
+            project.version
+        }.jar" id="gov.nasa.jpl.imce.oml.feature" version="${project.version}">
+      <category name="gov.nasa.jpl.imce.oml"/>
+   </feature>
+   <category-def name="gov.nasa.jpl.imce.oml" label="IMCE OML Workbench"/>
+</site>
+"""
+
+        XmlUtil.serialize(descriptor, new FileOutputStream('site.xml'))
+    }
+}
+
+build.dependsOn(eclipseSite)
+
+bintray {
+    user = project.hasProperty('bintrayUser') ? project.property('bintrayUser') : System.getenv('BINTRAY_USER')
+    key = project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey') : System.getenv('BINTRAY_API_KEY')
+    filesSpec {
+        into '.'
+        from('.') {
+            include 'artifacts.jar'
+            include 'content.jar'
+        }
+        from('features') {
+            include '*.jar'
+            into "${project.name}/${project.version}/features"
+        }
+        from('plugins') {
+            include '*.jar'
+            into "${project.name}/${project.version}/plugins"
+        }
+    }
+    dryRun = false
+    pkg {
+        repo = 'gov.nasa.jpl.imce'
+        userOrg = 'jpl-imce'
+        name = project.name
+        licenses = ['Apache-2.0']
+        vcsUrl = 'https://github.com/JPL-IMCE/gov.nasa.jpl.imce.oml.core'
+        websiteUrl = 'https://github.com/JPL-IMCE/gov.nasa.jpl.imce.oml.core'
+        issueTrackerUrl = 'https://github.com/JPL-IMCE/gov.nasa.jpl.imce.oml.core/issues'
+        desc = 'Eclipse Update Site for Ontological Modeling Language'
+        githubRepo = 'JPL-IMCE/gov.nasa.jpl.imce.oml.core'
+        githubReleaseNotesFile = 'README.md'
+        version {
+            gpg {
+                sign = true // sign with Bintray's internal keys
+            }
+        }
+    }
+}

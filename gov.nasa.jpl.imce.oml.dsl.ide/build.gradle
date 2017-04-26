@@ -43,9 +43,18 @@ ext.eclipseManifest = manifest {
     )
 }
 
+task eclipseManifest {
+    inputs.property("bundleName", project.name)
+    inputs.property("bundleVersion", project.version)
+    outputs.file('META-INF/MANIFEST.MF')
+    doLast {
+        project.eclipseManifest.writeTo('META-INF/MANIFEST.MF')
+    }
+}
+
 jar {
     manifestContentCharset = 'UTF-8'
-    manifest = eclipseManifest
+    manifest = project.eclipseManifest
     from('src-gen') {
         include 'META-INF/*.*'
     }
@@ -76,11 +85,9 @@ tasks.cleanEclipse.doLast {
     file('META-INF').deleteDir()
 }
 
+tasks.eclipse.dependsOn(eclipseManifest)
+
 tasks.eclipse.doFirst {
     file('src-gen').mkdir()
     file('xtend-gen').mkdir()
-}
-
-tasks.eclipse.doLast {
-    eclipseManifest.writeTo('META-INF/MANIFEST.MF')
 }

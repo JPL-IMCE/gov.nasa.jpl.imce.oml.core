@@ -1,8 +1,10 @@
-<?xml version="1.0" encoding="UTF-8"?>
+import groovy.xml.XmlUtil
+
+ext.eclipseFeature = """
 <feature
       id="gov.nasa.jpl.imce.oml.feature"
       label="Ontological Modeling Language Feature"
-      version="0.4.0">
+      version="${project.version}">
 
    <description url="https://github.com/JPL-IMCE/gov.nasa.jpl.imce.oml.core/blob/master/gov.nasa.jpl.imce.oml.feature/README.md">
       Eclipse features for the Ontological Modeling Language
@@ -79,3 +81,13 @@ License Terms
          version="0.0.0"/>
 
 </feature>
+"""
+
+task eclipseFeature {
+    inputs.property("featureName", project.name)
+    inputs.property("featureVersion", project.version)
+    outputs.file('feature.xml')
+    doLast {
+        XmlUtil.serialize(project.eclipseFeature, new FileOutputStream('feature.xml'))
+    }
+}

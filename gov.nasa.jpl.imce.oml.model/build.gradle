@@ -37,16 +37,16 @@ configurations {
 
 ext.eclipseManifest = manifest {
     attributes(
-        "Manifest-Version": "1.0",
-        "Bundle-ManifestVersion": "2",
-        "Bundle-Name": "%pluginName",
-        "Bundle-SymbolicName": "${project.name};singleton:=true",
-        "Bundle-Version": "${project.version}",
-        "Bundle-ClassPath": ".",
-        "Bundle-Vendor": "%providerName",
-        "Bundle-Localization": "plugin",
-        "Bundle-RequiredExecutionEnvironment": "JavaSE-1.8",
-        "Export-Package": '''gov.nasa.jpl.imce.oml.provenance.oti,
+            "Manifest-Version": "1.0",
+            "Bundle-ManifestVersion": "2",
+            "Bundle-Name": "%pluginName",
+            "Bundle-SymbolicName": "${project.name};singleton:=true",
+            "Bundle-Version": "${project.version}",
+            "Bundle-ClassPath": ".",
+            "Bundle-Vendor": "%providerName",
+            "Bundle-Localization": "plugin",
+            "Bundle-RequiredExecutionEnvironment": "JavaSE-1.8",
+            "Export-Package": '''gov.nasa.jpl.imce.oml.provenance.oti,
  gov.nasa.jpl.imce.oml.provenance.oti.impl, 
  gov.nasa.jpl.imce.oml.provenance.oti.util, 
  gov.nasa.jpl.imce.oml.model.common, 
@@ -66,7 +66,7 @@ ext.eclipseManifest = manifest {
  gov.nasa.jpl.imce.oml.model.descriptions.util, 
  gov.nasa.jpl.imce.oml.model.extensions,
  gov.nasa.jpl.imce.fm, gov.nasa.jpl.imce.fm.impl, gov.nasa.jpl.imce.fm.util''',
-        "Require-Bundle": '''gov.nasa.jpl.imce.oml.uuid;visibility:=reexport,
+            "Require-Bundle": '''gov.nasa.jpl.imce.oml.uuid;visibility:=reexport,
  org.eclipse.core.runtime;visibility:=reexport,
  org.eclipse.core.resources;visibility:=reexport,
  org.eclipse.emf.ecore;visibility:=reexport, org.eclipse.xtext.xbase.lib;visibility:=reexport,
@@ -74,14 +74,23 @@ ext.eclipseManifest = manifest {
  org.eclipse.emf.ecore.xcore;visibility:=reexport, org.eclipse.emf.cdo;visibility:=reexport,
  org.eclipse.emf.ecore.xmi;visibility:=reexport,
  org.apache.log4j;visibility:=reexport''',
-        "Bundle-ActivationPolicy": "lazy"
+            "Bundle-ActivationPolicy": "lazy"
     )
     contentCharset = 'UTF-8'
 }
 
+task eclipseManifest {
+    inputs.property("bundleName", project.name)
+    inputs.property("bundleVersion", project.version)
+    outputs.file('META-INF/MANIFEST.MF')
+    doLast {
+        project.eclipseManifest.writeTo('META-INF/MANIFEST.MF')
+    }
+}
+
 jar {
     manifestContentCharset = 'UTF-8'
-    manifest = eclipseManifest
+    manifest = project.eclipseManifest
     from('src/main/resources') {
         include '**/*.xcore'
     }
@@ -111,9 +120,7 @@ tasks.cleanEclipse.doLast {
     file('META-INF').deleteDir()
 }
 
-tasks.eclipse.doLast {
-    eclipseManifest.writeTo('META-INF/MANIFEST.MF')
-}
+tasks.eclipse.dependsOn(eclipseManifest)
 
 sourceSets {
     main {

@@ -5,11 +5,23 @@ There are no Eclipse metadata files (.classpath, .project, .settings, META-INF/M
 - Avoiding platform-specific files (e.g., .classpath)
 - Avoiding problems with re-generated files were the contents are syntactically different but logically equivalent
 
-## Eclipse
+## Eclipse (everyone)
 
-- Install Eclipse Neon.3 from: https://www.eclipse.org/downloads/download.php?file=/technology/epp/downloads/release/neon/3
+- Install Eclipse Neon.3 from: https://www.eclipse.org/downloads/packages/eclipse-ide-eclipse-committers/neon3
+   
+   If you have installed Eclipse before or elsewhere, there will probably be an "Import wizard"
+   to import previously-installed features.
+   
+   Click Cancel.
+   
 - Add the Xtext update site: http://download.eclipse.org/modeling/tmf/xtext/updates/composite/releases/
-- Install Xtext SDK 2.11 (this should be an update) and Xtend SDK 2.11
+- Install 
+    - Modeling / CDO Model Repository SDK 4.5.0
+    - Modeling / Ecore Diagram ditor (SDK) 3.2.1
+    - Xtext / Xtext Complete SDK 2.11 
+    - Xtext / Xtend IDE 2.11
+
+## Eclipse (Developers)
 
 - Add the Scala IDE update site: http://download.scala-ide.org/sdk/lithium/e46/scala212/dev/site
 - Install everything from the Scala IDE
@@ -18,7 +30,6 @@ There are no Eclipse metadata files (.classpath, .project, .settings, META-INF/M
 - In Eclipse preferences, set the location for Scala 2.11
 - In Eclipse preferences, set a Java classpath variable: GRADLE_HOME = ~/.gradle
 
-- Install Eclipse CDO
 
 ## To clean:
 
