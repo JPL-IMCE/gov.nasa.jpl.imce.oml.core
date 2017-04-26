@@ -70,7 +70,9 @@ Follow the procedure to install Eclipse Neon.3 with Xtext 2.11 & CDO:
     - Xtext / Xtext Complete SDK 2.11 
     - Xtext / Xtend IDE 2.11
 
-- In Eclipse, add an update site: https://dl.bintray.com/jpl-imce/gov.nasa.jpl.imce/gov.nasa.jpl.imce.oml.updateSite/<version>/
+- In Eclipse, add an update site: https://dl.bintray.com/jpl-imce/gov.nasa.jpl.imce/gov.nasa.jpl.imce.oml.updateSite/[version]/
+   
+  Replace [version] as appropriate.
 
 - In Eclipse, install all features from the above update site
 
