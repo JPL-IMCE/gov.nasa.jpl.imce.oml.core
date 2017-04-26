@@ -3,7 +3,8 @@
 ## Workbench usage
 
 - Install the OML Workbench on top of Eclipse Neon.3 with Xtext 2.11 & CDO (see below).
-- The OML Xtext-based editor & outline is associated with '*.oml' files.
+- Create a new project.
+- The OML Xtext-based editor & outline is associated with '*.oml' files. Note that you may be prompted whether to convert the project to an Xtext project. Click OK.
 
 ## API-based usage
 
@@ -63,12 +64,18 @@ Follow the procedure to install Eclipse Neon.3 with Xtext 2.11 & CDO:
    
    Click Cancel.
    
+   Also note that it is highly recommended to start with a fresh install.
+   
+- Run Eclipse Neon.3 and select Help > Install New Software...
+   
 - Add the Xtext update site: http://download.eclipse.org/modeling/tmf/xtext/updates/composite/releases/
 - Install 
     - Modeling / CDO Model Repository SDK 4.5.0
     - Modeling / Ecore Diagram ditor (SDK) 3.2.1
     - Xtext / Xtext Complete SDK 2.11 
     - Xtext / Xtend IDE 2.11
+    
+   Note that if you are using the Eclipse Neon.3 Modeling package, you may be prompted that the Xtext Complete SDK and Xtend IE cannot be installed without removing EMF Parsley first. This is reportedly offered as a calculated alternative installation option. It is recommended to accept this option.
 
 - In Eclipse, add an update site: https://dl.bintray.com/jpl-imce/gov.nasa.jpl.imce/gov.nasa.jpl.imce.oml.updateSite/[version]/
    
