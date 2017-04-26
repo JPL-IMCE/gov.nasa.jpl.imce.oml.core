@@ -86,8 +86,8 @@ License Terms
 task eclipseFeature {
     inputs.property("featureName", project.name)
     inputs.property("featureVersion", project.version)
-    outputs.file('feature.xml')
+    outputs.file(project.file('feature.xml'))
     doLast {
-        XmlUtil.serialize(project.eclipseFeature, new FileOutputStream('feature.xml'))
+        XmlUtil.serialize(project.eclipseFeature, new FileOutputStream(project.file('feature.xml')))
     }
 }

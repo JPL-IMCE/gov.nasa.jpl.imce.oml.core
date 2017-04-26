@@ -68,9 +68,9 @@ ext.eclipseManifest = manifest {
 task eclipseManifest {
 	inputs.property("bundleName", project.name)
 	inputs.property("bundleVersion", project.version)
-	outputs.file('META-INF/MANIFEST.MF')
+	outputs.file(project.file('META-INF/MANIFEST.MF'))
 	doLast {
-		project.eclipseManifest.writeTo('META-INF/MANIFEST.MF')
+		project.eclipseManifest.writeTo(project.file('META-INF/MANIFEST.MF'))
 	}
 }
 

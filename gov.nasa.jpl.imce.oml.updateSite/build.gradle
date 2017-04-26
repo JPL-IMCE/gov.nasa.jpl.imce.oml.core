@@ -3,7 +3,7 @@ import groovy.xml.XmlUtil
 task eclipseSite() {
     inputs.property("project.name", project.name)
     inputs.property("project.version", project.version)
-    outputs.file('site.xml')
+    outputs.file(project.file('site.xml'))
 
     doLast {
 
@@ -18,7 +18,7 @@ task eclipseSite() {
 </site>
 """
 
-        XmlUtil.serialize(descriptor, new FileOutputStream('site.xml'))
+        XmlUtil.serialize(descriptor, new FileOutputStream(project.file('site.xml')))
     }
 }
 
