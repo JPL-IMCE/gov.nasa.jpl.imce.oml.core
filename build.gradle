@@ -46,7 +46,7 @@ subprojects {
 	ext.xtextCoreVersion = '2.11.1.v20170223-0955'
 
 	// see http://services.typefox.io/open-source/jenkins/job/xtext-eclipse/job/maintenance_2.11/lastSuccessfulBuild/artifact/build/p2-repository/plugins/
-	ext.xtextUIVersion = '2.11.1.v20170201-1233'
+	ext.xtextUIVersion = '2.11.1.v20170424-0738'
 
 	// see http://services.typefox.io/open-source/jenkins/job/xtext-xtend/job/maintenance_2.11/lastSuccessfulBuild/artifact/build/p2-repository/plugins/
 	ext.xtendVersion = '2.11.1.v20170201-1447'
@@ -79,13 +79,16 @@ subprojects {
 			}
 		}
 
-		// for resolving org.eclipse.xtext.{ide,testing}
-		ivy {
-			url "http://services.typefox.io/open-source/jenkins/job/xtext-core/job/maintenance_2.11/lastSuccessfulBuild/artifact/build/p2-repository/"
-			layout "pattern", {
-				artifact "plugins/[artifact]_[revision].[ext]"
-			}
+		maven {
+			url "http://services.typefox.io/open-source/jenkins///job/xtext-core/job/maintenance_2.11/lastSuccessfulBuild/artifact/build/maven-repository/"
 		}
+		// for resolving org.eclipse.xtext.{ide,testing}
+//		ivy {
+//			url "http://services.typefox.io/open-source/jenkins/job/xtext-core/job/maintenance_2.11/lastSuccessfulBuild/artifact/build/p2-repository/"
+//			layout "pattern", {
+//				artifact "plugins/[artifact]_[revision].[ext]"
+//			}
+//		}
 		// for resolving Eclipse SDK plugins
 		// See versions here: http://download.eclipse.org/eclipse/downloads/
 		ivy {
