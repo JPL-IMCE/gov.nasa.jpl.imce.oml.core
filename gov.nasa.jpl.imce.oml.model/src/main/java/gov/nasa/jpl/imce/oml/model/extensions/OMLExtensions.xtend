@@ -29,15 +29,12 @@ import gov.nasa.jpl.imce.oml.model.bundles.SpecificDisjointConceptAxiom
 import gov.nasa.jpl.imce.oml.model.common.Element
 import gov.nasa.jpl.imce.oml.model.common.Extent
 import gov.nasa.jpl.imce.oml.model.descriptions.ConceptInstance
-import gov.nasa.jpl.imce.oml.model.descriptions.DataStructureTuple
 import gov.nasa.jpl.imce.oml.model.descriptions.DescriptionBox
 import gov.nasa.jpl.imce.oml.model.descriptions.DescriptionBoxExtendsClosedWorldDefinitions
 import gov.nasa.jpl.imce.oml.model.descriptions.DescriptionBoxRefinement
 import gov.nasa.jpl.imce.oml.model.descriptions.ReifiedRelationshipInstance
 import gov.nasa.jpl.imce.oml.model.descriptions.ReifiedRelationshipInstanceDomain
 import gov.nasa.jpl.imce.oml.model.descriptions.ReifiedRelationshipInstanceRange
-import gov.nasa.jpl.imce.oml.model.descriptions.ScalarDataPropertyValue
-import gov.nasa.jpl.imce.oml.model.descriptions.StructuredDataPropertyValue
 import gov.nasa.jpl.imce.oml.model.descriptions.UnreifiedRelationshipInstanceTuple
 import gov.nasa.jpl.imce.oml.model.graphs.ConceptDesignationTerminologyAxiom
 import gov.nasa.jpl.imce.oml.model.graphs.TerminologyGraph
@@ -87,6 +84,10 @@ import org.eclipse.emf.common.util.URI
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.emf.ecore.resource.ResourceSet
 import org.eclipse.emf.ecore.util.EcoreUtil
+import gov.nasa.jpl.imce.oml.model.descriptions.SingletonInstanceScalarDataPropertyValue
+import gov.nasa.jpl.imce.oml.model.descriptions.SingletonInstanceStructuredDataPropertyValue
+import gov.nasa.jpl.imce.oml.model.descriptions.StructuredDataPropertyTuple
+import gov.nasa.jpl.imce.oml.model.descriptions.ScalarDataPropertyValue
 
 class OMLExtensions {
 	
@@ -442,16 +443,18 @@ class OMLExtensions {
 				'ReifiedRelationshipInstanceDomain'
 			case ReifiedRelationshipInstanceRange:
 				'ReifiedRelationshipInstanceRange'
-			case ScalarDataPropertyValue:
-				'ScalarDataPropertyValue'
+			case SingletonInstanceScalarDataPropertyValue:
+				'SingletonInstanceScalarDataPropertyValue'
 			case ConceptInstance:
 				'ConceptInstance'
 			case ReifiedRelationshipInstance:
 				'ReifiedRelationshipInstance'
-			case DataStructureTuple:
-				'DataStructureTuple'
-			case StructuredDataPropertyValue:
-				'StructuredDataPropertyValue'
+			case StructuredDataPropertyTuple:
+				'StructuredDataPropertyTuple'
+			case ScalarDataPropertyValue:
+				'ScalarDataPropertyValue'
+			case SingletonInstanceStructuredDataPropertyValue:
+				'SingletonInstanceStructuredDataPropertyValue'
 			case UnreifiedRelationshipInstanceTuple:
 				'UnreifiedRelationshipInstanceTuple'
 			case EntityScalarDataProperty:

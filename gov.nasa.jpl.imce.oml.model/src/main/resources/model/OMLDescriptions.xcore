@@ -57,12 +57,10 @@ import gov.nasa.jpl.imce.oml.model.terminologies.Concept
 import gov.nasa.jpl.imce.oml.model.terminologies.ConceptualEntity
 import gov.nasa.jpl.imce.oml.model.terminologies.DataRelationshipToScalar
 import gov.nasa.jpl.imce.oml.model.terminologies.DataRelationshipToStructure
-import gov.nasa.jpl.imce.oml.model.terminologies.EntityScalarDataProperty
-import gov.nasa.jpl.imce.oml.model.terminologies.EntityStructuredDataProperty
 import gov.nasa.jpl.imce.oml.model.terminologies.ReifiedRelationship
-import gov.nasa.jpl.imce.oml.model.terminologies.Structure
 import gov.nasa.jpl.imce.oml.model.terminologies.TerminologyBox
 import gov.nasa.jpl.imce.oml.model.terminologies.UnreifiedRelationship
+import gov.nasa.jpl.imce.oml.model.terminologies.EntityScalarDataProperty
 
 /*
  * OML DescriptionKind specifies semantic constraints that apply to
@@ -112,6 +110,14 @@ class DescriptionBox extends Module {
 	@CopyConstructor
 	@Collection(kind="Set")
 	contains UnreifiedRelationshipInstanceTuple[] unreifiedRelationshipInstanceTuples opposite descriptionBox
+	
+	@CopyConstructor
+	@Collection(kind="Set")
+	contains SingletonInstanceScalarDataPropertyValue[] scalarDataPropertyValues opposite descriptionBox
+	
+	@CopyConstructor
+	@Collection(kind="Set")
+	contains SingletonInstanceStructuredDataPropertyValue[] structuredDataPropertyValues opposite descriptionBox
 }
 
 /*
@@ -205,55 +211,52 @@ class DescriptionBoxRefinement extends DescriptionBoxRelationship {
 @Glossary
 abstract class TerminologyInstanceAssertion extends ModuleElement {}
 
-
-/*
- * An OML SingletonInstance defines an instance of either an OML ConceptualEntity or of an OML Structure.
- */
-@Glossary
-abstract class SingletonInstance extends Element {
-	
-	@ImplicitExtent
-	@NotSchema
-	op DescriptionBox[?] descriptionBox()
-	
-	@CopyConstructor
-	@Collection(kind="Set")
-	contains ScalarDataPropertyValue[] scalarDataPropertyValues opposite singletonInstance
-	
-	@CopyConstructor
-	@Collection(kind="Set")
-	contains StructuredDataPropertyValue[] structuredDataPropertyValues opposite singletonInstance
-}
-
 /*
  * An OML ScalarDataPropertyValue defines a tuple for representing the atomic String value
  * of an OML DataRelationshipToScalar for a particular OML SingletonInstance.
  */
 @Glossary
 @DerivedUUID
-class ScalarDataPropertyValue extends Element {
+class SingletonInstanceScalarDataPropertyValue extends ModuleElement {
 	
 	@CopyConstructor
-	container SingletonInstance[1] singletonInstance opposite scalarDataPropertyValues
+	container DescriptionBox[1] descriptionBox opposite scalarDataPropertyValues 
 	
-	refers DataRelationshipToScalar[1] scalarDataProperty
+	refers ConceptualEntitySingletonInstance[1] singletonInstance
+	refers EntityScalarDataProperty[1] scalarDataProperty
 	
 	String[1] scalarPropertyValue
-	
-	@Scala(code="extent.singletonInstanceOfScalarDataPropertyValue.get(this).flatMap(_.descriptionBox())")
-	@ImplicitExtent
-	@NotSchema
-	op DescriptionBox[?] descriptionBox() { singletonInstance.descriptionBox }
 	
 	@NotFunctionalAPI
 	@NotSchema
 	op UUID[1] uuid() {
 		OMLExtensions.derivedUUID(
 		"ScalarDataPropertyValue", 
-		"singletonInstance" -> singletonInstance.uuid().toString(),
-		"scalarDataProperty" -> scalarDataProperty.uuid().toString()
+		"descriptionBox" -> getDescriptionBox.uuid().toString(),
+		"singletonInstance" -> getSingletonInstance.uuid().toString(),
+		"scalarDataProperty" -> getScalarDataProperty.uuid().toString()
 		).toString
 	}
+	
+	@Scala(code="extent.descriptionBoxOfSingletonInstanceScalarDataPropertyValue.get(this)")
+	@ImplicitExtent
+	@NotSchema
+	op DescriptionBox[?] descriptionBox() { getDescriptionBox }
+}
+
+@Glossary
+@DerivedUUID
+abstract class SingletonInstanceStructuredDataPropertyContext extends Element {
+	
+	refers DataRelationshipToStructure[1] structuredDataProperty
+	
+	contains StructuredDataPropertyTuple[] structuredPropertyTuples opposite structuredDataPropertyContext
+	
+	contains ScalarDataPropertyValue[] scalarDataPropertyValues opposite structuredDataPropertyContext
+	
+	@ImplicitExtent
+	@NotSchema
+	op DescriptionBox[?] descriptionBox()
 }
 
 /*
@@ -263,29 +266,28 @@ class ScalarDataPropertyValue extends Element {
  */
 @Glossary
 @DerivedUUID
-class StructuredDataPropertyValue extends Element {
+class SingletonInstanceStructuredDataPropertyValue extends SingletonInstanceStructuredDataPropertyContext, ModuleElement {
 	
 	@CopyConstructor
-	container SingletonInstance[1] singletonInstance opposite structuredDataPropertyValues
+	container DescriptionBox[1] descriptionBox opposite structuredDataPropertyValues
 	
-	refers DataRelationshipToStructure[1] structuredDataProperty
-	
-	contains DataStructureTuple[1] structuredPropertyTuple opposite structuredDataPropertyValue
-	
-	@Scala(code="extent.singletonInstanceOfStructuredDataPropertyValue.get(this).flatMap(_.descriptionBox())")
-	@ImplicitExtent
-	@NotSchema
-	op DescriptionBox[?] descriptionBox() { singletonInstance.descriptionBox }
+	refers ConceptualEntitySingletonInstance[1] singletonInstance
 	
 	@NotFunctionalAPI
 	@NotSchema
 	op UUID[1] uuid() {
 		OMLExtensions.derivedUUID(
 		"StructuredDataPropertyValue", 
-		"singletonInstance" -> singletonInstance.uuid().toString(),
-		"structuredDataProperty" -> structuredDataProperty.uuid().toString()
+		"descriptionBox" -> getDescriptionBox.uuid().toString(),
+		"singletonInstance" -> getSingletonInstance.uuid().toString(),
+		"structuredDataProperty" -> getStructuredDataProperty.uuid().toString()
 		).toString
 	}
+	
+	@Scala(code="extent.descriptionBoxOfSingletonInstanceStructuredDataPropertyValue.get(this)")
+	@ImplicitExtent
+	@NotSchema
+	op DescriptionBox[?] descriptionBox() { getDescriptionBox }
 }
 
 /*
@@ -293,26 +295,54 @@ class StructuredDataPropertyValue extends Element {
  */
 @Glossary
 @DerivedUUID
-class DataStructureTuple extends SingletonInstance, Element {
+class StructuredDataPropertyTuple extends SingletonInstanceStructuredDataPropertyContext {
 	
 	@CopyConstructor
-	container StructuredDataPropertyValue[1] structuredDataPropertyValue opposite structuredPropertyTuple
-	
-	refers Structure[1] dataStructureType
+	container SingletonInstanceStructuredDataPropertyContext[1] structuredDataPropertyContext opposite structuredPropertyTuples
 	
 	@Scala(code="extent.structuredDataPropertyValueOfDataStructureTuple.get(this).flatMap(_.descriptionBox())")
 	@ImplicitExtent
 	@NotSchema
 	@Override
-	op DescriptionBox[?] descriptionBox() { structuredDataPropertyValue.descriptionBox }
+	op DescriptionBox[?] descriptionBox() { structuredDataPropertyContext.descriptionBox }
 	
 	@NotFunctionalAPI
 	@NotSchema
 	op UUID[1] uuid() {
 		OMLExtensions.derivedUUID(
 		"DataStructureTuple", 
-		"structuredDataPropertyValue" -> structuredDataPropertyValue.uuid().toString(),
-		"dataStructureType" -> dataStructureType.uuid().toString()
+		"structuredDataPropertyContext" -> structuredDataPropertyContext.uuid().toString(),
+		"structuredDataProperty" -> structuredDataProperty.uuid().toString()
+		).toString
+	}
+}
+
+/*
+ * An OML ScalarDataPropertyValue specifies a literal string as the value of 
+ * an OML ScalarDataProperty in the scope of an OML SingletonInstanceStructuredDataPropertyContext.
+ */
+@Glossary
+@DerivedUUID
+class ScalarDataPropertyValue extends Element {
+	
+	@CopyConstructor
+	container SingletonInstanceStructuredDataPropertyContext[1] structuredDataPropertyContext opposite scalarDataPropertyValues
+	
+	refers DataRelationshipToScalar[1] scalarDataProperty
+	String[1] scalarPropertyValue
+	
+	@Scala(code="extent.singletonInstanceOfScalarDataPropertyValue.get(this).flatMap(_.descriptionBox())")
+	@ImplicitExtent
+	@NotSchema
+	op DescriptionBox[?] descriptionBox() { structuredDataPropertyContext.descriptionBox }
+	
+	@NotFunctionalAPI
+	@NotSchema
+	op UUID[1] uuid() {
+		OMLExtensions.derivedUUID(
+		"ScalarDataPropertyValue", 
+		"structuredDataPropertyContext" -> structuredDataPropertyContext.uuid().toString(),
+		"scalarDataProperty" -> scalarDataProperty.uuid().toString()
 		).toString
 	}
 }
@@ -331,7 +361,11 @@ class DataStructureTuple extends SingletonInstance, Element {
  */
 @Glossary
 @NamespaceUUID(namespace="descriptionBox", factors="name")
-abstract class ConceptualEntitySingletonInstance extends SingletonInstance, TerminologyInstanceAssertion, Resource {
+abstract class ConceptualEntitySingletonInstance extends TerminologyInstanceAssertion, Resource {
+	
+	@ImplicitExtent
+	@NotSchema
+	op DescriptionBox[?] descriptionBox()
 	
 	@Scala(code="descriptionBox().flatMap(_.iri())")
 	@ImplicitExtent
@@ -348,51 +382,6 @@ abstract class ConceptualEntitySingletonInstance extends SingletonInstance, Term
 	
 	@NotSchema
 	op ConceptualEntity[1] conceptualEntitySingletonClassifier()
-	
-	@NotSchema
-	@Scala(code="extent.scalarDataPropertyValues.getOrElse(this, scala.collection.immutable.Set.empty[resolver.api.ScalarDataPropertyValue]).filter {
-      case ep: EntityScalarDataProperty =>
-        ep.isIdentityCriteria
-      case _ =>
-        false
-    }")
-	@Collection(kind="Set")
-	@ImplicitExtent
-	op ScalarDataPropertyValue[] identifyingScalarValues() {
-		scalarDataPropertyValues
-		.filter[v | 
-			val p = v.scalarDataProperty 
-			switch p {
-			EntityScalarDataProperty:
-				p.isIdentityCriteria
-			default:
-				false
-			}]
-		.asEList
-		
-	}
-	
-	@NotSchema
-	@Scala(code="extent.structuredDataPropertyValues.getOrElse(this, scala.collection.immutable.Set.empty[resolver.api.StructuredDataPropertyValue]).filter {
-      case ep: EntityStructuredDataProperty =>
-        ep.isIdentityCriteria
-      case _ =>
-        false
-    }")
-	@Collection(kind="Set")
-	@ImplicitExtent
-	op StructuredDataPropertyValue[] identifyingStructuredTuples() { 
-		structuredDataPropertyValues
-		.filter[v | 
-			val p = v.structuredDataProperty 
-			switch p {
-			EntityStructuredDataProperty:
-				p.isIdentityCriteria
-			default:
-				false
-			}]
-		.asEList
-	}
 	
 	@NotFunctionalAPI
 	@NotSchema

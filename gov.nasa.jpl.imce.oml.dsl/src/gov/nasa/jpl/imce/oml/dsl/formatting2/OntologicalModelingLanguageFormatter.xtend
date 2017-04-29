@@ -64,8 +64,8 @@ import gov.nasa.jpl.imce.oml.model.terminologies.TimeScalarRestriction
 import gov.nasa.jpl.imce.oml.model.terminologies.UnreifiedRelationship
 import org.eclipse.xtext.formatting2.AbstractFormatter2
 import org.eclipse.xtext.formatting2.IFormattableDocument
-import gov.nasa.jpl.imce.oml.model.descriptions.ScalarDataPropertyValue
-import gov.nasa.jpl.imce.oml.model.descriptions.StructuredDataPropertyValue
+import gov.nasa.jpl.imce.oml.model.descriptions.SingletonInstanceScalarDataPropertyValue
+import gov.nasa.jpl.imce.oml.model.descriptions.SingletonInstanceStructuredDataPropertyValue
 
 class OntologicalModelingLanguageFormatter extends AbstractFormatter2 {
 	
@@ -712,7 +712,7 @@ class OntologicalModelingLanguageFormatter extends AbstractFormatter2 {
 		ax.regionFor.ruleCall(descriptionBoxRefinementAccess.refinedDescriptionBoxDescriptionBoxExternalReferenceParserRuleCall_1_0_1).append[newLine]
 	}
 	
-	def dispatch void format(ScalarDataPropertyValue s, extension IFormattableDocument document) {
+	def dispatch void format(SingletonInstanceScalarDataPropertyValue s, extension IFormattableDocument document) {
 		s.prepend[noSpace]
 		s.regionFor.keyword('ScalarDataPropertyValue').append[oneSpace]
 		
@@ -729,7 +729,7 @@ class OntologicalModelingLanguageFormatter extends AbstractFormatter2 {
 		s.regionFor.ruleCall(scalarDataPropertyValueAccess.scalarPropertyValueReferenceParserRuleCall_2_0).append[newLine]
 	}
 	
-	def dispatch void format(StructuredDataPropertyValue s, extension IFormattableDocument document) {
+	def dispatch void format(SingletonInstanceStructuredDataPropertyValue s, extension IFormattableDocument document) {
 		s.prepend[noSpace]
 		s.regionFor.keyword('ScalarDataPropertyValue').append[oneSpace]
 		

@@ -300,20 +300,18 @@ SpecificDisjointConceptAxiom returns SpecificDisjointConceptAxiom:
 // 2 EntityRestrictionAxioms
 
 EntityExistentialRestrictionAxiom returns EntityExistentialRestrictionAxiom:
-	'entityExistentialRestrictionAxiom'
-	'{'
-		'restrictedRelation' restrictedRelation=[ReifiedRelationship|Reference]
-		'restrictedDomain' restrictedDomain=[Entity|Reference]
-		'restrictedRange' restrictedRange=[Entity|Reference]
-	'}';
+	'some'
+	restrictedDomain=[Entity|Reference]
+	'.' 
+	restrictedRelation=[ReifiedRelationship|Reference]
+	'in' restrictedRange=[Entity|Reference];
 
 EntityUniversalRestrictionAxiom returns EntityUniversalRestrictionAxiom:
-	'entityUniversalRestrictionAxiom'
-	'{'
-		'restrictedRelation' restrictedRelation=[ReifiedRelationship|Reference]
-		'restrictedDomain' restrictedDomain=[Entity|Reference]
-		'restrictedRange' restrictedRange=[Entity|Reference]
-	'}';
+	'all'
+	restrictedDomain=[Entity|Reference]
+	'.' 
+	restrictedRelation=[ReifiedRelationship|Reference]
+	'in' restrictedRange=[Entity|Reference];
 
 // 3 SpecializationAxioms
 
@@ -329,28 +327,23 @@ ReifiedRelationshipSpecializationAxiom returns ReifiedRelationshipSpecialization
 // 3 EntityScalarDataPropertyRestrictionAxioms
 
 EntityScalarDataPropertyExistentialRestrictionAxiom returns EntityScalarDataPropertyExistentialRestrictionAxiom:
-	'entityScalarDataPropertyExistentialRestrictionAxiom'
-	'{'
-		'restrictedEntity' restrictedEntity=[Entity|Reference]
-		'scalarProperty' scalarProperty=[EntityScalarDataProperty|Reference]
-		'scalarRestriction' scalarRestriction=[DataRange|Reference]
-	'}';
+	'some'
+	restrictedEntity=[Entity|Reference]
+	'.'
+	scalarProperty=[EntityScalarDataProperty|Reference]
+	'in' scalarRestriction=[DataRange|Reference];
 
 EntityScalarDataPropertyParticularRestrictionAxiom returns EntityScalarDataPropertyParticularRestrictionAxiom:
-	'entityScalarDataPropertyParticularRestrictionAxiom'
-	'{'
-		'restrictedEntity' restrictedEntity=[Entity|Reference]
-		'scalarProperty' scalarProperty=[EntityScalarDataProperty|Reference]
-		'literalValue' literalValue=STRING
-	'}';
+	'all'
+	restrictedEntity=[Entity|Reference]
+	',' scalarProperty=[EntityScalarDataProperty|Reference]
+	'=' literalValue=STRING;
 	
 EntityScalarDataPropertyUniversalRestrictionAxiom returns EntityScalarDataPropertyUniversalRestrictionAxiom:
-	'entityScalarDataPropertyUniversalRestrictionAxiom'
-	'{'
-		'restrictedEntity' restrictedEntity=[Entity|Reference]
-		'scalarProperty' scalarProperty=[EntityScalarDataProperty|Reference]
-		'scalarRestriction' scalarRestriction=[DataRange|Reference]
-	'}';
+	'all'
+	restrictedEntity=[Entity|Reference]
+	'.' scalarProperty=[EntityScalarDataProperty|Reference]
+	'in' scalarRestriction=[DataRange|Reference];
 
 // 8 RestrictedDataRanges + 1 ScalarOneOfLiteralAxiom
 
@@ -445,7 +438,9 @@ DescriptionBox returns DescriptionBox:
 	  reifiedRelationshipInstances+=ReifiedRelationshipInstance |
 	  reifiedRelationshipInstanceDomains+=ReifiedRelationshipInstanceDomain|
 	  reifiedRelationshipInstanceRanges+=ReifiedRelationshipInstanceRange |
-	  unreifiedRelationshipInstanceTuples+=UnreifiedRelationshipInstanceTuple
+	  unreifiedRelationshipInstanceTuples+=UnreifiedRelationshipInstanceTuple |
+	  scalarDataPropertyValues+=SingletonInstanceScalarDataPropertyValue |
+	  structuredDataPropertyValues+=SingletonInstanceStructuredDataPropertyValue
 	)*
 	'}';
 
@@ -469,35 +464,39 @@ DescriptionBoxExtendsClosedWorldDefinitions returns DescriptionBoxExtendsClosedW
 DescriptionBoxRefinement returns DescriptionBoxRefinement:
 	'refines' refinedDescriptionBox=[DescriptionBox|ExternalReference];
 
-ScalarDataPropertyValue returns ScalarDataPropertyValue:
-	scalarDataProperty=[DataRelationshipToScalar|Reference] '=' scalarPropertyValue=Reference;
+SingletonInstanceScalarDataPropertyValue returns SingletonInstanceScalarDataPropertyValue:
+	singletonInstance=[ConceptualEntitySingletonInstance|Reference] 
+	'.' 
+	scalarDataProperty=[EntityScalarDataProperty|Reference] 
+	'=' 
+	scalarPropertyValue=Value;
 
-StructuredDataPropertyValue returns StructuredDataPropertyValue:
-	structuredDataProperty=[DataRelationshipToStructure|Reference] '=' structuredPropertyTuple=DataStructureTuple;
-
-DataStructureTuple returns DataStructureTuple:
-	'structure' '(' dataStructureType=[Structure|Reference] ')'
-	'{'
-		( scalarDataPropertyValues+=ScalarDataPropertyValue |
-		  structuredDataPropertyValues+=StructuredDataPropertyValue
-		)*
+SingletonInstanceStructuredDataPropertyValue returns SingletonInstanceStructuredDataPropertyValue:
+	singletonInstance=[ConceptualEntitySingletonInstance|Reference] 
+	'.' 
+	structuredDataProperty=[DataRelationshipToStructure|Reference] 
+	'=' '{'
+	( structuredPropertyTuples+=StructuredDataPropertyTuple |
+	  scalarDataPropertyValues += ScalarDataPropertyValue )*
 	'}';
+
+StructuredDataPropertyTuple returns StructuredDataPropertyTuple:
+	structuredDataProperty=[DataRelationshipToStructure|Reference] 
+	'=' '{'
+	( structuredPropertyTuples+=StructuredDataPropertyTuple |
+	  scalarDataPropertyValues += ScalarDataPropertyValue )*
+	'}';
+
+ScalarDataPropertyValue returns ScalarDataPropertyValue:
+	scalarDataProperty=[DataRelationshipToScalar|Reference]
+	'='
+	scalarPropertyValue=Value;
 
 ConceptInstance returns ConceptInstance:
-	'conceptInstance' '(' name=ID ':' singletonConceptClassifier=[Concept|Reference] ')'
-	'{'
-		( scalarDataPropertyValues+=ScalarDataPropertyValue |
-		  structuredDataPropertyValues+=StructuredDataPropertyValue
-		)*
-	'}';
+	'conceptInstance' '(' name=ID ':' singletonConceptClassifier=[Concept|Reference] ')';
 
 ReifiedRelationshipInstance returns ReifiedRelationshipInstance:
-	'reifiedRelationshipInstance' '(' name=ID ':' singletonReifiedRelationshipClassifier=[ReifiedRelationship|Reference] ')'
-	'{'
-		( scalarDataPropertyValues+=ScalarDataPropertyValue |
-		  structuredDataPropertyValues+=StructuredDataPropertyValue
-		)*
-	'}';
+	'reifiedRelationshipInstance' '(' name=ID ':' singletonReifiedRelationshipClassifier=[ReifiedRelationship|Reference] ')';
 
 ReifiedRelationshipInstanceDomain returns ReifiedRelationshipInstanceDomain:
 	'domain' 
@@ -533,6 +532,9 @@ ABBREV_IRI:
 
 ValidID:
 	ID;
+	
+Value:
+	DECIMAL | STRING | INT | UUID | HEX | FLOAT;
 	
 //----------------------------
 
@@ -582,6 +584,11 @@ terminal DECIMAL:
 	(('e'|'E') ('+'|'-')? INT)? 
 	(('b'|'B')('i'|'I'|'d'|'D') | ('l'|'L'|'d'|'D'|'f'|'F'))?;
 
+terminal FLOAT:
+	'-'?
+	(('0'..'9')+ '.' ('0'..'9')+)
+    (('e' | 'E') ('+' | '-')? ('0'..'9')+)?;
+    
 @Override
 terminal ML_COMMENT  : 
  	'/*' -> '*/';
