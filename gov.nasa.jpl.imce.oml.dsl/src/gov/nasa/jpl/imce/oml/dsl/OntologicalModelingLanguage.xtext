@@ -300,14 +300,14 @@ SpecificDisjointConceptAxiom returns SpecificDisjointConceptAxiom:
 // 2 EntityRestrictionAxioms
 
 EntityExistentialRestrictionAxiom returns EntityExistentialRestrictionAxiom:
-	'some'
+	'someEntities'
 	restrictedDomain=[Entity|Reference]
 	'.' 
 	restrictedRelation=[ReifiedRelationship|Reference]
 	'in' restrictedRange=[Entity|Reference];
 
 EntityUniversalRestrictionAxiom returns EntityUniversalRestrictionAxiom:
-	'all'
+	'allEntities'
 	restrictedDomain=[Entity|Reference]
 	'.' 
 	restrictedRelation=[ReifiedRelationship|Reference]
@@ -327,20 +327,20 @@ ReifiedRelationshipSpecializationAxiom returns ReifiedRelationshipSpecialization
 // 3 EntityScalarDataPropertyRestrictionAxioms
 
 EntityScalarDataPropertyExistentialRestrictionAxiom returns EntityScalarDataPropertyExistentialRestrictionAxiom:
-	'some'
+	'someData'
 	restrictedEntity=[Entity|Reference]
 	'.'
 	scalarProperty=[EntityScalarDataProperty|Reference]
 	'in' scalarRestriction=[DataRange|Reference];
 
 EntityScalarDataPropertyParticularRestrictionAxiom returns EntityScalarDataPropertyParticularRestrictionAxiom:
-	'all'
+	'allData'
 	restrictedEntity=[Entity|Reference]
 	',' scalarProperty=[EntityScalarDataProperty|Reference]
 	'=' literalValue=STRING;
 	
 EntityScalarDataPropertyUniversalRestrictionAxiom returns EntityScalarDataPropertyUniversalRestrictionAxiom:
-	'all'
+	'allData'
 	restrictedEntity=[Entity|Reference]
 	'.' scalarProperty=[EntityScalarDataProperty|Reference]
 	'in' scalarRestriction=[DataRange|Reference];

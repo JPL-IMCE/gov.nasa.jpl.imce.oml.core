@@ -413,96 +413,46 @@ class OntologicalModelingLanguageFormatter extends AbstractFormatter2 {
 	
 	def dispatch void format(EntityExistentialRestrictionAxiom ax, extension IFormattableDocument document) {
 		ax.prepend[noSpace]
-		ax.regionFor.keyword('entityExistentialRestrictionAxiom').append[oneSpace]
+		ax.regionFor.keyword('someEntities').append[oneSpace]
 		
-		val lcurly = ax.regionFor.keyword('{')
-		val rcurly = ax.regionFor.keyword('}')
-		lcurly.prepend[oneSpace]
-		lcurly.append[newLine]
-		interior(lcurly, rcurly)[indent]
-		rcurly.append[newLine]
-		
-		ax.regionFor.keyword('restrictedRelation').append[oneSpace]
-		ax.regionFor.ruleCall(entityExistentialRestrictionAxiomAccess.restrictedRelationReifiedRelationshipReferenceParserRuleCall_3_0_1).append[newLine]
-		ax.regionFor.keyword('restrictedDomain').append[oneSpace]
-		ax.regionFor.ruleCall(entityExistentialRestrictionAxiomAccess.restrictedDomainEntityReferenceParserRuleCall_5_0_1).append[newLine]
-		ax.regionFor.keyword('restrictedRange').append[oneSpace]
+		ax.regionFor.keyword('.').surround[noSpace]
+		ax.regionFor.keyword('in').surround[oneSpace]
 		ax.regionFor.ruleCall(entityExistentialRestrictionAxiomAccess.restrictedRangeEntityReferenceParserRuleCall_7_0_1).append[newLine]
 	}
 	
 	def dispatch void format(EntityUniversalRestrictionAxiom ax, extension IFormattableDocument document) {
 		ax.prepend[noSpace]
-		ax.regionFor.keyword('entityUniversalRestrictionAxiom').append[oneSpace]
+		ax.regionFor.keyword('allEntities').append[oneSpace]
 		
-		val lcurly = ax.regionFor.keyword('{')
-		val rcurly = ax.regionFor.keyword('}')
-		lcurly.prepend[oneSpace]
-		lcurly.append[newLine]
-		interior(lcurly, rcurly)[indent]
-		rcurly.append[newLine]
-		
-		ax.regionFor.keyword('restrictedRelation').append[oneSpace]
-		ax.regionFor.ruleCall(entityUniversalRestrictionAxiomAccess.restrictedRelationReifiedRelationshipReferenceParserRuleCall_3_0_1).append[newLine]
-		ax.regionFor.keyword('restrictedDomain').append[oneSpace]
-		ax.regionFor.ruleCall(entityUniversalRestrictionAxiomAccess.restrictedDomainEntityReferenceParserRuleCall_5_0_1).append[newLine]
-		ax.regionFor.keyword('restrictedRange').append[oneSpace]
+		ax.regionFor.keyword('.').surround[noSpace]
+		ax.regionFor.keyword('in').surround[oneSpace]
 		ax.regionFor.ruleCall(entityUniversalRestrictionAxiomAccess.restrictedRangeEntityReferenceParserRuleCall_7_0_1).append[newLine]
 	}
 	
 	def dispatch void format(EntityScalarDataPropertyExistentialRestrictionAxiom ax, extension IFormattableDocument document) {
 		ax.prepend[noSpace]
-		ax.regionFor.keyword('entityScalarDataPropertyExistentialRestrictionAxiom').append[oneSpace]
+		ax.regionFor.keyword('someData').append[oneSpace]
 		
-		val lcurly = ax.regionFor.keyword('{')
-		val rcurly = ax.regionFor.keyword('}')
-		lcurly.prepend[oneSpace]
-		lcurly.append[newLine]
-		interior(lcurly, rcurly)[indent]
-		rcurly.append[newLine]
-		
-		ax.regionFor.keyword('restrictedEntity').append[oneSpace]
-		ax.regionFor.ruleCall(entityScalarDataPropertyExistentialRestrictionAxiomAccess.restrictedEntityEntityReferenceParserRuleCall_3_0_1).append[newLine]
-		ax.regionFor.keyword('scalarProperty').append[oneSpace]
-		ax.regionFor.ruleCall(entityScalarDataPropertyExistentialRestrictionAxiomAccess.scalarPropertyEntityScalarDataPropertyReferenceParserRuleCall_5_0_1).append[newLine]
-		ax.regionFor.keyword('scalarRestriction').append[oneSpace]
+		ax.regionFor.keyword('.').surround[noSpace]
+		ax.regionFor.keyword('in').surround[oneSpace]
 		ax.regionFor.ruleCall(entityScalarDataPropertyExistentialRestrictionAxiomAccess.scalarRestrictionDataRangeReferenceParserRuleCall_7_0_1).append[newLine]
 	}
 	
 	def dispatch void format(EntityScalarDataPropertyParticularRestrictionAxiom ax, extension IFormattableDocument document) {
 		ax.prepend[noSpace]
-		ax.regionFor.keyword('entityScalarDataPropertyParticularRestrictionAxiom').append[oneSpace]
+		ax.regionFor.keyword('allData').append[oneSpace]
 		
-		val lcurly = ax.regionFor.keyword('{')
-		val rcurly = ax.regionFor.keyword('}')
-		lcurly.prepend[oneSpace]
-		lcurly.append[newLine]
-		interior(lcurly, rcurly)[indent]
-		rcurly.append[newLine]
-		
-		ax.regionFor.keyword('restrictedEntity').append[oneSpace]
-		ax.regionFor.ruleCall(entityScalarDataPropertyParticularRestrictionAxiomAccess.restrictedEntityEntityReferenceParserRuleCall_3_0_1).append[newLine]
-		ax.regionFor.keyword('scalarProperty').append[oneSpace]
-		ax.regionFor.ruleCall(entityScalarDataPropertyParticularRestrictionAxiomAccess.scalarPropertyEntityScalarDataPropertyReferenceParserRuleCall_5_0_1).append[newLine]
-		ax.regionFor.keyword('literalValue').append[oneSpace]
+		ax.regionFor.keyword('.').surround[noSpace]
+		ax.regionFor.keyword('in').surround[oneSpace]
 		ax.regionFor.ruleCall(entityScalarDataPropertyParticularRestrictionAxiomAccess.literalValueSTRINGTerminalRuleCall_7_0).append[newLine]
 	}
 	
 	def dispatch void format(EntityScalarDataPropertyUniversalRestrictionAxiom ax, extension IFormattableDocument document) {
 		ax.prepend[noSpace]
-		ax.regionFor.keyword('entityScalarDataPropertyUniversalRestrictionAxiom').append[oneSpace]
+		ax.regionFor.keyword('allData').append[oneSpace]
 		
-		val lcurly = ax.regionFor.keyword('{')
-		val rcurly = ax.regionFor.keyword('}')
-		lcurly.prepend[oneSpace]
-		lcurly.append[newLine]
-		interior(lcurly, rcurly)[indent]
-		rcurly.append[newLine]
-		
-		ax.regionFor.keyword('restrictedEntity').append[oneSpace]
-		ax.regionFor.ruleCall(entityScalarDataPropertyUniversalRestrictionAxiomAccess.restrictedEntityEntityReferenceParserRuleCall_3_0_1).append[newLine]
-		ax.regionFor.keyword('scalarProperty').append[oneSpace]
-		ax.regionFor.ruleCall(entityScalarDataPropertyUniversalRestrictionAxiomAccess.scalarPropertyEntityScalarDataPropertyReferenceParserRuleCall_5_0_1).append[newLine]
-		ax.regionFor.keyword('scalarRestriction').append[oneSpace]
+		ax.regionFor.keyword('.').surround[noSpace]
+		ax.regionFor.keyword('in').surround[oneSpace]
 		ax.regionFor.ruleCall(entityScalarDataPropertyUniversalRestrictionAxiomAccess.scalarRestrictionDataRangeReferenceParserRuleCall_7_0_1).append[newLine]
 	}
 	
