@@ -417,7 +417,7 @@ class OntologicalModelingLanguageFormatter extends AbstractFormatter2 {
 		
 		ax.regionFor.keyword('.').surround[noSpace]
 		ax.regionFor.keyword('in').surround[oneSpace]
-		ax.regionFor.ruleCall(entityExistentialRestrictionAxiomAccess.restrictedRangeEntityReferenceParserRuleCall_7_0_1).append[newLine]
+		ax.regionFor.ruleCall(entityExistentialRestrictionAxiomAccess.restrictedRangeEntityReferenceParserRuleCall_5_0_1).append[newLine]
 	}
 	
 	def dispatch void format(EntityUniversalRestrictionAxiom ax, extension IFormattableDocument document) {
@@ -426,7 +426,7 @@ class OntologicalModelingLanguageFormatter extends AbstractFormatter2 {
 		
 		ax.regionFor.keyword('.').surround[noSpace]
 		ax.regionFor.keyword('in').surround[oneSpace]
-		ax.regionFor.ruleCall(entityUniversalRestrictionAxiomAccess.restrictedRangeEntityReferenceParserRuleCall_7_0_1).append[newLine]
+		ax.regionFor.ruleCall(entityUniversalRestrictionAxiomAccess.restrictedRangeEntityReferenceParserRuleCall_5_0_1).append[newLine]
 	}
 	
 	def dispatch void format(EntityScalarDataPropertyExistentialRestrictionAxiom ax, extension IFormattableDocument document) {
@@ -435,7 +435,7 @@ class OntologicalModelingLanguageFormatter extends AbstractFormatter2 {
 		
 		ax.regionFor.keyword('.').surround[noSpace]
 		ax.regionFor.keyword('in').surround[oneSpace]
-		ax.regionFor.ruleCall(entityScalarDataPropertyExistentialRestrictionAxiomAccess.scalarRestrictionDataRangeReferenceParserRuleCall_7_0_1).append[newLine]
+		ax.regionFor.ruleCall(entityScalarDataPropertyExistentialRestrictionAxiomAccess.scalarRestrictionDataRangeReferenceParserRuleCall_5_0_1).append[newLine]
 	}
 	
 	def dispatch void format(EntityScalarDataPropertyParticularRestrictionAxiom ax, extension IFormattableDocument document) {
@@ -444,7 +444,7 @@ class OntologicalModelingLanguageFormatter extends AbstractFormatter2 {
 		
 		ax.regionFor.keyword('.').surround[noSpace]
 		ax.regionFor.keyword('in').surround[oneSpace]
-		ax.regionFor.ruleCall(entityScalarDataPropertyParticularRestrictionAxiomAccess.literalValueSTRINGTerminalRuleCall_7_0).append[newLine]
+		ax.regionFor.ruleCall(entityScalarDataPropertyParticularRestrictionAxiomAccess.literalValueSTRINGTerminalRuleCall_5_0).append[newLine]
 	}
 	
 	def dispatch void format(EntityScalarDataPropertyUniversalRestrictionAxiom ax, extension IFormattableDocument document) {
@@ -453,7 +453,7 @@ class OntologicalModelingLanguageFormatter extends AbstractFormatter2 {
 		
 		ax.regionFor.keyword('.').surround[noSpace]
 		ax.regionFor.keyword('in').surround[oneSpace]
-		ax.regionFor.ruleCall(entityScalarDataPropertyUniversalRestrictionAxiomAccess.scalarRestrictionDataRangeReferenceParserRuleCall_7_0_1).append[newLine]
+		ax.regionFor.ruleCall(entityScalarDataPropertyUniversalRestrictionAxiomAccess.scalarRestrictionDataRangeReferenceParserRuleCall_5_0_1).append[newLine]
 	}
 	
 	def dispatch void format(BinaryScalarRestriction sc, extension IFormattableDocument document) {
@@ -676,7 +676,7 @@ class OntologicalModelingLanguageFormatter extends AbstractFormatter2 {
 		s.regionFor.keyword('scalarDataProperty').append[oneSpace]
 		s.regionFor.ruleCall(scalarDataPropertyValueAccess.scalarDataPropertyDataRelationshipToScalarReferenceParserRuleCall_0_0_1).append[newLine]
 		s.regionFor.keyword('scalarPropertyValue').append[oneSpace]
-		s.regionFor.ruleCall(scalarDataPropertyValueAccess.scalarPropertyValueReferenceParserRuleCall_2_0).append[newLine]
+		s.regionFor.ruleCall(scalarDataPropertyValueAccess.scalarPropertyValueValueParserRuleCall_2_0).append[newLine]
 	}
 	
 	def dispatch void format(SingletonInstanceStructuredDataPropertyValue s, extension IFormattableDocument document) {
@@ -693,7 +693,7 @@ class OntologicalModelingLanguageFormatter extends AbstractFormatter2 {
 		s.regionFor.keyword('scalarDataProperty').append[oneSpace]
 		s.regionFor.ruleCall(scalarDataPropertyValueAccess.scalarDataPropertyDataRelationshipToScalarReferenceParserRuleCall_0_0_1).append[newLine]
 		s.regionFor.keyword('scalarPropertyValue').append[oneSpace]
-		s.regionFor.ruleCall(scalarDataPropertyValueAccess.scalarPropertyValueReferenceParserRuleCall_2_0).append[newLine]
+		s.regionFor.ruleCall(scalarDataPropertyValueAccess.scalarPropertyValueValueParserRuleCall_2_0).append[newLine]
 	}
 	
 }
