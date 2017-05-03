@@ -37,7 +37,6 @@ public class OMLImportNormalizer extends ImportNormalizer {
     this.namespace = this.qnc.toString(importedNamespace);
   }
   
-  @Override
   public QualifiedName resolve(final QualifiedName relativeName) {
     String relative = this.qnc.toString(relativeName);
     if ((relative.startsWith("<") && relative.endsWith(">"))) {
@@ -79,7 +78,6 @@ public class OMLImportNormalizer extends ImportNormalizer {
     return null;
   }
   
-  @Override
   public QualifiedName deresolve(final QualifiedName fullyQualifiedName) {
     String qualified = this.qnc.toString(fullyQualifiedName);
     if ((qualified.startsWith("<") && qualified.endsWith(">"))) {

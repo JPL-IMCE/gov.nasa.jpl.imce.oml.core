@@ -102,8 +102,8 @@ public class OntologicalModelingLanguageLabelProvider extends DefaultEObjectLabe
   public String text(final Term e) {
     String _kind = OMLExtensions.kind(e);
     String _plus = (_kind + "(");
-    Object _elvis = null;
-    Object _abbrevIRI = e.abbrevIRI();
+    String _elvis = null;
+    String _abbrevIRI = e.abbrevIRI();
     if (_abbrevIRI != null) {
       _elvis = _abbrevIRI;
     } else {
@@ -116,8 +116,8 @@ public class OntologicalModelingLanguageLabelProvider extends DefaultEObjectLabe
   public String text(final ConceptualEntitySingletonInstance e) {
     String _kind = OMLExtensions.kind(e);
     String _plus = (_kind + "(");
-    Object _elvis = null;
-    Object _abbrevIRI = e.abbrevIRI();
+    String _elvis = null;
+    String _abbrevIRI = e.abbrevIRI();
     if (_abbrevIRI != null) {
       _elvis = _abbrevIRI;
     } else {
@@ -193,9 +193,9 @@ public class OntologicalModelingLanguageLabelProvider extends DefaultEObjectLabe
   
   public String text(final EntityExistentialRestrictionAxiom ax) {
     String _elvis = null;
-    Object _elvis_1 = null;
+    String _elvis_1 = null;
     EntityRelationship _restrictedRelation = ax.getRestrictedRelation();
-    Object _abbrevIRI = null;
+    String _abbrevIRI = null;
     if (_restrictedRelation!=null) {
       _abbrevIRI=_restrictedRelation.abbrevIRI();
     }
@@ -206,9 +206,9 @@ public class OntologicalModelingLanguageLabelProvider extends DefaultEObjectLabe
     }
     String _plus = ("someEntities " + _elvis_1);
     String _plus_1 = (_plus + ".");
-    Object _elvis_2 = null;
+    String _elvis_2 = null;
     Entity _restrictedDomain = ax.getRestrictedDomain();
-    Object _abbrevIRI_1 = null;
+    String _abbrevIRI_1 = null;
     if (_restrictedDomain!=null) {
       _abbrevIRI_1=_restrictedDomain.abbrevIRI();
     }
@@ -221,7 +221,7 @@ public class OntologicalModelingLanguageLabelProvider extends DefaultEObjectLabe
     String _plus_3 = (_plus_2 + 
       " in ");
     Entity _restrictedRange = ax.getRestrictedRange();
-    Object _abbrevIRI_2 = null;
+    String _abbrevIRI_2 = null;
     if (_restrictedRange!=null) {
       _abbrevIRI_2=_restrictedRange.abbrevIRI();
     }
@@ -236,9 +236,9 @@ public class OntologicalModelingLanguageLabelProvider extends DefaultEObjectLabe
   
   public String text(final EntityUniversalRestrictionAxiom ax) {
     String _elvis = null;
-    Object _elvis_1 = null;
+    String _elvis_1 = null;
     EntityRelationship _restrictedRelation = ax.getRestrictedRelation();
-    Object _abbrevIRI = null;
+    String _abbrevIRI = null;
     if (_restrictedRelation!=null) {
       _abbrevIRI=_restrictedRelation.abbrevIRI();
     }
@@ -249,9 +249,9 @@ public class OntologicalModelingLanguageLabelProvider extends DefaultEObjectLabe
     }
     String _plus = ("allEntities " + _elvis_1);
     String _plus_1 = (_plus + ".");
-    Object _elvis_2 = null;
+    String _elvis_2 = null;
     Entity _restrictedDomain = ax.getRestrictedDomain();
-    Object _abbrevIRI_1 = null;
+    String _abbrevIRI_1 = null;
     if (_restrictedDomain!=null) {
       _abbrevIRI_1=_restrictedDomain.abbrevIRI();
     }
@@ -264,7 +264,7 @@ public class OntologicalModelingLanguageLabelProvider extends DefaultEObjectLabe
     String _plus_3 = (_plus_2 + 
       " in ");
     Entity _restrictedRange = ax.getRestrictedRange();
-    Object _abbrevIRI_2 = null;
+    String _abbrevIRI_2 = null;
     if (_restrictedRange!=null) {
       _abbrevIRI_2=_restrictedRange.abbrevIRI();
     }
@@ -279,9 +279,9 @@ public class OntologicalModelingLanguageLabelProvider extends DefaultEObjectLabe
   
   public String text(final EntityScalarDataPropertyExistentialRestrictionAxiom ax) {
     String _elvis = null;
-    Object _elvis_1 = null;
+    String _elvis_1 = null;
     Entity _restrictedEntity = ax.getRestrictedEntity();
-    Object _abbrevIRI = null;
+    String _abbrevIRI = null;
     if (_restrictedEntity!=null) {
       _abbrevIRI=_restrictedEntity.abbrevIRI();
     }
@@ -292,9 +292,9 @@ public class OntologicalModelingLanguageLabelProvider extends DefaultEObjectLabe
     }
     String _plus = ("someData " + _elvis_1);
     String _plus_1 = (_plus + ".");
-    Object _elvis_2 = null;
+    String _elvis_2 = null;
     EntityScalarDataProperty _scalarProperty = ax.getScalarProperty();
-    Object _abbrevIRI_1 = null;
+    String _abbrevIRI_1 = null;
     if (_scalarProperty!=null) {
       _abbrevIRI_1=_scalarProperty.abbrevIRI();
     }
@@ -306,7 +306,7 @@ public class OntologicalModelingLanguageLabelProvider extends DefaultEObjectLabe
     String _plus_2 = (_plus_1 + _elvis_2);
     String _plus_3 = (_plus_2 + " in ");
     DataRange _scalarRestriction = ax.getScalarRestriction();
-    Object _abbrevIRI_2 = null;
+    String _abbrevIRI_2 = null;
     if (_scalarRestriction!=null) {
       _abbrevIRI_2=_scalarRestriction.abbrevIRI();
     }
@@ -321,9 +321,9 @@ public class OntologicalModelingLanguageLabelProvider extends DefaultEObjectLabe
   
   public String text(final EntityScalarDataPropertyUniversalRestrictionAxiom ax) {
     String _elvis = null;
-    Object _elvis_1 = null;
+    String _elvis_1 = null;
     Entity _restrictedEntity = ax.getRestrictedEntity();
-    Object _abbrevIRI = null;
+    String _abbrevIRI = null;
     if (_restrictedEntity!=null) {
       _abbrevIRI=_restrictedEntity.abbrevIRI();
     }
@@ -334,9 +334,9 @@ public class OntologicalModelingLanguageLabelProvider extends DefaultEObjectLabe
     }
     String _plus = ("allData " + _elvis_1);
     String _plus_1 = (_plus + ".");
-    Object _elvis_2 = null;
+    String _elvis_2 = null;
     EntityScalarDataProperty _scalarProperty = ax.getScalarProperty();
-    Object _abbrevIRI_1 = null;
+    String _abbrevIRI_1 = null;
     if (_scalarProperty!=null) {
       _abbrevIRI_1=_scalarProperty.abbrevIRI();
     }
@@ -348,7 +348,7 @@ public class OntologicalModelingLanguageLabelProvider extends DefaultEObjectLabe
     String _plus_2 = (_plus_1 + _elvis_2);
     String _plus_3 = (_plus_2 + " in ");
     DataRange _scalarRestriction = ax.getScalarRestriction();
-    Object _abbrevIRI_2 = null;
+    String _abbrevIRI_2 = null;
     if (_scalarRestriction!=null) {
       _abbrevIRI_2=_scalarRestriction.abbrevIRI();
     }
@@ -362,9 +362,9 @@ public class OntologicalModelingLanguageLabelProvider extends DefaultEObjectLabe
   }
   
   public String text(final EntityScalarDataPropertyParticularRestrictionAxiom ax) {
-    Object _elvis = null;
+    String _elvis = null;
     Entity _restrictedEntity = ax.getRestrictedEntity();
-    Object _abbrevIRI = null;
+    String _abbrevIRI = null;
     if (_restrictedEntity!=null) {
       _abbrevIRI=_restrictedEntity.abbrevIRI();
     }
@@ -375,9 +375,9 @@ public class OntologicalModelingLanguageLabelProvider extends DefaultEObjectLabe
     }
     String _plus = ("allData " + _elvis);
     String _plus_1 = (_plus + ".");
-    Object _elvis_1 = null;
+    String _elvis_1 = null;
     EntityScalarDataProperty _scalarProperty = ax.getScalarProperty();
-    Object _abbrevIRI_1 = null;
+    String _abbrevIRI_1 = null;
     if (_scalarProperty!=null) {
       _abbrevIRI_1=_scalarProperty.abbrevIRI();
     }
@@ -391,9 +391,9 @@ public class OntologicalModelingLanguageLabelProvider extends DefaultEObjectLabe
   }
   
   public String text(final ScalarOneOfLiteralAxiom ax) {
-    Object _elvis = null;
+    String _elvis = null;
     ScalarOneOfRestriction _axiom = ax.getAxiom();
-    Object _abbrevIRI = null;
+    String _abbrevIRI = null;
     if (_axiom!=null) {
       _abbrevIRI=_axiom.abbrevIRI();
     }
@@ -413,9 +413,9 @@ public class OntologicalModelingLanguageLabelProvider extends DefaultEObjectLabe
     String _elvis = null;
     String _kind = OMLExtensions.kind(ax);
     String _plus = (_kind + " ");
-    Object _elvis_1 = null;
+    String _elvis_1 = null;
     Entity _child = ax.child();
-    Object _abbrevIRI = null;
+    String _abbrevIRI = null;
     if (_child!=null) {
       _abbrevIRI=_child.abbrevIRI();
     }
@@ -427,7 +427,7 @@ public class OntologicalModelingLanguageLabelProvider extends DefaultEObjectLabe
     String _plus_1 = (_plus + _elvis_1);
     String _plus_2 = (_plus_1 + " <: ");
     Entity _parent = ax.parent();
-    Object _abbrevIRI_1 = null;
+    String _abbrevIRI_1 = null;
     if (_parent!=null) {
       _abbrevIRI_1=_parent.abbrevIRI();
     }
@@ -441,9 +441,9 @@ public class OntologicalModelingLanguageLabelProvider extends DefaultEObjectLabe
   }
   
   public String text(final SingletonInstanceStructuredDataPropertyValue e) {
-    Object _elvis = null;
+    String _elvis = null;
     ConceptualEntitySingletonInstance _singletonInstance = e.getSingletonInstance();
-    Object _abbrevIRI = null;
+    String _abbrevIRI = null;
     if (_singletonInstance!=null) {
       _abbrevIRI=_singletonInstance.abbrevIRI();
     }
@@ -453,9 +453,9 @@ public class OntologicalModelingLanguageLabelProvider extends DefaultEObjectLabe
       _elvis = "";
     }
     String _plus = (_elvis + " . ");
-    Object _elvis_1 = null;
+    String _elvis_1 = null;
     DataRelationshipToStructure _structuredDataProperty = e.getStructuredDataProperty();
-    Object _abbrevIRI_1 = null;
+    String _abbrevIRI_1 = null;
     if (_structuredDataProperty!=null) {
       _abbrevIRI_1=_structuredDataProperty.abbrevIRI();
     }
@@ -468,9 +468,9 @@ public class OntologicalModelingLanguageLabelProvider extends DefaultEObjectLabe
   }
   
   public String text(final SingletonInstanceScalarDataPropertyValue e) {
-    Object _elvis = null;
+    String _elvis = null;
     ConceptualEntitySingletonInstance _singletonInstance = e.getSingletonInstance();
-    Object _abbrevIRI = null;
+    String _abbrevIRI = null;
     if (_singletonInstance!=null) {
       _abbrevIRI=_singletonInstance.abbrevIRI();
     }
@@ -480,9 +480,9 @@ public class OntologicalModelingLanguageLabelProvider extends DefaultEObjectLabe
       _elvis = "";
     }
     String _plus = (_elvis + " . ");
-    Object _elvis_1 = null;
+    String _elvis_1 = null;
     EntityScalarDataProperty _scalarDataProperty = e.getScalarDataProperty();
-    Object _abbrevIRI_1 = null;
+    String _abbrevIRI_1 = null;
     if (_scalarDataProperty!=null) {
       _abbrevIRI_1=_scalarDataProperty.abbrevIRI();
     }
@@ -493,13 +493,13 @@ public class OntologicalModelingLanguageLabelProvider extends DefaultEObjectLabe
     }
     String _plus_1 = (_plus + _elvis_1);
     String _plus_2 = (_plus_1 + " = ");
-    Object _scalarPropertyValue = e.getScalarPropertyValue();
+    String _scalarPropertyValue = e.getScalarPropertyValue();
     return (_plus_2 + _scalarPropertyValue);
   }
   
   public String text(final SingletonInstanceStructuredDataPropertyContext e) {
     String _elvis = null;
-    Object _abbrevIRI = e.getStructuredDataProperty().abbrevIRI();
+    String _abbrevIRI = e.getStructuredDataProperty().abbrevIRI();
     String _plus = (" . " + _abbrevIRI);
     if (_plus != null) {
       _elvis = _plus;
@@ -511,7 +511,7 @@ public class OntologicalModelingLanguageLabelProvider extends DefaultEObjectLabe
   
   public String text(final StructuredDataPropertyTuple e) {
     String _elvis = null;
-    Object _abbrevIRI = e.getStructuredDataProperty().abbrevIRI();
+    String _abbrevIRI = e.getStructuredDataProperty().abbrevIRI();
     String _plus = (" . " + _abbrevIRI);
     if (_plus != null) {
       _elvis = _plus;
@@ -522,9 +522,9 @@ public class OntologicalModelingLanguageLabelProvider extends DefaultEObjectLabe
   }
   
   public String text(final ScalarDataPropertyValue e) {
-    Object _elvis = null;
+    String _elvis = null;
     DataRelationshipToScalar _scalarDataProperty = e.getScalarDataProperty();
-    Object _abbrevIRI = null;
+    String _abbrevIRI = null;
     if (_scalarDataProperty!=null) {
       _abbrevIRI=_scalarDataProperty.abbrevIRI();
     }
@@ -535,15 +535,15 @@ public class OntologicalModelingLanguageLabelProvider extends DefaultEObjectLabe
     }
     String _plus = (" . " + _elvis);
     String _plus_1 = (_plus + " = ");
-    Object _scalarPropertyValue = e.getScalarPropertyValue();
+    String _scalarPropertyValue = e.getScalarPropertyValue();
     return (_plus_1 + _scalarPropertyValue);
   }
   
   public String text(final ReifiedRelationshipInstanceDomain e) {
     String _elvis = null;
-    Object _elvis_1 = null;
+    String _elvis_1 = null;
     ReifiedRelationshipInstance _reifiedRelationshipInstance = e.getReifiedRelationshipInstance();
-    Object _abbrevIRI = null;
+    String _abbrevIRI = null;
     if (_reifiedRelationshipInstance!=null) {
       _abbrevIRI=_reifiedRelationshipInstance.abbrevIRI();
     }
@@ -555,7 +555,7 @@ public class OntologicalModelingLanguageLabelProvider extends DefaultEObjectLabe
     String _plus = ("domain(" + _elvis_1);
     String _plus_1 = (_plus + ") = ");
     ConceptualEntitySingletonInstance _domain = e.getDomain();
-    Object _abbrevIRI_1 = null;
+    String _abbrevIRI_1 = null;
     if (_domain!=null) {
       _abbrevIRI_1=_domain.abbrevIRI();
     }
@@ -570,9 +570,9 @@ public class OntologicalModelingLanguageLabelProvider extends DefaultEObjectLabe
   
   public String text(final ReifiedRelationshipInstanceRange e) {
     String _elvis = null;
-    Object _elvis_1 = null;
+    String _elvis_1 = null;
     ReifiedRelationshipInstance _reifiedRelationshipInstance = e.getReifiedRelationshipInstance();
-    Object _abbrevIRI = null;
+    String _abbrevIRI = null;
     if (_reifiedRelationshipInstance!=null) {
       _abbrevIRI=_reifiedRelationshipInstance.abbrevIRI();
     }
@@ -584,7 +584,7 @@ public class OntologicalModelingLanguageLabelProvider extends DefaultEObjectLabe
     String _plus = ("range(" + _elvis_1);
     String _plus_1 = (_plus + ") = ");
     ConceptualEntitySingletonInstance _range = e.getRange();
-    Object _abbrevIRI_1 = null;
+    String _abbrevIRI_1 = null;
     if (_range!=null) {
       _abbrevIRI_1=_range.abbrevIRI();
     }
@@ -599,9 +599,9 @@ public class OntologicalModelingLanguageLabelProvider extends DefaultEObjectLabe
   
   public String text(final UnreifiedRelationshipInstanceTuple e) {
     String _elvis = null;
-    Object _elvis_1 = null;
+    String _elvis_1 = null;
     ConceptualEntitySingletonInstance _domain = e.getDomain();
-    Object _abbrevIRI = null;
+    String _abbrevIRI = null;
     if (_domain!=null) {
       _abbrevIRI=_domain.abbrevIRI();
     }
@@ -612,9 +612,9 @@ public class OntologicalModelingLanguageLabelProvider extends DefaultEObjectLabe
     }
     String _plus = ("tuple(" + _elvis_1);
     String _plus_1 = (_plus + " . ");
-    Object _elvis_2 = null;
+    String _elvis_2 = null;
     UnreifiedRelationship _unreifiedRelationship = e.getUnreifiedRelationship();
-    Object _abbrevIRI_1 = null;
+    String _abbrevIRI_1 = null;
     if (_unreifiedRelationship!=null) {
       _abbrevIRI_1=_unreifiedRelationship.abbrevIRI();
     }
@@ -626,7 +626,7 @@ public class OntologicalModelingLanguageLabelProvider extends DefaultEObjectLabe
     String _plus_2 = (_plus_1 + _elvis_2);
     String _plus_3 = (_plus_2 + " ) = ");
     ConceptualEntitySingletonInstance _range = e.getRange();
-    Object _abbrevIRI_2 = null;
+    String _abbrevIRI_2 = null;
     if (_range!=null) {
       _abbrevIRI_2=_range.abbrevIRI();
     }
