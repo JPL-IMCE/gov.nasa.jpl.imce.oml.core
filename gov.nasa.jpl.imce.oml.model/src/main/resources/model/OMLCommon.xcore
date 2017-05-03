@@ -379,6 +379,11 @@ abstract class Module extends Element, Resource {
 	@NotSchema
 	op LocalName[1] name() { nsPrefix }
 	
+	@Scala(code="scala.Some(nsPrefix)")
+	@ImplicitExtent
+	@NotSchema
+	op String[?] abbrevIRI() { nsPrefix }
+	
 	@NotSchema
 	@Collection(kind="Set")
 	contains Annotation[] annotations opposite module

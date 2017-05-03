@@ -29,7 +29,8 @@ There are no Eclipse metadata files (.classpath, .project, .settings, META-INF/M
 - ln -s /usr/local/Cellar/scala@2.11/2.11.8_1 scala2.11
 - In Eclipse preferences, set the location for Scala 2.11
 - In Eclipse preferences, set a Java classpath variable: GRADLE_HOME = ~/.gradle
-- Use gradle to build all the projects & generate the Eclipse project metadata needed for import into Eclipse
+
+All the Eclipse-related metadata files are included in GIT (.project, .classpath, META-INF/MANIFEST.MF, ...)
 
 
 ## To clean:
@@ -50,7 +51,9 @@ The following usually suffices to avoid this problem:
 
     ./gradlew :<subproject>:<task> :<subproject>:taskTree
     
-## To import in Intellij:
+## To import in Intellij
+
+### For the gradle-based configuration at the toplevel:
 
 1) `New > Project from existing sources...`
 
@@ -64,43 +67,27 @@ Note that this project's gradle configuration does not include support for worki
 
 To work on these, import these sub-projects as separate Intellij SBT projects.
 
+### For SBT-based Scala projects
+
+- [gov.nasa.jpl.imce.oml.tables](gov.nasa.jpl.imce.oml.tables)
+- [gov.nasa.jpl.imce.oml.resolver](gov.nasa.jpl.imce.oml.resolver)
+
+Import each project in Intellij as an SBT-based project.
+
 ## To import in eclipse:
 
-1) Build everything with gradle
-
-     ```
-     ./gradlew build
-     ```
-     
-2) Generate Eclipse metadata
-
-     ```
-     ./gradlew eclipse
-     ```
-     
-3) Define a `GRADLE_HOME` Eclipse Classpath variable
+1) Define a `GRADLE_HOME` Eclipse Classpath variable
 
    This variable can be defined in Eclipse' preferences in `Java/Build Path/Classpath Variables`
    The value of this variable should be the folder corresponding to `$HOME/.gradle`
    
-4) Import the Eclipse projects from this directory
+2) Import the Eclipse projects from this directory except for:
 
-Note that this project's gradle configuration does not include support for working on the scala sub-projects:
 - [gov.nasa.jpl.imce.oml.tables](gov.nasa.jpl.imce.oml.tables)
 - [gov.nasa.jpl.imce.oml.resolver](gov.nasa.jpl.imce.oml.resolver)
 
-Working on these Sacla sub-projects is easier with Intellij than with Eclipse 
-because Intellij uses the SBT project configuration to configure Intellij.
-
-In contrast, the Scala-Eclipse IDE does not yet use the SBT project configuration to configure Eclipse;
-which means that Eclipse needs to be configured somehow (manually or by generation). The `sbt eclipse`
-command generates useful Eclipse configuration metadata (.project, .classpath, ...); however, this configuration
-typically needs to be further adjusted manually for Scala development in Eclipse.
-
-## Building using Eclipse:
-
-- Execute the procedure to `import in Eclipse`
-- The projects can be cleaned & rebuilt in the Eclipse IDE
+These projects involve Scala source code that is unfortunately difficult to work on using the Eclipse Scala IDE.
+However, working on these two projects is easier with Intellij by importing them as SBT projects.
 
 ## Gradle
 

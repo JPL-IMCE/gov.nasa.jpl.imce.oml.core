@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature url="features/gov.nasa.jpl.imce.oml.feature_0.6.0.jar" id="gov.nasa.jpl.imce.oml.feature" version="0.6.0">
+      <category name="gov.nasa.jpl.imce.oml"/>
+   </feature>
+   <category-def name="gov.nasa.jpl.imce.oml" label="IMCE OML Workbench"/>
+</site>

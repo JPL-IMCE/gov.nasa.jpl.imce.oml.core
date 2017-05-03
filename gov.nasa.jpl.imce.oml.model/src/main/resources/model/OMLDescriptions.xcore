@@ -380,7 +380,7 @@ abstract class ConceptualEntitySingletonInstance extends TerminologyInstanceAsse
 	@Override
 	op IRI[?] iri() { descriptionBox?.iri()+'#'+name() }
 	
-	@Scala(code="descriptionBox().flatMap(dbox => dbox.nsPrefix()+\":\"+name())")
+	@Scala(code="descriptionBox().map(dbox => dbox.nsPrefix+\":\"+name)")
 	@ImplicitExtent
 	@NotSchema
 	@Override

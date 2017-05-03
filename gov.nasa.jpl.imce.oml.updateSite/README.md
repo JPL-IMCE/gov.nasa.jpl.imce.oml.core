@@ -86,6 +86,11 @@ Follow the procedure to install Eclipse Neon.3 with Xtext 2.11 & CDO:
 
 2) In the Eclipse IDE, build the update site
 
+   Note that all the Eclipse plugin projects have in their build.properties directives to include source directories despite warnings from Eclipse PDE UI.
+   Eclipse PDE UI warns that such source directories are included in source builds.
+   This is true only for 100%-based java sources; it is not true for other source content (e.g., *.xcore, *.xtend). 
+  
+   
 3) Publish
 
 ```shell

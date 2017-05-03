@@ -243,7 +243,7 @@ abstract class Term extends TerminologyBoxStatement, Resource {
 	@Override
 	op IRI[?] iri() { tbox?.iri()+'#'+name() }
 	
-	@Scala(code="extent.terminologyBoxOfTerminologyBoxStatement.get(this).flatMap(tbox => tbox.nsPrefix()+\":\"+name())")
+	@Scala(code="extent.terminologyBoxOfTerminologyBoxStatement.get(this).map(tbox => tbox.nsPrefix+\":\"+name)")
 	@ImplicitExtent
 	@NotSchema
 	@Override

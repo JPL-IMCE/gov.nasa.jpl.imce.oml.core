@@ -1,14 +1,9 @@
 *~
 .antlr-generator-3.2.0-patch.jar
-.classpath
 .gradle
 .idea
-.project
 .settings
 bin
 build
-src-gen
-xtend-gen
-META-INF
 */.gitignore
 *.log
