@@ -21,27 +21,24 @@ import com.google.inject.Inject
 import org.eclipse.xtext.common.services.DefaultTerminalConverters
 import org.eclipse.xtext.conversion.IValueConverter
 import org.eclipse.xtext.conversion.ValueConverter
-import org.eclipse.xtext.conversion.impl.AbstractIDValueConverter
 import org.eclipse.xtext.conversion.impl.KeywordAlternativeConverter
 import org.eclipse.xtext.conversion.impl.QualifiedNameValueConverter
 
 class OMLValueConverterService extends DefaultTerminalConverters {
 
-	@Inject OMLReferenceValueConverter referenceValueConverter;
+	@Inject OMLReferenceValueConverter referenceValueConverter
 
-	@Inject OMLQNAMEValueConverter qnameValueConverter;
+	@Inject OMLQNAMEValueConverter qnameValueConverter
 
-	@Inject QualifiedNameValueConverter qualifiedNameValueConverter;
+	@Inject QualifiedNameValueConverter qualifiedNameValueConverter
 
-	@Inject OMLIRIValueConverter iriValueConverter;
+	@Inject OMLIRIValueConverter iriValueConverter
 
-	@Inject OMLExternalReferenceValueConverter externalReferenceValueConverter;
+	@Inject OMLExternalReferenceValueConverter externalReferenceValueConverter
 	
-	@Inject OMLSL_COMMENTValueConverter sl_CommentValueConverter;
+	@Inject OMLSL_COMMENTValueConverter sl_CommentValueConverter
 
-	@Inject KeywordAlternativeConverter validIDValueConverter;
-
-	@Inject AbstractIDValueConverter idValueConverter;
+	@Inject KeywordAlternativeConverter validIDValueConverter
 
 	@ValueConverter(rule="Reference")
 	def IValueConverter<String> Reference() {
@@ -76,10 +73,5 @@ class OMLValueConverterService extends DefaultTerminalConverters {
 	@ValueConverter(rule="ValidID")
 	def IValueConverter<String> ValidID() {
 		validIDValueConverter;
-	}
-
-	@ValueConverter(rule="ID")
-	override def IValueConverter<String> ID() {
-		idValueConverter;
 	}
 }

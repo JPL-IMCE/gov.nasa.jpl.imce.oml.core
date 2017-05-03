@@ -18,58 +18,33 @@
 package gov.nasa.jpl.imce.oml.dsl.linking
 
 import com.google.inject.Inject
-
+import gov.nasa.jpl.imce.oml.model.bundles.Bundle
+import gov.nasa.jpl.imce.oml.model.bundles.BundlesPackage
+import gov.nasa.jpl.imce.oml.model.common.Annotation
+import gov.nasa.jpl.imce.oml.model.common.CommonPackage
+import gov.nasa.jpl.imce.oml.model.common.Element
+import gov.nasa.jpl.imce.oml.model.common.Extent
+import gov.nasa.jpl.imce.oml.model.descriptions.DescriptionBox
+import gov.nasa.jpl.imce.oml.model.descriptions.DescriptionsPackage
+import gov.nasa.jpl.imce.oml.model.extensions.OMLExtensions
+import gov.nasa.jpl.imce.oml.model.terminologies.TerminologiesPackage
+import gov.nasa.jpl.imce.oml.model.terminologies.TerminologyBox
 import java.util.Collections
-
+import org.apache.xml.resolver.Catalog
+import org.eclipse.emf.common.util.URI
 import org.eclipse.emf.ecore.EClass
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
+import org.eclipse.emf.ecore.resource.Resource.Diagnostic
+import org.eclipse.xtext.CrossReference
 import org.eclipse.xtext.linking.impl.DefaultLinkingService
 import org.eclipse.xtext.linking.impl.IllegalNodeException
 import org.eclipse.xtext.naming.IQualifiedNameConverter
 import org.eclipse.xtext.naming.QualifiedName
 import org.eclipse.xtext.nodemodel.INode
-import org.eclipse.xtext.scoping.IScope
 import org.eclipse.xtext.resource.IEObjectDescription
+import org.eclipse.xtext.scoping.IScope
 
-import gov.nasa.jpl.imce.oml.model.common.AnnotationProperty
-import gov.nasa.jpl.imce.oml.model.common.Annotation
-import gov.nasa.jpl.imce.oml.model.common.Element
-import gov.nasa.jpl.imce.oml.model.extensions.OMLExtensions
-import org.apache.xml.resolver.Catalog
-import org.eclipse.emf.common.util.URI
-import gov.nasa.jpl.imce.oml.model.common.Extent
-import gov.nasa.jpl.imce.oml.model.terminologies.TerminologyBox
-import gov.nasa.jpl.imce.oml.model.descriptions.DescriptionBox
-import gov.nasa.jpl.imce.oml.model.terminologies.TerminologiesPackage
-import gov.nasa.jpl.imce.oml.model.descriptions.DescriptionsPackage
-
-/*
- * In the OML metamodel, an OML Annotation has 2 non-container references that require cross-reference resolution:
- * - property, which is specified in the concrete syntax grammar via an OML AnnotationProperty's abbreviated IRI
- * - subject, which is specified implicitly based on the fact that OML Annotations appear after an OML TerminologyThing subject.
- * 
- * The cross-reference resolution of the property in terms of its abbreviated IRI will trigger a call: getLinkedObjects(context, ref, node)
- * where ref corresponds to Annotation.property and node is the concrete syntax AST for the Annotation itself.
- * 
- * The concrete syntax for annotations looks like this ('...' means a repetition of the previous concrete syntax statement)
- * 
- * <TerminologyBox(tbox)> {
- *   <Annotation(subject=tbox, property=..., value=...)>
- *   ...
- *   <Annotation(subject=tbox, property=..., value=...)>
- * 
- *   <TerminologyThing(t1)>
- *   <Annotation(subject=t1, property=..., value=...)>
- *   ...
- *   <Annotation(subject=t1, property=..., value=...)>
- * 
- *   <TerminologyThing(t2)>
- *   <Annotation(subject=t2, property=..., value=...)>
- *   ...
- *   <Annotation(subject=t2, property=..., value=...)>
- * } 
- */
 class OWLLinkingService extends DefaultLinkingService {
 	
 	@Inject
@@ -82,14 +57,13 @@ class OWLLinkingService extends DefaultLinkingService {
 
 		val crossRefString = getCrossRefNodeAsString(node)
 
-		// TODO: catalog-based cross-ref resolver.
-		// when crossRefString = "<....>" 
-		// look for a catalog from the current "file" directory and to the parent folders.
-		// if found, use it to resolve the crossRef IRI to a local file; which needs to be loaded.
 		if (null === crossRefString || crossRefString.equals(""))
 			return Collections.emptyList()
 
+		// Is this an IRI cross-reference?
 		if (crossRefString.startsWith("<") && crossRefString.endsWith(">")) {
+			
+			// For an IRI cross-reference, find an OASIS XML catalog to resolve the IRI into a local OML file URL, which we need to load into the XtextResourceSet.
 			
 			val rs = context.eResource.resourceSet
 			if (null === rs)
@@ -109,12 +83,33 @@ class OWLLinkingService extends DefaultLinkingService {
 					return Collections.emptyList()
 				
 				val resolvedOML = rs.getResource(URI.createURI(resolvedIRI), true)
-				if (!resolvedOML.errors.isEmpty) {
-					throw new IllegalNodeException(node, "Problem loading: "+resolvedIRI)
+				val StringBuffer problems = new StringBuffer()
+				resolvedOML.errors.forEach[Diagnostic e |
+					switch e {
+						org.eclipse.xtext.diagnostics.Diagnostic:
+							problems.append("\n"+e.message+" at "+e.location+" line:"+e.line+", column:"+e.column+", offset:"+e.offset+", length:"+e.length)
+						default:
+							problems.append("\n"+e.message+" at "+e.location+" line:"+e.line+", column:"+e.column)
+					}
+				]
+				resolvedOML.warnings.forEach[Diagnostic e |
+					switch e {
+						org.eclipse.xtext.diagnostics.Diagnostic:
+							problems.append(e.message+" at "+e.location+" line:"+e.line+", column:"+e.column+", offset:"+e.offset+", length:"+e.length)
+						default:
+							problems.append(e.message+" at "+e.location+" line:"+e.line+", column:"+e.column)
+					}
+				]
+				if (!resolvedOML.errors.empty || !resolvedOML.warnings.empty) {
+					throw new IllegalNodeException(node, "Problem loading: "+resolvedIRI+problems.toString)
 				}
 			}
 			val refType = ref.EType
 			switch refType {
+				case BundlesPackage.eINSTANCE.bundle: {
+					val bundle = rs.resources.map[contents.filter(Extent).map[modules.filter(Bundle)].flatten].flatten.findFirst[b|b.iri() == resourceIRI]
+					return if(null === bundle) Collections.emptyList() else Collections.singletonList(bundle)
+				}
 				case TerminologiesPackage.eINSTANCE.terminologyBox: {
 					val tbox = rs.resources.map[contents.filter(Extent).map[modules.filter(TerminologyBox)].flatten].flatten.findFirst[tbox|tbox.iri() == resourceIRI]
 					return if(null === tbox) Collections.emptyList() else Collections.singletonList(tbox)
@@ -126,47 +121,52 @@ class OWLLinkingService extends DefaultLinkingService {
 				default:
 					return Collections.emptyList()
 			}
-		}
+			
+		} 
 		
-		val IScope scope = getScope(context, ref)
-		val QualifiedName qualifiedLinkName = qualifiedNameConverter.toQualifiedName(crossRefString)
-		val IEObjectDescription eObjectDescription = scope.getSingleElement(qualifiedLinkName)
-		if (null === eObjectDescription) {
-			throw new IllegalNodeException(node, "getLinkedObjects: failed to resolve reference '"+crossRefString+" for "+ref.name+":"+requiredType.name)	
-		}
-		val e = eObjectDescription.getEObjectOrProxy()
-
-		switch context {
-			// Piggy-back on the cross-reference resolution of the Annotation.property reference for an Annotation context
-			// to lookup a TerminologyThing semantic element for the previous concrete syntax node of the Annotation node.
-			// Since a TerminologyThing can have multiple subsequent Annotations in the concrete syntax, 
-			// we rely on the fact that the cross-reference lookup will happen in the order in which Annotations appear in the concrete syntax.
-			Annotation: {
-				switch e {
-					AnnotationProperty: {
-						val prevNode = node.parent.previousSibling
-						val prevSE = prevNode.leafNodes.head.semanticElement
-						switch prevSE {
-							Element:
-								// In this case, the concrete syntax looks like this:
-								// <TerminologyThing> == prevSE
-								// <Annotation> == context
-								context.subject = prevSE
-							Annotation:
-								// In this case, the concrete syntax looks like this:
-								// <TerminologyThing>
-								// <Annotation>
-								// ...
-								// <Annotation> == prevSE
-								// <Annotation> == context
-								context.subject = prevSE.subject
-						}
-
-						return Collections.singletonList(e)
-					}
+		if (Annotation.isInstance(context) && ref == CommonPackage.eINSTANCE.annotation_Property) {
+			// Look for what the next node is...
+			val aContext = Annotation.cast(context)
+			val nextNode = node.parent.nextSibling
+			val nextSE = nextNode.leafNodes.head.semanticElement
+			switch nextSE {
+				Element: {
+					// In this case, the concrete syntax looks like this:
+					// <Annotation> == context
+					// <Element> == nextSE
+					aContext.subject = nextSE
+				}
+				Annotation: {
+					// In this case, the concrete syntax looks like this:
+					// <Annotation> == context
+					// <Annotation> == nextSE
+					// ...
+					// <Element>
+					
+					// force resolving the next annotation; as a side effect, it will have its subset set.
+					val nextLeafNodes = nextNode.leafNodes
+					val n1 = nextLeafNodes.findFirst[n|CrossReference.isInstance(n.grammarElement)]
+					getLinkedObjects(nextSE, ref, n1)
+					aContext.subject = nextSE.subject
 				}
 			}
 		}
+		
+		//val defaultResult = super.getLinkedObjects(context, ref, node)
+		//return defaultResult
+		
+		val IScope scope = getScope(context, ref)
+		val QualifiedName qualifiedLinkName = qualifiedNameConverter.toQualifiedName(crossRefString)
+		val IEObjectDescription eObjectDescription = scope.getSingleElement(qualifiedLinkName)		
+		
+		if (null === eObjectDescription) {
+			val defaultResult = super.getLinkedObjects(context, ref, node)
+			if (defaultResult !== null && !defaultResult.empty)
+				return defaultResult
+			else
+				return Collections.emptyList()
+		}
+		val e = eObjectDescription.getEObjectOrProxy()
 		return Collections.singletonList(e)
 	}
 	

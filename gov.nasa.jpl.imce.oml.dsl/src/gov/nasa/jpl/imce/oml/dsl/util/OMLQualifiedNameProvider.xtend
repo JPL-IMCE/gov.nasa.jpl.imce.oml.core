@@ -39,11 +39,11 @@ class OMLQualifiedNameProvider extends DefaultDeclarativeQualifiedNameProvider {
 	}
 	
 	def QualifiedName qualifiedName(Term term) {
-		return qnc.toQualifiedName(OMLExtensions.kind(term)+'<'+term.iri()+'>')
+		return qnc.toQualifiedName(term.abbrevIRI)
 	}
 	
 	def QualifiedName qualifiedName(ConceptualEntitySingletonInstance i) {
-		return qnc.toQualifiedName(OMLExtensions.kind(i)+'<'+i.iri()+'>')
+		return qnc.toQualifiedName(i.abbrevIRI)
 	}
 	
 	def QualifiedName qualifiedName(ModuleEdge edge) {

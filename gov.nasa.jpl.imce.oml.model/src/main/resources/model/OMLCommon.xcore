@@ -162,7 +162,7 @@ type NamespacePrefix wraps String
 /*
  * An OML Element is a logical abstraction
  * for everything involved in OML that
- * is globally identified by a UUID.
+ * is globally identified by a version 5 namespace UUID.
  */
 abstract class Element {
 	
@@ -192,6 +192,10 @@ abstract class Resource {
 	
 	@NotSchema
 	op LocalName[1] name()
+	
+	@ImplicitExtent
+	@NotSchema
+	op String[?] abbrevIRI()
 }
 
 /*
@@ -232,7 +236,7 @@ class AnnotationProperty {
 	@Scala(code="com.fasterxml.uuid.Generators.nameBasedGenerator(com.fasterxml.uuid.impl.NameBasedGenerator.NAMESPACE_URL).generate(iri)")
 	@IsOrderingKey
 	derived UUID[1] uuid get {
-		OMLExtensions.namespaceUUID(iri).toString
+		OMLExtensions.namespaceUUID(iri)?.toString
 	}
 
 	IRI[1] iri
@@ -338,11 +342,12 @@ class Extent {
 	
 	@NotFunctionalAPI
 	@NotSchema
-	contains AnnotationProperty[] annotationProperties opposite extent
+	contains Module[] modules opposite extent
 	
 	@NotFunctionalAPI
 	@NotSchema
-	contains Module[] modules opposite extent
+	contains AnnotationProperty[] annotationProperties opposite extent
+	
 }
 
 /*
@@ -369,7 +374,7 @@ abstract class Module extends Element, Resource {
 	
 	@Scala(code="iri.substring(1+iri.lastIndexOf('/'))")
 	@NotSchema
- 	op NamespacePrefix[1] nsPrefix() { getIri().substring(1+getIri().lastIndexOf('/')) }
+ 	op NamespacePrefix[1] nsPrefix() { getIri()?.substring(1+getIri().lastIndexOf('/')) }
 	
 	@NotSchema
 	op LocalName[1] name() { nsPrefix }
@@ -381,6 +386,6 @@ abstract class Module extends Element, Resource {
 	@NotFunctionalAPI
 	@NotSchema
 	op UUID[1] uuid() {
-		OMLExtensions.namespaceUUID(iri()).toString
+		OMLExtensions.namespaceUUID(iri()?:"")?.toString
 	}
 }

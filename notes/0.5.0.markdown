@@ -1,0 +1,2 @@
+gov.nasa.jpl.imce.oml.core 0.5.0 is the first build of all the oml libraries, 
+including the Eclipse P2 update site for the OML workbench.

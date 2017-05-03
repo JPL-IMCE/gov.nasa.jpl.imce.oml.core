@@ -18,16 +18,12 @@
 
 package gov.nasa.jpl.imce.oml.resolver.api
 
-/*
- * An OML DataStructureTuple defines an structured tuple instance of an OML Structure.
- */
-trait DataStructureTuple
-  extends SingletonInstance
-  with Element
+trait SingletonInstanceStructuredDataPropertyContext
+  extends Element
 {
 
-  val dataStructureType: Structure
+  val structuredDataProperty: DataRelationshipToStructure
 
-  override def descriptionBox
+  def descriptionBox
   ()(implicit extent: Extent): scala.Option[DescriptionBox]
 }

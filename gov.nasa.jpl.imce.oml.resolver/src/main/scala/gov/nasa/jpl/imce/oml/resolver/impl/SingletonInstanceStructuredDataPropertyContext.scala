@@ -20,41 +20,17 @@ package gov.nasa.jpl.imce.oml.resolver.impl
 
 import gov.nasa.jpl.imce.oml._
 
-case class StructuredDataPropertyValue private[impl] 
-(
- override val uuid: java.util.UUID,
- override val structuredDataProperty: resolver.api.DataRelationshipToStructure
-)
-extends resolver.api.StructuredDataPropertyValue
+trait SingletonInstanceStructuredDataPropertyContext
+extends resolver.api.SingletonInstanceStructuredDataPropertyContext
   with Element
 {
+override val structuredDataProperty: resolver.api.DataRelationshipToStructure
 		
-  def descriptionBox
-  ()(implicit extent: resolver.api.Extent)
-  : scala.Option[resolver.api.DescriptionBox]
-  = {
-    extent.singletonInstanceOfStructuredDataPropertyValue.get(this).flatMap(_.descriptionBox())
-  }
-  
 
 
 
   override def canEqual(that: scala.Any): scala.Boolean = that match {
-  	case _: StructuredDataPropertyValue => true
+  	case _: SingletonInstanceStructuredDataPropertyContext => true
   	case _ => false
-  }
-
-  override val hashCode
-  : scala.Int
-  = (uuid, structuredDataProperty).##
-
-  override def equals(other: scala.Any): scala.Boolean = other match {
-	  case that: StructuredDataPropertyValue =>
-	    (that canEqual this) &&
-	    (this.uuid == that.uuid) &&
-	    (this.structuredDataProperty == that.structuredDataProperty)
-
-	  case _ =>
-	    false
   }
 }

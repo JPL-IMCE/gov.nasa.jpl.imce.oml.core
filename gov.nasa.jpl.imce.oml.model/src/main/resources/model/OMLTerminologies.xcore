@@ -224,9 +224,9 @@ class TerminologyExtensionAxiom extends TerminologyBoxAxiom {
 	op UUID[1] uuid() {
 		OMLExtensions.derivedUUID(
 		"TerminologyExtensionAxiom", 
-		"tbox" -> tbox.uuid(),
-		"extendedTerminology" -> extendedTerminology.uuid()
-		).toString
+		"tbox" -> tbox?.uuid()?.toString,
+		"extendedTerminology" -> extendedTerminology?.uuid()?.toString
+		)?.toString
 	}
 }
 
@@ -241,7 +241,13 @@ abstract class Term extends TerminologyBoxStatement, Resource {
 	@ImplicitExtent
 	@NotSchema
 	@Override
-	op IRI[?] iri() { tbox.iri()+'#'+name() }
+	op IRI[?] iri() { tbox?.iri()+'#'+name() }
+	
+	@Scala(code="extent.terminologyBoxOfTerminologyBoxStatement.get(this).flatMap(tbox => tbox.nsPrefix()+\":\"+name())")
+	@ImplicitExtent
+	@NotSchema
+	@Override
+	op String[?] abbrevIRI() { (tbox?.nsPrefix()?:"")+':'+name() }
 	
 	@Override
 	LocalName[1] name
@@ -253,7 +259,7 @@ abstract class Term extends TerminologyBoxStatement, Resource {
 	@NotFunctionalAPI
 	@NotSchema
 	op UUID[1] uuid() {
-		OMLExtensions.namespaceUUID(tbox.uuid(), "name" -> name().toString()).toString
+		OMLExtensions.namespaceUUID(tbox?.uuid(), "name" -> name()?.toString())?.toString
 	}
 }
 
@@ -443,7 +449,7 @@ abstract class DataRelationship extends Term, DirectedBinaryRelationshipKind {
  * for the domain of an OML DataRelationship
  */
 @Glossary
-abstract class DataRelationshipDomain extends Element {
+abstract class DataRelationshipDomain extends Element, Resource {
 }
 
 /*
@@ -479,7 +485,7 @@ abstract class DataRelationshipFromStructure extends DataRelationshipDomain {
  * for the range of an OML DataRelationship
  */
 @Glossary
-abstract class DataRelationshipRange extends Element {
+abstract class DataRelationshipRange extends Element, Resource {
 }
 
 /*
@@ -624,10 +630,10 @@ class EntityExistentialRestrictionAxiom extends EntityRestrictionAxiom {
 		OMLExtensions.derivedUUID(
 		"EntityExistentialRestrictionAxiom", 
 		"tbox" -> tbox.uuid(),
-		"restrictedRelation" -> restrictedRelation.uuid().toString,
-		"restrictedDomain" -> restrictedDomain.uuid().toString, 
-		"restrictedRange" -> restrictedRange.uuid().toString
-		).toString
+		"restrictedRelation" -> restrictedRelation?.uuid()?.toString,
+		"restrictedDomain" -> restrictedDomain?.uuid()?.toString, 
+		"restrictedRange" -> restrictedRange?.uuid()?.toString
+		)?.toString
 	}
 }
 
@@ -645,10 +651,10 @@ class EntityUniversalRestrictionAxiom extends EntityRestrictionAxiom {
 		OMLExtensions.derivedUUID(
 		"EntityUniversalRestrictionAxiom", 
 		"tbox" -> tbox.uuid(),
-		"restrictedRelation" -> restrictedRelation.uuid().toString,
-		"restrictedDomain" -> restrictedDomain.uuid().toString, 
-		"restrictedRange" -> restrictedRange.uuid().toString
-		).toString
+		"restrictedRelation" -> restrictedRelation?.uuid()?.toString,
+		"restrictedDomain" -> restrictedDomain?.uuid()?.toString, 
+		"restrictedRange" -> restrictedRange?.uuid()?.toString
+		)?.toString
 	}
 	
 }
@@ -707,9 +713,9 @@ class AspectSpecializationAxiom extends SpecializationAxiom {
 		OMLExtensions.derivedUUID(
 		"AspectSpecializationAxiom",  
 		"tbox" -> tbox.uuid(),
-		"superAspect" -> superAspect.uuid().toString,
-		"subEntity" -> subEntity.uuid().toString
-		).toString
+		"superAspect" -> superAspect?.uuid()?.toString,
+		"subEntity" -> subEntity?.uuid()?.toString
+		)?.toString
 	}
 }
 
@@ -742,10 +748,10 @@ class ConceptSpecializationAxiom extends SpecializationAxiom {
 	op UUID[1] uuid() {
 		OMLExtensions.derivedUUID(
 		"ConceptSpecializationAxiom",
-		"tbox" -> tbox.uuid(),
-		"superConcept" -> superConcept.uuid().toString,
-		"subConcept" -> subConcept.uuid().toString
-		).toString
+		"tbox" -> tbox?.uuid(),
+		"superConcept" -> superConcept?.uuid()?.toString,
+		"subConcept" -> subConcept?.uuid()?.toString
+		)?.toString
 	}
 }
 
@@ -787,10 +793,10 @@ class ReifiedRelationshipSpecializationAxiom extends SpecializationAxiom {
 	op UUID[1] uuid() {
 		OMLExtensions.derivedUUID(
 		"ReifiedRelationshipSpecializationAxiom",
-		"tbox" -> tbox.uuid(),
-		"superRelationship" -> superRelationship.uuid().toString,
-		"subRelationship" -> subRelationship.uuid().toString
-		).toString
+		"tbox" -> tbox?.uuid(),
+		"superRelationship" -> superRelationship?.uuid()?.toString,
+		"subRelationship" -> subRelationship?.uuid()?.toString
+		)?.toString
 	}
 }
 
@@ -820,11 +826,11 @@ extends EntityScalarDataPropertyRestrictionAxiom {
 	op UUID[1] uuid() {
 		OMLExtensions.derivedUUID(
 		"EntityScalarDataPropertyExistentialRestrictionAxiom",
-		"tbox" -> tbox.uuid(),
-		"restrictedEntity" -> restrictedEntity.uuid().toString,
-		"scalarProperty" -> scalarProperty.uuid().toString,
-		"scalarRestriction" -> scalarRestriction.uuid().toString
-		).toString
+		"tbox" -> tbox?.uuid(),
+		"restrictedEntity" -> restrictedEntity?.uuid()?.toString,
+		"scalarProperty" -> scalarProperty?.uuid()?.toString,
+		"scalarRestriction" -> scalarRestriction?.uuid()?.toString
+		)?.toString
 	}
 }
 
@@ -844,11 +850,11 @@ extends EntityScalarDataPropertyRestrictionAxiom {
 	op UUID[1] uuid() {
 		OMLExtensions.derivedUUID(
 		"EntityScalarDataPropertyUniversalRestrictionAxiom",
-		"tbox" -> tbox.uuid(),
-		"restrictedEntity" -> restrictedEntity.uuid().toString,
-		"scalarProperty" -> scalarProperty.uuid().toString,
-		"scalarRestriction" -> scalarRestriction.uuid().toString
-		).toString
+		"tbox" -> tbox?.uuid(),
+		"restrictedEntity" -> restrictedEntity?.uuid()?.toString,
+		"scalarProperty" -> scalarProperty?.uuid()?.toString,
+		"scalarRestriction" -> scalarRestriction?.uuid()?.toString
+		)?.toString
 	}
 }
 
@@ -867,10 +873,10 @@ extends EntityScalarDataPropertyRestrictionAxiom {
 	op UUID[1] uuid() {
 		OMLExtensions.derivedUUID(
 		"EntityScalarDataPropertyParticularRestrictionAxiom",
-		"tbox" -> tbox.uuid(),
-		"restrictedEntity" -> restrictedEntity.uuid().toString,
-		"scalarProperty" -> scalarProperty.uuid().toString
-		).toString
+		"tbox" -> tbox?.uuid(),
+		"restrictedEntity" -> restrictedEntity?.uuid()?.toString,
+		"scalarProperty" -> scalarProperty?.uuid()?.toString
+		)?.toString
 	}
 }
 
@@ -920,12 +926,6 @@ class BinaryScalarRestriction extends RestrictedDataRange {
 	 * The maximum length of the binary data
 	 */
 	int[?] maxLength
-	
-	@NotFunctionalAPI
-	@NotSchema
-	op UUID[1] uuid() {
-		OMLExtensions.namespaceUUID(tbox.uuid().toString, "name" -> name().toString).toString
-	}
 }
 
 /*
@@ -960,12 +960,6 @@ class IRIScalarRestriction extends RestrictedDataRange {
 	 * The pattern of the IRI (https://www.w3.org/TR/xmlschema-2/#regexs)
 	 */
 	Pattern[?] pattern
-	
-	@NotFunctionalAPI
-	@NotSchema
-	op UUID[1] uuid() {
-		OMLExtensions.namespaceUUID(tbox.uuid().toString, "name" -> name().toString).toString
-	}
 }
 
 /*
@@ -1017,12 +1011,6 @@ class NumericScalarRestriction extends RestrictedDataRange {
 	 * The exclusive maximum value in the range
 	 */
 	LexicalNumber[?] maxExclusive
-	
-	@NotFunctionalAPI
-	@NotSchema
-	op UUID[1] uuid() {
-		OMLExtensions.namespaceUUID(tbox.uuid().toString, "name" -> name().toString).toString
-	}
 }
 
 /*
@@ -1062,12 +1050,6 @@ class PlainLiteralScalarRestriction extends RestrictedDataRange {
 	 * The language of the plain literal (http://www.rfc-editor.org/rfc/bcp/bcp47.txt)
 	 */
 	LangRange[?] langRange
-	
-	@NotFunctionalAPI
-	@NotSchema
-	op UUID[1] uuid() {
-		OMLExtensions.namespaceUUID(tbox.uuid().toString, "name" -> name().toString).toString
-	}
 }
 
 /*
@@ -1108,12 +1090,6 @@ class StringScalarRestriction extends RestrictedDataRange {
 	 * The pattern of the string (https://www.w3.org/TR/xmlschema-2/#regexs)
 	 */
 	Pattern[?] pattern
-	
-	@NotFunctionalAPI
-	@NotSchema
-	op UUID[1] uuid() {
-		OMLExtensions.namespaceUUID(tbox.uuid().toString, "name" -> name().toString).toString
-	}
 }
 
 /*
@@ -1149,12 +1125,6 @@ class TimeScalarRestriction extends RestrictedDataRange {
 	 * The exclusive maximum value in the range
 	 */
 	LexicalTime[?] maxExclusive
-	
-	@NotFunctionalAPI
-	@NotSchema
-	op UUID[1] uuid() {
-		OMLExtensions.namespaceUUID(tbox.uuid().toString, "name" -> name().toString).toString
-	}
 }
 
 /*
@@ -1162,12 +1132,6 @@ class TimeScalarRestriction extends RestrictedDataRange {
  */
 @Glossary
 class SynonymScalarRestriction extends RestrictedDataRange {
-	
-	@NotFunctionalAPI
-	@NotSchema
-	op UUID[1] uuid() {
-		OMLExtensions.namespaceUUID(tbox.uuid().toString, "name" -> name().toString).toString
-	}
 }
 
 /*
@@ -1176,12 +1140,6 @@ class SynonymScalarRestriction extends RestrictedDataRange {
  */
 @Glossary
 class ScalarOneOfRestriction extends RestrictedDataRange {
-
-	@NotFunctionalAPI
-	@NotSchema
-	op UUID[1] uuid() {
-		OMLExtensions.namespaceUUID(tbox.uuid().toString, "name" -> name().toString).toString
-	}
 }
 
 /*
@@ -1196,12 +1154,14 @@ class ScalarOneOfLiteralAxiom extends TermAxiom {
 	 * The value of the literal from the restrictedScalar datatype
 	 */
 	LexicalValue[1] value
+	
 	@NotFunctionalAPI
 	@NotSchema
 	op UUID[1] uuid() {
 		OMLExtensions.derivedUUID(
 		"ScalarOneOfLiteralAxiom",
-		"tbox" -> tbox.uuid().toString,
-		"axiom" -> axiom.uuid().toString).toString
+		"tbox" -> tbox?.uuid()?.toString,
+		"axiom" -> axiom?.uuid()?.toString
+		)?.toString
 	}
 }

@@ -29,6 +29,7 @@ There are no Eclipse metadata files (.classpath, .project, .settings, META-INF/M
 - ln -s /usr/local/Cellar/scala@2.11/2.11.8_1 scala2.11
 - In Eclipse preferences, set the location for Scala 2.11
 - In Eclipse preferences, set a Java classpath variable: GRADLE_HOME = ~/.gradle
+- Use gradle to build all the projects & generate the Eclipse project metadata needed for import into Eclipse
 
 
 ## To clean:

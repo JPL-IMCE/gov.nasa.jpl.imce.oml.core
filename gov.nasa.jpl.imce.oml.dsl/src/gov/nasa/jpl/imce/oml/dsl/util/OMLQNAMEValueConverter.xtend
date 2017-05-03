@@ -32,28 +32,20 @@ class OMLQNAMEValueConverter extends AbstractValueConverter<String> {
 		return "ValidID";
 	}
 
+	def String getAbbrevIRIRuleName() {
+		return "AbbrevIRI";
+	}
+
 	override toString(String value) {
 		if (value.contains(':')) {
-			val buffer = new StringBuilder()
-			val segment = value.split(':')
-			if (!segment.get(0).equals(""))
-				buffer.append(valueConverterService.toString(segment.get(0), getDelegateRuleName()))
-			buffer.append(':');
-			buffer.append(valueConverterService.toString(segment.get(1), getDelegateRuleName()))
-			return buffer.toString()
+			return valueConverterService.toString(value, getAbbrevIRIRuleName())
 		} else
 			return valueConverterService.toString(value, getDelegateRuleName())
 	}
 	
 	override toValue(String string, INode node) throws ValueConverterException {
 		if (string.contains(':')) {
-			val buffer = new StringBuilder()
-			val segment = string.split(':')
-			if (!segment.get(0).equals(""))
-				buffer.append(valueConverterService.toValue(segment.get(0), getDelegateRuleName(), null) as String)
-			buffer.append(':');
-			buffer.append(valueConverterService.toValue(segment.get(1), getDelegateRuleName(), null) as String)
-			return buffer.toString()
+			return valueConverterService.toString(string, getAbbrevIRIRuleName())
 		}  else
 			return valueConverterService.toValue(string, getDelegateRuleName(), null) as String
 	}

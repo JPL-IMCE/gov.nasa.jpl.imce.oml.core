@@ -21,7 +21,6 @@
 import com.fasterxml.uuid.Generators
 import com.fasterxml.uuid.impl.NameBasedGenerator
 import com.google.common.collect.Lists
-import gov.nasa.jpl.imce.oml.model.bundles.AnonymousConceptTaxonomyAxiom
 import gov.nasa.jpl.imce.oml.model.bundles.Bundle
 import gov.nasa.jpl.imce.oml.model.bundles.BundledTerminologyAxiom
 import gov.nasa.jpl.imce.oml.model.bundles.RootConceptTaxonomyAxiom
@@ -76,7 +75,6 @@ import java.io.IOException
 import java.net.URL
 import java.util.ArrayList
 import java.util.UUID
-import org.apache.xml.resolver.Catalog
 import org.apache.xml.resolver.CatalogManager
 import org.apache.xml.resolver.tools.CatalogResolver
 import org.eclipse.emf.common.CommonPlugin
@@ -88,6 +86,10 @@ import gov.nasa.jpl.imce.oml.model.descriptions.SingletonInstanceScalarDataPrope
 import gov.nasa.jpl.imce.oml.model.descriptions.SingletonInstanceStructuredDataPropertyValue
 import gov.nasa.jpl.imce.oml.model.descriptions.StructuredDataPropertyTuple
 import gov.nasa.jpl.imce.oml.model.descriptions.ScalarDataPropertyValue
+import gov.nasa.jpl.imce.oml.model.descriptions.ConceptualEntitySingletonInstance
+import com.google.common.collect.Sets
+import java.util.HashSet
+import gov.nasa.jpl.imce.oml.model.bundles.AnonymousConceptUnionAxiom
 
 class OMLExtensions {
 	
@@ -96,36 +98,41 @@ class OMLExtensions {
 	static val String RESOURCE_SET_CATALOG_INSTANCE = "RESOURCE_SET_CATALOG_INSTANCE"
 	
 	static def CatalogManager getOrCreateCatalogManager(ResourceSet rs) {
-		val cm = rs.loadOptions.getOrDefault(RESOURCE_SET_CATALOG_MANAGER, new CatalogManager())
-		if (CatalogManager.isInstance(cm)) {
+		val o = rs.loadOptions.get(RESOURCE_SET_CATALOG_MANAGER) ?: new OMLCatalogManager()
+		if (OMLCatalogManager.isInstance(o)) {
+			val cm = OMLCatalogManager.cast(o)
+			cm.useStaticCatalog = false
+			cm.catalogClassName = "gov.nasa.jpl.imce.oml.model.extensions.OMLCatalog"
 			rs.loadOptions.putIfAbsent(RESOURCE_SET_CATALOG_MANAGER, cm)
-			return CatalogManager.cast(cm)
+			return cm
 		} else {
 			return null
 		}
 	}
 	
 	static def CatalogResolver getOrCreateCatalogResolver(ResourceSet rs) {
-		val cr = rs.loadOptions.getOrDefault(RESOURCE_SET_CATALOG_RESOLVER, new CatalogResolver(getOrCreateCatalogManager(rs)))
-		if (CatalogResolver.isInstance(cr)) {
+		val o = rs.loadOptions.get(RESOURCE_SET_CATALOG_RESOLVER) ?: new CatalogResolver(getOrCreateCatalogManager(rs))
+		if (CatalogResolver.isInstance(o)) {
+			val cr = CatalogResolver.cast(o)
 			rs.loadOptions.putIfAbsent(RESOURCE_SET_CATALOG_RESOLVER, cr)
-			return CatalogResolver.cast(cr)
+			return cr
 		} else {
 			return null
 		}
 	}
 	
-	static def Catalog getCatalog(ResourceSet rs) {
-		val c = rs.loadOptions.getOrDefault(RESOURCE_SET_CATALOG_INSTANCE, getOrCreateCatalogResolver(rs).catalog)
-		if (Catalog.isInstance(c)) {
+	static def OMLCatalog getCatalog(ResourceSet rs) {
+		val o = rs.loadOptions.get(RESOURCE_SET_CATALOG_INSTANCE) ?: getOrCreateCatalogResolver(rs).catalog
+		if (OMLCatalog.isInstance(o)) {
+			val c = OMLCatalog.cast(o)
 			rs.loadOptions.putIfAbsent(RESOURCE_SET_CATALOG_INSTANCE, c)
-			return Catalog.cast(c)
+			return c
 		} else {
 			return null
 		}
 	}
 	
-	static def Catalog findCatalogIfExists(Resource r) {
+	static def OMLCatalog findCatalogIfExists(Resource r) {
 		val rs = r.resourceSet
 		val uri = rs.URIConverter.normalize(r.URI)
 		val ruri = CommonPlugin.resolve(uri)
@@ -133,8 +140,11 @@ class OMLExtensions {
 		findCatalogIfExists(rs, luri.trimSegments(1))
 	}
 	
-	static def Catalog findCatalogIfExists(ResourceSet rs, URI path) {
+	static def OMLCatalog findCatalogIfExists(ResourceSet rs, URI path) {
 		val c = rs.catalog
+		if (null === c)
+			return null
+			
 		var current = path
 		while (current.segmentCount > 0) {
 			try {
@@ -146,8 +156,11 @@ class OMLExtensions {
 				val omlS = omlURL.openStream
 				omlS.close
 				
-				c.parseCatalog(new URL(omlC.toString))
-				System.out.println("# Found catalog: " + omlC)
+				if (!c.hasParsedCatalog(omlURL)) {
+					c.parseCatalog(new URL(omlC.toString))
+					System.out.println("# Found catalog: " + omlC)
+				}
+				
 				return c
 			} catch (IOException ex) {
 				current = current.trimSegments(1)
@@ -181,7 +194,7 @@ class OMLExtensions {
   	}
 	
   	static def UUID namespaceUUID(String namespace, Pair<String,String>[] factors) {
-  		val name = namespace + factors.map[pair| pair.key+":"+pair.value].join(",")
+  		val name = namespace + factors.map[pair| (pair.key ?: "") + ":" + (pair.value ?: "")].join(",")
   		Generators.nameBasedGenerator(NameBasedGenerator.NAMESPACE_URL).generate(name)
   	}
 
@@ -254,7 +267,7 @@ class OMLExtensions {
   		derivedUUID(context, factors)
   	}
   	static def derivedUUID(String context, Pair<String,String>[] factors) {
-  		val name = context + factors.map[pair| pair.key+":"+pair.value].join(",")
+  		val name = context + factors.map[pair| (pair.key ?: "") + ":" + (pair.value ?: "")].join(",")
   		Generators.nameBasedGenerator(NameBasedGenerator.NAMESPACE_URL).generate(name)
   	}
   	
@@ -264,6 +277,10 @@ class OMLExtensions {
 	
 	def Iterable<TerminologyGraph> terminologyGraphs(Extent it) {
 		it.modules.filter(TerminologyGraph)
+	}
+	
+	def Iterable<DescriptionBox> descriptions(Extent it) {
+		it.modules.filter(DescriptionBox)
 	}
 	
 	def Iterable<Bundle> bundles(Extent it) {
@@ -338,6 +355,10 @@ class OMLExtensions {
 		boxStatements.filter(ReifiedRelationship)
 	}
 	
+	def Iterable<UnreifiedRelationship> localUnreifiedRelationships(TerminologyBox it) {
+		boxStatements.filter(UnreifiedRelationship)
+	}
+	
 	def Iterable<ReifiedRelationship> allReifiedRelationships(TerminologyBox it) {
 		localReifiedRelationships + allImportedTerminologies(it).map[localReifiedRelationships].flatten
 	}
@@ -360,6 +381,18 @@ class OMLExtensions {
 	
 	def Iterable<EntityScalarDataProperty> localEntityScalarDataProperties(TerminologyBox it) {
 		boxStatements.filter(EntityScalarDataProperty)
+	}
+	
+	def Iterable<EntityStructuredDataProperty> localEntityStructuredDataProperties(TerminologyBox it) {
+		boxStatements.filter(EntityStructuredDataProperty)
+	}
+	
+	def Iterable<ScalarDataProperty> localScalarDataProperties(TerminologyBox it) {
+		boxStatements.filter(ScalarDataProperty)
+	}
+	
+	def Iterable<StructuredDataProperty> localStructuredDataProperties(TerminologyBox it) {
+		boxStatements.filter(StructuredDataProperty)
 	}
 	
 	def Iterable<ScalarOneOfRestriction> localScalarOneOfRestrictions(TerminologyBox it) {
@@ -387,12 +420,64 @@ class OMLExtensions {
 		collectAllImportedBundles(queue, acc)
 	}
 	
-	def Iterable<AnonymousConceptTaxonomyAxiom> localAnonymousConceptTaxonomyAxioms(Bundle it) {
-		bundleStatements.filter(AnonymousConceptTaxonomyAxiom)	
+	def Iterable<AnonymousConceptUnionAxiom> localAnonymousConceptUnionAxioms(Bundle it) {
+		bundleStatements.filter(AnonymousConceptUnionAxiom)	
 	}
 	
 	def Iterable<RootConceptTaxonomyAxiom> localRootConceptTaxonomyAxioms(Bundle it) {
 		bundleStatements.filter(RootConceptTaxonomyAxiom)	
+	}
+	
+	def Iterable<TerminologyBox> allImportedTerminologiesFromDescription(DescriptionBox it) {
+		collectAllImportedTerminologiesFromDescription(Lists.newArrayList(it), Sets.newHashSet())
+	}
+	
+	final def Iterable<TerminologyBox> collectAllImportedTerminologiesFromDescription(
+		ArrayList<DescriptionBox> queue, 
+		HashSet<TerminologyBox> acc
+	) {
+		if (queue.isEmpty)
+			return acc
+		
+		val dbox = queue.head
+		queue.remove(dbox)
+		
+		val incd = dbox.descriptionBoxRefinements.map[refinedDescriptionBox]
+		queue.addAll(incd)
+		
+		val inct = dbox.closedWorldDefinitions.map[closedWorldDefinitions].map[allImportedTerminologies].flatten
+		acc.addAll(inct)
+		
+		collectAllImportedTerminologiesFromDescription(queue, acc)
+	}
+	
+	def Iterable<DescriptionBox> allImportedDescriptions(DescriptionBox it) {
+		collectAllImportedDescriptions(Lists.newArrayList(it), Lists.newArrayList())
+	}
+	
+	final def Iterable<DescriptionBox> collectAllImportedDescriptions(
+		ArrayList<DescriptionBox> queue, 
+		ArrayList<DescriptionBox> acc
+	) {
+		if (queue.isEmpty)
+			return acc
+		
+		val dbox = queue.head
+		queue.remove(dbox)
+		
+		val inc = dbox.descriptionBoxRefinements.map[refinedDescriptionBox]
+		queue.addAll(inc)
+		acc.addAll(inc)
+		
+		collectAllImportedDescriptions(queue, acc)
+	}
+	
+	def Iterable<ConceptualEntitySingletonInstance> localConceptualEntitySingletonInstances(DescriptionBox it) {
+		conceptInstances + reifiedRelationshipInstances
+	}
+	
+	def Iterable<ReifiedRelationshipInstance> localReifiedRelationshipInstances(DescriptionBox it) {
+		reifiedRelationshipInstances
 	}
 	
 	static def String kind(Element e) {
@@ -433,7 +518,7 @@ class OMLExtensions {
 				'ConceptSpecializationAxiom'
 			case ReifiedRelationshipSpecializationAxiom:
 				'ReifiedRelationshipSpecializationAxiom'
-			case AnonymousConceptTaxonomyAxiom:
+			case AnonymousConceptUnionAxiom:
 				'AnonymousConceptTaxonomyAxiom'
 			case SpecificDisjointConceptAxiom:
 				'SpecificDisjointConceptAxiom'

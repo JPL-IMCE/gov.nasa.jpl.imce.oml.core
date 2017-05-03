@@ -16,20 +16,19 @@
  * License Terms
  */
 
-package gov.nasa.jpl.imce.oml.resolver.impl
+package gov.nasa.jpl.imce.oml.resolver.api
 
-import gov.nasa.jpl.imce.oml._
-
-trait SingletonInstance
-extends resolver.api.SingletonInstance
-  with Element
+/*
+ * An OML StructuredDataPropertyValue defines a tuple for representing the structured tuple value
+ * of an OML DataRelationshipToStructure for a particular OML SingletonInstance.
+ */
+trait SingletonInstanceStructuredDataPropertyValue
+  extends SingletonInstanceStructuredDataPropertyContext
+  with ModuleElement
 {
-		
 
+  val singletonInstance: ConceptualEntitySingletonInstance
 
-
-  override def canEqual(that: scala.Any): scala.Boolean = that match {
-  	case _: SingletonInstance => true
-  	case _ => false
-  }
+  def descriptionBox
+  ()(implicit extent: Extent): scala.Option[DescriptionBox]
 }

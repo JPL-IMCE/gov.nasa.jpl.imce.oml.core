@@ -19,6 +19,7 @@ package gov.nasa.jpl.imce.oml.dsl.scoping
 
 import com.google.inject.Inject
 import gov.nasa.jpl.imce.oml.dsl.util.OMLImportNormalizer
+import gov.nasa.jpl.imce.oml.model.bundles.Bundle
 import gov.nasa.jpl.imce.oml.model.bundles.BundledTerminologyAxiom
 import gov.nasa.jpl.imce.oml.model.bundles.BundlesPackage
 import gov.nasa.jpl.imce.oml.model.bundles.DisjointUnionOfConceptsAxiom
@@ -27,8 +28,23 @@ import gov.nasa.jpl.imce.oml.model.bundles.SpecificDisjointConceptAxiom
 import gov.nasa.jpl.imce.oml.model.common.Annotation
 import gov.nasa.jpl.imce.oml.model.common.CommonPackage
 import gov.nasa.jpl.imce.oml.model.common.Extent
+import gov.nasa.jpl.imce.oml.model.common.ModuleEdge
+import gov.nasa.jpl.imce.oml.model.descriptions.ConceptInstance
+import gov.nasa.jpl.imce.oml.model.descriptions.DescriptionBox
+import gov.nasa.jpl.imce.oml.model.descriptions.DescriptionBoxExtendsClosedWorldDefinitions
+import gov.nasa.jpl.imce.oml.model.descriptions.DescriptionBoxRefinement
+import gov.nasa.jpl.imce.oml.model.descriptions.DescriptionsPackage
+import gov.nasa.jpl.imce.oml.model.descriptions.ReifiedRelationshipInstance
+import gov.nasa.jpl.imce.oml.model.descriptions.ReifiedRelationshipInstanceDomain
+import gov.nasa.jpl.imce.oml.model.descriptions.ReifiedRelationshipInstanceRange
+import gov.nasa.jpl.imce.oml.model.descriptions.ScalarDataPropertyValue
+import gov.nasa.jpl.imce.oml.model.descriptions.SingletonInstanceScalarDataPropertyValue
+import gov.nasa.jpl.imce.oml.model.descriptions.SingletonInstanceStructuredDataPropertyValue
+import gov.nasa.jpl.imce.oml.model.descriptions.StructuredDataPropertyTuple
+import gov.nasa.jpl.imce.oml.model.descriptions.UnreifiedRelationshipInstanceTuple
 import gov.nasa.jpl.imce.oml.model.graphs.ConceptDesignationTerminologyAxiom
 import gov.nasa.jpl.imce.oml.model.graphs.GraphsPackage
+import gov.nasa.jpl.imce.oml.model.graphs.TerminologyGraph
 import gov.nasa.jpl.imce.oml.model.graphs.TerminologyNestingAxiom
 import gov.nasa.jpl.imce.oml.model.terminologies.AspectSpecializationAxiom
 import gov.nasa.jpl.imce.oml.model.terminologies.ConceptSpecializationAxiom
@@ -36,7 +52,7 @@ import gov.nasa.jpl.imce.oml.model.terminologies.EntityRelationship
 import gov.nasa.jpl.imce.oml.model.terminologies.EntityRestrictionAxiom
 import gov.nasa.jpl.imce.oml.model.terminologies.EntityScalarDataProperty
 import gov.nasa.jpl.imce.oml.model.terminologies.EntityScalarDataPropertyExistentialRestrictionAxiom
-import gov.nasa.jpl.imce.oml.model.terminologies.EntityScalarDataPropertyRestrictionAxiom
+import gov.nasa.jpl.imce.oml.model.terminologies.EntityScalarDataPropertyParticularRestrictionAxiom
 import gov.nasa.jpl.imce.oml.model.terminologies.EntityScalarDataPropertyUniversalRestrictionAxiom
 import gov.nasa.jpl.imce.oml.model.terminologies.EntityStructuredDataProperty
 import gov.nasa.jpl.imce.oml.model.terminologies.ReifiedRelationshipSpecializationAxiom
@@ -45,7 +61,6 @@ import gov.nasa.jpl.imce.oml.model.terminologies.ScalarDataProperty
 import gov.nasa.jpl.imce.oml.model.terminologies.ScalarOneOfLiteralAxiom
 import gov.nasa.jpl.imce.oml.model.terminologies.StructuredDataProperty
 import gov.nasa.jpl.imce.oml.model.terminologies.TerminologiesPackage
-import gov.nasa.jpl.imce.oml.model.terminologies.TerminologyBox
 import gov.nasa.jpl.imce.oml.model.terminologies.TerminologyExtensionAxiom
 import java.util.ArrayList
 import java.util.List
@@ -66,12 +81,34 @@ class OMLImportedNamespaceAwareLocalScopeProvider extends ImportedNamespaceAware
 			Extent:
 				for (ap : context.annotationProperties)
 					res.add(new OMLImportNormalizer(qnc.toQualifiedName(ap.iri), ap.abbrevIRI))
-			TerminologyBox: {
+			Bundle: {
 				for (ap : context.extent.annotationProperties) {
 					res.add(new OMLImportNormalizer(qnc.toQualifiedName(ap.iri), ap.abbrevIRI))
 				}
 				for (e : context.boxAxioms) {
-					res.add(new OMLImportNormalizer(qnc.toQualifiedName(e.target.iri()), e.target.name))
+					res.add(new OMLImportNormalizer(qnc.toQualifiedName(e?.target?.iri()?:""), e.target?.name?:""))
+				}
+				for (e : context.bundleAxioms) {
+					res.add(new OMLImportNormalizer(qnc.toQualifiedName(e?.target?.iri()?:""), e.target?.name?:""))
+				}
+			}
+			TerminologyGraph: {
+				for (ap : context.extent.annotationProperties) {
+					res.add(new OMLImportNormalizer(qnc.toQualifiedName(ap.iri), ap.abbrevIRI))
+				}
+				for (e : context.boxAxioms) {
+					res.add(new OMLImportNormalizer(qnc.toQualifiedName(e?.target?.iri()?:""), e.target?.name?:""))
+				}
+			}
+			DescriptionBox: {
+				for (ap : context.extent.annotationProperties) {
+					res.add(new OMLImportNormalizer(qnc.toQualifiedName(ap.iri), ap.abbrevIRI))
+				}
+				for (e : context.closedWorldDefinitions) {
+					res.add(new OMLImportNormalizer(qnc.toQualifiedName(e?.closedWorldDefinitions?.iri()?:""), e.closedWorldDefinitions?.name?:""))
+				}
+				for (e : context.descriptionBoxRefinements) {
+					res.add(new OMLImportNormalizer(qnc.toQualifiedName(e?.refinedDescriptionBox?.iri()?:""), e.refinedDescriptionBox?.name?:""))
 				}
 			}
 		}
@@ -83,12 +120,35 @@ class OMLImportedNamespaceAwareLocalScopeProvider extends ImportedNamespaceAware
 	
 	@Inject extension OMLScopeExtensions
 	
+	override protected getImportedNamespace(EObject object) {
+		switch object {
+			ModuleEdge:
+				object.targetModule?.iri()	
+			default:
+				super.getImportedNamespace(object)
+		}	
+	}
+	
  	override getScope(EObject context, EReference reference) {
  		var IScope scope = null
 		switch context {
  			Annotation:
- 				if (reference == CommonPackage.eINSTANCE.annotation_Property)
-					scope = scope_Annotation_property(context, reference)
+ 				if (reference == CommonPackage.eINSTANCE.annotation_Property) {
+ 					// @TODO replace with a proper scope definition.
+ 					// This is an ugly workaround to a proper scope definition.
+ 					// Usually, this workaround has the useful side effect to make the next scope, 's2', non-empty.
+					val s1 = super.getScope(context, reference)
+					val s2 = scope_Annotation_property(context, reference)
+					val n2 = s2.allElements.size
+					if (n2 == 0)
+						scope = s1
+					else
+						scope = s2
+				}
+					
+			TerminologyExtensionAxiom:
+				if (reference == TerminologiesPackage.eINSTANCE.terminologyExtensionAxiom_ExtendedTerminology)
+					scope = context.tbox.allTerminologies
 					
 			EntityRelationship:
 				if (reference == TerminologiesPackage.eINSTANCE.entityRelationship_Source ||
@@ -150,18 +210,26 @@ class OMLImportedNamespaceAwareLocalScopeProvider extends ImportedNamespaceAware
 					scope = context.tbox.allEntitiesScope
 				
 			EntityScalarDataPropertyExistentialRestrictionAxiom:
-				if (reference == TerminologiesPackage.eINSTANCE.entityScalarDataPropertyExistentialRestrictionAxiom_ScalarRestriction)
-					scope = context.tbox.allRangesScope
-				
-			EntityScalarDataPropertyUniversalRestrictionAxiom:
-				if (reference == TerminologiesPackage.eINSTANCE.entityScalarDataPropertyUniversalRestrictionAxiom_ScalarRestriction)
-					scope = context.tbox.allRangesScope
-				
-			EntityScalarDataPropertyRestrictionAxiom:
 				if (reference == TerminologiesPackage.eINSTANCE.entityScalarDataPropertyRestrictionAxiom_RestrictedEntity)
 					scope = context.tbox.allEntitiesScope
 				else if (reference == TerminologiesPackage.eINSTANCE.entityScalarDataPropertyRestrictionAxiom_ScalarProperty)
 					scope = context.tbox.allEntityScalarDataPropertiesScope
+				else if (reference == TerminologiesPackage.eINSTANCE.entityScalarDataPropertyExistentialRestrictionAxiom_ScalarRestriction)
+					scope = context.tbox.allRangesScope
+				
+			EntityScalarDataPropertyParticularRestrictionAxiom:
+				if (reference == TerminologiesPackage.eINSTANCE.entityScalarDataPropertyRestrictionAxiom_RestrictedEntity)
+					scope = context.tbox.allEntitiesScope
+				else if (reference == TerminologiesPackage.eINSTANCE.entityScalarDataPropertyRestrictionAxiom_ScalarProperty)
+					scope = context.tbox.allEntityScalarDataPropertiesScope
+			
+			EntityScalarDataPropertyUniversalRestrictionAxiom:
+				if (reference == TerminologiesPackage.eINSTANCE.entityScalarDataPropertyRestrictionAxiom_RestrictedEntity)
+					scope = context.tbox.allEntitiesScope
+				else if (reference == TerminologiesPackage.eINSTANCE.entityScalarDataPropertyRestrictionAxiom_ScalarProperty)
+					scope = context.tbox.allEntityScalarDataPropertiesScope
+				else if (reference == TerminologiesPackage.eINSTANCE.entityScalarDataPropertyUniversalRestrictionAxiom_ScalarRestriction)
+					scope = context.tbox.allRangesScope
 				
 			ScalarOneOfLiteralAxiom:
 				if (reference == TerminologiesPackage.eINSTANCE.scalarOneOfLiteralAxiom_Axiom)
@@ -181,21 +249,81 @@ class OMLImportedNamespaceAwareLocalScopeProvider extends ImportedNamespaceAware
 			BundledTerminologyAxiom:
 				if (reference == BundlesPackage.eINSTANCE.bundledTerminologyAxiom_BundledTerminology)
 					scope = scope_BundledTerminologyAxiom_bundledTerminology(context)
+					
 			ConceptDesignationTerminologyAxiom:
 				if (reference == GraphsPackage.eINSTANCE.conceptDesignationTerminologyAxiom_DesignatedTerminology)
 					scope = scope_ConceptDesignationTerminologyAxiom_designatedTerminology(context)
 				else if (reference == GraphsPackage.eINSTANCE.conceptDesignationTerminologyAxiom_DesignatedConcept)
 					scope = scope_ConceptDesignationTerminologyAxiom_designatedConcept(context)
-			TerminologyExtensionAxiom:
-				if (reference == TerminologiesPackage.eINSTANCE.terminologyExtensionAxiom_ExtendedTerminology)
-					scope = scope_TerminologyExtensionAxiom_extendedTerminology(context, reference)
+					
 			TerminologyNestingAxiom:
-				{}
+				if (reference == GraphsPackage.eINSTANCE.terminologyNestingAxiom_NestingTerminology)
+					scope = context.tbox.allTerminologies
+				else if (reference == GraphsPackage.eINSTANCE.terminologyNestingAxiom_NestingContext)
+					scope = context.tbox.allConceptsScope
+					
+			DescriptionBoxExtendsClosedWorldDefinitions:
+				if (reference == DescriptionsPackage.eINSTANCE.descriptionBoxExtendsClosedWorldDefinitions_ClosedWorldDefinitions)
+					scope = context.descriptionBox.allTerminologies
+				
+			DescriptionBoxRefinement:
+				if (reference == DescriptionsPackage.eINSTANCE.descriptionBoxRefinement_RefinedDescriptionBox)
+					scope = context.descriptionDomain.allDescriptions
+					
+			SingletonInstanceScalarDataPropertyValue:
+				if (reference == DescriptionsPackage.eINSTANCE.singletonInstanceScalarDataPropertyValue_SingletonInstance)
+					scope = context.descriptionBox()?.allConceptualEntitySingletonInstanceScope
+				else if (reference == DescriptionsPackage.eINSTANCE.singletonInstanceScalarDataPropertyValue_ScalarDataProperty)
+					scope = context.descriptionBox()?.allEntityScalarDataPropertiesScope
+					
+			SingletonInstanceStructuredDataPropertyValue:
+				if (reference == DescriptionsPackage.eINSTANCE.singletonInstanceStructuredDataPropertyValue_SingletonInstance)
+					scope = context.descriptionBox()?.allConceptualEntitySingletonInstanceScope
+				else if (reference == DescriptionsPackage.eINSTANCE.singletonInstanceStructuredDataPropertyContext_StructuredDataProperty)
+					scope = context.descriptionBox()?.allEntityStructuredDataPropertiesScope
+					
+			StructuredDataPropertyTuple:
+				if (reference == DescriptionsPackage.eINSTANCE.singletonInstanceStructuredDataPropertyContext_StructuredDataProperty)
+					scope = context.descriptionBox()?.allStructuredDataPropertiesScope
+			
+			ScalarDataPropertyValue:
+				if (reference == DescriptionsPackage.eINSTANCE.scalarDataPropertyValue_ScalarDataProperty)
+					scope = context.descriptionBox()?.allScalarDataPropertiesScope
+			
+			ConceptInstance:
+				if (reference == DescriptionsPackage.eINSTANCE.conceptInstance_SingletonConceptClassifier)
+					scope = context.descriptionBox()?.allConceptsScope		
+					
+			ReifiedRelationshipInstance:
+				if (reference == DescriptionsPackage.eINSTANCE.reifiedRelationshipInstance_SingletonReifiedRelationshipClassifier)
+					scope = context.descriptionBox()?.allReifiedRelationshipScope
+					
+			ReifiedRelationshipInstanceDomain:
+				if (reference == DescriptionsPackage.eINSTANCE.reifiedRelationshipInstanceDomain_ReifiedRelationshipInstance)
+					scope = context.descriptionBox()?.allReifiedRelationshipInstancesScope
+				else if (reference == DescriptionsPackage.eINSTANCE.reifiedRelationshipInstanceDomain_Domain)
+					scope = context.descriptionBox()?.allConceptualEntitySingletonInstanceScope
+					
+			ReifiedRelationshipInstanceRange:
+				if (reference == DescriptionsPackage.eINSTANCE.reifiedRelationshipInstanceRange_ReifiedRelationshipInstance)
+					scope = context.descriptionBox()?.allReifiedRelationshipInstancesScope
+				else if (reference == DescriptionsPackage.eINSTANCE.reifiedRelationshipInstanceRange_Range)
+					scope = context.descriptionBox()?.allConceptualEntitySingletonInstanceScope
+					
+			UnreifiedRelationshipInstanceTuple:
+				if (reference == DescriptionsPackage.eINSTANCE.unreifiedRelationshipInstanceTuple_UnreifiedRelationship)
+					scope = context.descriptionBox()?.allUnreifiedRelationshipScope
+				else if (reference == DescriptionsPackage.eINSTANCE.unreifiedRelationshipInstanceTuple_Domain)
+					scope = context.descriptionBox()?.allConceptualEntitySingletonInstanceScope
+				else if (reference == DescriptionsPackage.eINSTANCE.unreifiedRelationshipInstanceTuple_Range)
+					scope = context.descriptionBox()?.allConceptualEntitySingletonInstanceScope
+					
 		} 
 		if (null !== scope)
 			scope
 		else
 			super.getScope(context, reference)
 	}
+	
 	
 }

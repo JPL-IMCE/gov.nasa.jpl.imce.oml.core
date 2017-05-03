@@ -63,18 +63,19 @@ import gov.nasa.jpl.imce.oml.model.terminologies.TerminologyBox
 class Bundle extends TerminologyBox {
 		
 	/*
+	 * The BundledTerminologyAxioms asserted in this Bundle
+	 */
+	@NotSchema
+	@Collection(kind="Set")
+	contains TerminologyBundleAxiom[] bundleAxioms opposite bundle
+	
+	/*
 	 * The TerminologyBundleStatements asserted in this Bundle
 	 */
 	@NotSchema
 	@Collection(kind="Set")
 	contains TerminologyBundleStatement[] bundleStatements opposite bundle
 	
-	/*
-	 * The BundledTerminologyAxioms asserted in this Bundle
-	 */
-	@NotSchema
-	@Collection(kind="Set")
-	contains TerminologyBundleAxiom[] bundleAxioms opposite bundle
 }
 
 /*
@@ -116,8 +117,8 @@ abstract class ConceptTreeDisjunction extends Element {
 }
 
 /*
- * An OML DisjointUnionOfConceptsAxiom(s) represents non-leaf & leaf nodes of a concept taxonomy:
- * - Each non-leaf node is an OML AnonymousConceptTaxonomyAxiom.
+ * An OML DisjointUnionOfConceptsAxiom(s) specifies the logical union of non-leaf & leaf nodes in a concept taxonomy tree:
+ * - Each non-leaf node is an OML AnonymousConceptUnionAxiom.
  * - Each leaf nodes is an OML SpecificDisjointConceptAxiom.
  */
 @Glossary
@@ -137,7 +138,7 @@ abstract class DisjointUnionOfConceptsAxiom extends Element {
 }
 
 /*
- * An OML SpecificDisjointConceptAxiom specifies a leaf in a taxonomy tree.
+ * An OML SpecificDisjointConceptAxiom specifies a leaf in a concept taxonomy tree.
  */
 @Glossary
 @DerivedUUID
@@ -153,37 +154,39 @@ class SpecificDisjointConceptAxiom extends DisjointUnionOfConceptsAxiom, Element
 	op UUID[1] uuid() {
 		OMLExtensions.derivedUUID(
 		"SpecificDisjointConceptAxiom",
-		"disjointTaxonomyParent" -> disjointTaxonomyParent.uuid().toString,
-		"disjointLeaf" -> disjointLeaf.uuid().toString
-		).toString
+		"disjointTaxonomyParent" -> disjointTaxonomyParent?.uuid()?.toString,
+		"disjointLeaf" -> disjointLeaf?.uuid()?.toString
+		)?.toString
 	}
 }
 
 /*
- * An OML AnonymousConceptTaxonomyAxiom is an anonymous taxonomy tree of DisjointUnionOfEntityAxioms.
+ * An OML AnonymousConceptUnionAxiom specifies an anonymous logical union of DisjointUnionOfEntityAxioms in a concept taxonomy tree.
+ * Although it is semantically anonymous, it is syntactically identified with name whose 
+ * only purpose is for generating the axiom's namespace UUID.
  */
 @Glossary
 @NamespaceUUID(namespace="disjointTaxonomyParent", factors="name")
-class AnonymousConceptTaxonomyAxiom extends DisjointUnionOfConceptsAxiom, ConceptTreeDisjunction, Element {
+class AnonymousConceptUnionAxiom extends DisjointUnionOfConceptsAxiom, ConceptTreeDisjunction, Element {
 	
 	LocalName[1] name
 	
 	@FunctionalInterface
 	@OverrideVal
 	op UUID[1] uuid() {
-		OMLExtensions.namespaceUUID(disjointTaxonomyParent.uuid().toString, "name" -> name.toString).toString
+		OMLExtensions.namespaceUUID(disjointTaxonomyParent?.uuid()?.toString, "name" -> getName?.toString)?.toString
 	}
 	
 	@Scala(code="conceptTreeDisjunctionParent().flatMap(_.bundleContainer())")
 	@NotSchema
 	@ImplicitExtent
 	@Override
-	op Bundle[?] bundleContainer() { disjointTaxonomyParent.bundleContainer() }
+	op Bundle[?] bundleContainer() { disjointTaxonomyParent?.bundleContainer() }
 }
 
 /*
- * An OML RootConceptTaxonomyAxiom asserts that, in the scope of a Bundle, a particular Entity
- * is the root of a taxonomy of specializations of that Entity.
+ * An OML RootConceptTaxonomyAxiom asserts that, in the scope of a Bundle, a particular OML Concept
+ * is the root of a taxonomy of concept specializations.
  */
 @Glossary
 @DerivedUUID
@@ -194,9 +197,9 @@ class RootConceptTaxonomyAxiom extends TerminologyBundleStatement, ConceptTreeDi
 	op UUID[1] uuid() {
 		OMLExtensions.derivedUUID(
 		"RootConceptTaxonomyAxiom",
-		"bundle" -> bundle.uuid().toString,
-		"root" -> root.uuid().toString
-		).toString
+		"bundle" -> bundle?.uuid()?.toString,
+		"root" -> root?.uuid()?.toString
+		)?.toString
 	}
 	
 	/*
@@ -246,8 +249,8 @@ class BundledTerminologyAxiom extends TerminologyBundleAxiom {
 	op UUID[1] uuid() {
 		OMLExtensions.derivedUUID(
 		"BundledTerminologyAxiom",
-		"bundledTerminology" -> bundledTerminology.uuid().toString,
-		"bundle" -> bundle.uuid().toString
-		).toString
+		"bundledTerminology" -> bundledTerminology?.uuid()?.toString,
+		"bundle" -> bundle?.uuid()?.toString
+		)?.toString
 	}
 }

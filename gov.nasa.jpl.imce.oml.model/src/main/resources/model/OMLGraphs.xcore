@@ -108,9 +108,9 @@ class ConceptDesignationTerminologyAxiom extends TerminologyBoxAxiom {
 		OMLExtensions.derivedUUID(
 		"ConceptDesignationTerminologyAxiom",
 		"tbox" -> tbox.uuid().toString,
-		"designatedConcept" -> designatedConcept.uuid().toString,
-		"designatedTerminology" -> designatedTerminology.uuid().toString
-		).toString
+		"designatedConcept" -> designatedConcept?.uuid()?.toString,
+		"designatedTerminology" -> designatedTerminology?.uuid()?.toString
+		)?.toString
 	}
 }
 
@@ -168,8 +168,8 @@ class TerminologyNestingAxiom extends TerminologyBoxAxiom {
 		OMLExtensions.derivedUUID(
 		"TerminologyNestingAxiom",
 		"tbox" -> tbox.uuid().toString,
-		"nestingTerminology" -> nestingTerminology.uuid().toString,
-		"nestingContext" -> nestingContext.uuid().toString
-		).toString
+		"nestingTerminology" -> nestingTerminology?.uuid()?.toString,
+		"nestingContext" -> nestingContext?.uuid()?.toString
+		)?.toString
 	}
 }

@@ -25,8 +25,8 @@ import org.eclipse.xtext.formatting2.FormatterPreferenceKeys
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.XtextRunner
 import org.eclipse.xtext.testing.formatter.FormatterTestHelper
-import org.eclipse.xtext.testing.util.ParseHelper
-import org.eclipse.xtext.testing.validation.ValidationTestHelper
+//import org.eclipse.xtext.testing.util.ParseHelper
+//import org.eclipse.xtext.testing.validation.ValidationTestHelper
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -34,13 +34,13 @@ import org.junit.runner.RunWith
 @InjectWith(OntologicalModelingLanguageInjectorProvider)
 class OMLFileTests extends OMLTest {
 
-	@Inject
-	ParseHelper<Extent> parseHelper
+//	@Inject
+//	ParseHelper<Extent> parseHelper
 
 	@Inject extension FormatterTestHelper
 
-	@Inject 
-	extension ValidationTestHelper
+//	@Inject 
+//	extension ValidationTestHelper
 
 	/*
 	 * Tell the `testFile` method to verify
@@ -84,7 +84,9 @@ class OMLFileTests extends OMLTest {
 //
 			expectation = 
 '''open terminology <http://imce.jpl.nasa.gov/foundation/base/base> {
+
 	aspect IdentifiedElement
+
 }
 '''
 

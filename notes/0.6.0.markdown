@@ -1,0 +1,39 @@
+gov.nasa.jpl.imce.oml.core 0.6.0 fixes several problems found in the 0.5.0 release
+
+### fixes
+
+- Xtext linking and scoping fixed for annotations within a module
+
+- Xtext content completion 
+
+- Xtext outline labels
+
+### Summary of API Changes in `gov.nasa.jpl.imce.oml.tables`: 
+
+| API | Change |
+|-----|--------|
+| `AnonymousConceptUnionAxiom` | Renamed from `AnonymousConceptTaxonomyAxiom` |
+| `ConceptTreeTaxonomyAxiom` | New |
+| `ScalarDataPropertyValue` | Renamed column `singletonInstanceUUID` to `structuredDataPropertyContextUUID` |
+| `SingletonInstanceScalarDataPropertyValue` | New |
+| `SingletonInstanceStructuredDataPropertyValue` | Renamed from `StructuredDataPropertyValue` |
+| | Added `descriptionBoxUUID` column |
+| `StructuredDataPropertyTuple` | New |
+
+
+### Summary of API Changes in `gov.nasa.jpl.imce.oml.resolver.api` 
+
+| API | Change |
+|-----|--------|
+| `AnonymousConceptUnionAxiom` | Renamed from `AnonymousConceptTaxonomyAxiom` |
+| `ConceptTreeTaxonomyAxiom` | New |
+| `ConceptualEntitySingletonInstance` | Added operation `descriptionBox`; removed operations `identifyingScalarValues`, `identifyingStructuredTuples` |
+| `Extent` | Added `singletonScalarDataPropertyValues` property and derived features |
+| | Added `singletonStructuredDataPropertyValues` property and derived features |
+| `ScalarDataPropertyValue` | Renamed column `singletonInstanceUUID` to `structuredDataPropertyContextUUID` |
+| `SingletonInstanceScalarDataPropertyValue` | New |
+| `SingletonInstanceStructuredDataPropertyContext` | Renamed from `SingletonInstance` |
+| `SingletonInstanceStructuredDataPropertyValue` | Renamed from `StructuredDataPropertyValue` |
+| | Added `singletonInstance` field |
+| | Removed `structuredDataProperty` field |
+| `StructuredDataPropertyTuple` | Renamed from `DataStructureTuple` |

@@ -17,7 +17,7 @@
  */
 grammar gov.nasa.jpl.imce.oml.dsl.OntologicalModelingLanguage 
 	with org.eclipse.xtext.common.Terminals
-	hidden(WS, ML_COMMENT, SL_COMMENT)
+	hidden(WS, ML_COMMENT, SL_COMMENT) 
 
 import "http://imce.jpl.nasa.gov/oml/common"
 import "http://imce.jpl.nasa.gov/oml/terminologies"
@@ -96,10 +96,7 @@ TerminologyBoxAxiom returns TerminologyBoxAxiom:
 // 1 TerminologyBundleAxiom
 
 BundledTerminologyAxiom returns BundledTerminologyAxiom:
-	'bundledTerminologyAxiom'
-	'{'
-		'bundledTerminology' bundledTerminology=[TerminologyBox|ExternalReference]
-	'}';
+	'bundles' bundledTerminology=[TerminologyBox|ExternalReference];
 
 // 3 TerminologyBoxAxioms
 
@@ -189,11 +186,11 @@ TerminologyBundleAxiom returns TerminologyBundleAxiom:
 	BundledTerminologyAxiom;
 
 ConceptTreeDisjunction returns ConceptTreeDisjunction:
-	AnonymousConceptTaxonomyAxiom |
+	AnonymousConceptUnionAxiom |
 	RootConceptTaxonomyAxiom;
 
 DisjointUnionOfConceptsAxiom returns DisjointUnionOfConceptsAxiom:
-	AnonymousConceptTaxonomyAxiom |
+	AnonymousConceptUnionAxiom |
 	SpecificDisjointConceptAxiom;
 	
 enum TerminologyKind returns TerminologyKind:
@@ -213,15 +210,15 @@ Concept returns Concept:
 
 ReifiedRelationship returns ReifiedRelationship:
 	'reifiedRelationship' name=ID '{'
-	(isFunctional?='functional')?
-	(isInverseFunctional?='inverseFunctional')?
-	(isEssential?='essential')?
-	(isInverseEssential?='inverseEssential')?
-	(isSymmetric?='symmetric')?
-	(isAsymmetric?='asymmetric')?
-	(isReflexive?='reflexive')?
-	(isIrreflexive?='irreflexive')?
-	(isTransitive?='transitive')?
+	( (isFunctional?='functional')? &
+	  (isInverseFunctional?='inverseFunctional')? &
+	  (isEssential?='essential')? &
+	  (isInverseEssential?='inverseEssential')? &
+	  (isSymmetric?='symmetric')? &
+	  (isAsymmetric?='asymmetric')? &
+	  (isReflexive?='reflexive')? &
+	  (isIrreflexive?='irreflexive')? &
+	  (isTransitive?='transitive')? )
 	'unreified' '=' unreifiedPropertyName=ID
 	('inverse' '=' unreifiedInversePropertyName=ID)?
 	'source' '=' source=[Entity|Reference]
@@ -230,15 +227,15 @@ ReifiedRelationship returns ReifiedRelationship:
 
 UnreifiedRelationship returns UnreifiedRelationship:
 	'unreifiedRelationship' name=ID '{'
-	(isFunctional?='functional')?
-	(isInverseFunctional?='inverseFunctional')?
-	(isEssential?='essential')?
-	(isInverseEssential?='inverseEssential')?
-	(isSymmetric?='symmetric')?
-	(isAsymmetric?='asymmetric')?
-	(isReflexive?='reflexive')?
-	(isIrreflexive?='irreflexive')?
-	(isTransitive?='transitive')?
+	( (isFunctional?='functional')? &
+	  (isInverseFunctional?='inverseFunctional')? &
+	  (isEssential?='essential')? &
+	  (isInverseEssential?='inverseEssential')? &
+	  (isSymmetric?='symmetric')? &
+	  (isAsymmetric?='asymmetric')? &
+	  (isReflexive?='reflexive')? &
+	  (isIrreflexive?='irreflexive')? &
+	  (isTransitive?='transitive')? )
 	'source' '=' source=[Entity|Reference]
 	'target' '=' target=[Entity|Reference]
 	'}';
@@ -279,23 +276,20 @@ ScalarDataProperty returns ScalarDataProperty:
 
 // ConceptTreeDisjunctions and DisjointUnionOfConceptsAxioms
 
-AnonymousConceptTaxonomyAxiom returns AnonymousConceptTaxonomyAxiom:
-	'anonymousConceptTaxonomyAxiom' name=ID '{'
+
+AnonymousConceptUnionAxiom returns AnonymousConceptUnionAxiom:
+	'anonymousConceptUnion' '(' name=ID ')' '{'
 		( disjunctions+=DisjointUnionOfConceptsAxiom)*
 	'}';
 
 RootConceptTaxonomyAxiom returns RootConceptTaxonomyAxiom:
-	'rootConceptTaxonomyAxiom'
+	'rootConceptTaxonomy' '(' root=[Concept|Reference] ')'
 	'{'
-		'root' root=[Concept|Reference]
 		( disjunctions+=DisjointUnionOfConceptsAxiom)*
 	'}';
 
 SpecificDisjointConceptAxiom returns SpecificDisjointConceptAxiom:
-	'specificDisjointConceptAxiom'
-	'{'
-		'disjointLeaf' disjointLeaf=[Concept|Reference]
-	'}';
+	'disjointLeaf' '(' disjointLeaf=[Concept|Reference] ')';
 
 // 2 EntityRestrictionAxioms
 
@@ -350,40 +344,40 @@ EntityScalarDataPropertyUniversalRestrictionAxiom returns EntityScalarDataProper
 BinaryScalarRestriction returns BinaryScalarRestriction:
 	'binaryScalarRestriction' name=ID
 	'{'
-		('length' length=INT)?
-		('minLength' minLength=INT)?
-		('maxLength' maxLength=INT)?
+		( ('length' length=INT)? &
+		  ('minLength' minLength=INT)? &
+		  ('maxLength' maxLength=INT)? )
 		'restrictedRange' restrictedRange=[DataRange|Reference]
 	'}';
 
 IRIScalarRestriction returns IRIScalarRestriction:
 	'iriScalarRestriction' name=ID
 	'{'
-		('length' length=INT)?
-		('minLength' minLength=INT)?
-		('maxLength' maxLength=INT)?
-		('pattern' pattern=STRING)?
+		( ('length' length=INT)? &
+		  ('minLength' minLength=INT)? &
+		  ('maxLength' maxLength=INT)? &
+		  ('pattern' pattern=STRING)? )
 		'restrictedRange' restrictedRange=[DataRange|Reference]
 	'}';
 
 NumericScalarRestriction returns NumericScalarRestriction:
 	'numericScalarRestriction' name=ID
 	'{'
-		('minInclusive' minInclusive=STRING)?
-		('maxInclusive' maxInclusive=STRING)?
-		('minExclusive' minExclusive=STRING)?
-		('maxExclusive' maxExclusive=STRING)?
+		( ('minInclusive' minInclusive=STRING)? &
+		  ('maxInclusive' maxInclusive=STRING)? &
+		  ('minExclusive' minExclusive=STRING)? &
+		  ('maxExclusive' maxExclusive=STRING)? )
 		'restrictedRange' restrictedRange=[DataRange|Reference]
 	'}';
 
 PlainLiteralScalarRestriction returns PlainLiteralScalarRestriction:
 	'plainLiteralScalarRestriction' name=ID
 	'{'
-		('length' length=INT)?
-		('minLength' minLength=INT)?
-		('maxLength' maxLength=INT)?
-		('pattern' pattern=STRING)?
-		('langRange' langRange=STRING)?
+		( ('length' length=INT)? &
+		  ('minLength' minLength=INT)? &
+		  ('maxLength' maxLength=INT)? &
+		  ('pattern' pattern=STRING)? &
+		  ('langRange' langRange=STRING)? )
 		'restrictedRange' restrictedRange=[DataRange|Reference]
 	'}';
 
@@ -394,19 +388,17 @@ ScalarOneOfRestriction returns ScalarOneOfRestriction:
 	'}';
 
 ScalarOneOfLiteralAxiom returns ScalarOneOfLiteralAxiom:
-	'scalarOneOfLiteralAxiom'
-	'{'
-		'axiom' axiom=[ScalarOneOfRestriction|Reference]
-		'value' value=STRING
-	'}';
+	'oneOf'
+	axiom=[ScalarOneOfRestriction|Reference]
+	'=' value=STRING;
 
 StringScalarRestriction returns StringScalarRestriction:
 	'stringScalarRestriction' name=ID
 	'{'
-		('length' length=INT)?
-		('minLength' minLength=INT)?
-		('maxLength' maxLength=INT)?
-		('pattern' pattern=STRING)?
+		( ('length' length=INT)? &
+		  ('minLength' minLength=INT)? &
+		  ('maxLength' maxLength=INT)? &
+		  ('pattern' pattern=STRING)? )
 		'restrictedRange' restrictedRange=[DataRange|Reference]
 	'}';
 
@@ -419,10 +411,10 @@ SynonymScalarRestriction returns SynonymScalarRestriction:
 TimeScalarRestriction returns TimeScalarRestriction:
 	'timeScalarRestriction' name=ID
 	'{'
-		('minInclusive' minInclusive=STRING)?
-		('maxInclusive' maxInclusive=STRING)?
-		('minExclusive' minExclusive=STRING)?
-		('maxExclusive' maxExclusive=STRING)?
+		( ('minInclusive' minInclusive=STRING)? &
+		  ('maxInclusive' maxInclusive=STRING)? &
+		  ('minExclusive' minExclusive=STRING)? &
+		  ('maxExclusive' maxExclusive=STRING)? )
 		'restrictedRange' restrictedRange=[DataRange|Reference]
 	'}';
 //----------------------------
@@ -439,8 +431,8 @@ DescriptionBox returns DescriptionBox:
 	  reifiedRelationshipInstanceDomains+=ReifiedRelationshipInstanceDomain|
 	  reifiedRelationshipInstanceRanges+=ReifiedRelationshipInstanceRange |
 	  unreifiedRelationshipInstanceTuples+=UnreifiedRelationshipInstanceTuple |
-	  scalarDataPropertyValues+=SingletonInstanceScalarDataPropertyValue |
-	  structuredDataPropertyValues+=SingletonInstanceStructuredDataPropertyValue
+	  singletonScalarDataPropertyValues+=SingletonInstanceScalarDataPropertyValue |
+	  singletonStructuredDataPropertyValues+=SingletonInstanceStructuredDataPropertyValue
 	)*
 	'}';
 
@@ -493,10 +485,10 @@ ScalarDataPropertyValue returns ScalarDataPropertyValue:
 	scalarPropertyValue=Value;
 
 ConceptInstance returns ConceptInstance:
-	'conceptInstance' '(' name=ID ':' singletonConceptClassifier=[Concept|Reference] ')';
+	'conceptInstance' '(' name=ID 'is-a' singletonConceptClassifier=[Concept|Reference] ')';
 
 ReifiedRelationshipInstance returns ReifiedRelationshipInstance:
-	'reifiedRelationshipInstance' '(' name=ID ':' singletonReifiedRelationshipClassifier=[ReifiedRelationship|Reference] ')';
+	'reifiedRelationshipInstance' '(' name=ID 'is-a' singletonReifiedRelationshipClassifier=[ReifiedRelationship|Reference] ')';
 
 ReifiedRelationshipInstanceDomain returns ReifiedRelationshipInstanceDomain:
 	'domain' 
@@ -527,9 +519,6 @@ ExternalReference:
 QNAME:
 	ABBREV_IRI | ValidID;
 
-ABBREV_IRI:
-	ValidID ':' ValidID;
-
 ValidID:
 	ID;
 	
@@ -547,6 +536,9 @@ terminal STRING:
 terminal IRI:
 	'<' (!'>')* '>';
 
+terminal ABBREV_IRI:
+	('a'..'z'|'A'..'Z'|'$'|'_') ('a'..'z'|'A'..'Z'|'$'|'_'|'0'..'9')+ ':' ('a'..'z'|'A'..'Z'|'$'|'_') ('a'..'z'|'A'..'Z'|'$'|'_'|'0'..'9')*;
+	
 @Override
 terminal ID:
 	'^'? ('a'..'z'|'A'..'Z'|'$'|'_') ('a'..'z'|'A'..'Z'|'$'|'_'|'0'..'9')*;

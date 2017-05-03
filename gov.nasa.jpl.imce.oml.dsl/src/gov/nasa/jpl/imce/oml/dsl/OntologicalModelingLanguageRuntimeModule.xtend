@@ -70,4 +70,6 @@ class OntologicalModelingLanguageRuntimeModule extends AbstractOntologicalModeli
 	def Class<? extends ICrossReferenceSerializer> bindICrossReferenceSerializer() {
 		OntologicalModelingLanguageCrossReferenceSerializer
 	}
+	
+	
 }
