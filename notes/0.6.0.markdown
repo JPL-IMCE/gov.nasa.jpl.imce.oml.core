@@ -2,9 +2,13 @@ gov.nasa.jpl.imce.oml.core 0.6.0 fixes several problems found in the 0.5.0 relea
 
 ### Artifacts
 
+- OML Update Site [gov.nasa.jpl.imce/gov.nasa.jpl.imce.oml.updateSite/0.6.0](https://dl.bintray.com/jpl-imce/gov.nasa.jpl.imce/gov.nasa.jpl.imce.oml.updateSite/0.6.0)
+
 - OML Normalized Relational Schema API [gov.nasa.jpl.imce.oml.tables/0.59.0](https://bintray.com/jpl-imce/gov.nasa.jpl.imce/gov-nasa-jpl-imce-oml-tables/0.59.0)
 
-- OML Immutable, Functional API [gov.nasa.jpl.imce.oml.resolver/0.26.0]()
+- OML Immutable, Functional API [gov.nasa.jpl.imce.oml.resolver/0.26.1](https://bintray.com/jpl-imce/gov.nasa.jpl.imce/gov.nasa.jpl.imce.oml.resolver/0.26.1)
+
+- OML Specification Document [gov.nasa.jpl.imce.oml.doc](https://www.gitbook.com/book/omf/ontological-modeling-language-specification/details)
 
 ### fixes
 
