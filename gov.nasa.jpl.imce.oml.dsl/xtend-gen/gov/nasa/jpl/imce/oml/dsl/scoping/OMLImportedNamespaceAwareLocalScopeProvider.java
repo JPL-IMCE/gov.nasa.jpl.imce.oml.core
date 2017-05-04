@@ -87,6 +87,7 @@ public class OMLImportedNamespaceAwareLocalScopeProvider extends ImportedNamespa
   @Inject
   private IQualifiedNameConverter qnc;
   
+  @Override
   public List<ImportNormalizer> getImportedNamespaceResolvers(final EObject context, final boolean ignoreCase) {
     final ArrayList<ImportNormalizer> res = new ArrayList<ImportNormalizer>();
     boolean _matched = false;
@@ -299,6 +300,7 @@ public class OMLImportedNamespaceAwareLocalScopeProvider extends ImportedNamespa
   @Extension
   private OMLScopeExtensions _oMLScopeExtensions;
   
+  @Override
   protected String getImportedNamespace(final EObject object) {
     String _switchResult = null;
     boolean _matched = false;
@@ -317,6 +319,7 @@ public class OMLImportedNamespaceAwareLocalScopeProvider extends ImportedNamespa
     return _switchResult;
   }
   
+  @Override
   public IScope getScope(final EObject context, final EReference reference) {
     IScope _xblockexpression = null;
     {
