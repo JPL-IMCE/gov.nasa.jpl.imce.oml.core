@@ -20,7 +20,7 @@ In 0.6.0, this incorrectly returned the terminology box' IRI, not the term IRI.
 
 ### Implementation changes
 
-Eclipse code generation changes does no always produce the same code given the same input models.
+Eclipse code generation does no always produce the same code given the same input models.
 
 - The '@Override' annotation may be added/removed
 
