@@ -237,7 +237,7 @@ class TerminologyExtensionAxiom extends TerminologyBoxAxiom {
 @NamespaceUUID(namespace="tbox", factors="name")
 abstract class Term extends TerminologyBoxStatement, Resource {
 	
-	@Scala(code="extent.terminologyBoxOfTerminologyBoxStatement.get(this).flatMap(_.iri())")
+	@Scala(code="extent.terminologyBoxOfTerminologyBoxStatement.get(this).flatMap(_.iri().map(_ + \"#\" + name))")
 	@ImplicitExtent
 	@NotSchema
 	@Override

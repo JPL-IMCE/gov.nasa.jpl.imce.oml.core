@@ -19,4 +19,7 @@ class OMLCatalog extends Catalog {
 			super.parseCatalog(aUrl)
 	}
 	
+	def Set<URL> getParsedCatalogs() {
+		parsedCatalogs.immutableCopy
+	}
 }

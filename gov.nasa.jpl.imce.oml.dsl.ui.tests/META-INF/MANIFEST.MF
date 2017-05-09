@@ -20,6 +20,6 @@ Import-Package: org.hamcrest.core,
  org.junit;version="4.5.0
 Export-Package: gov.nasa.jpl.imce.oml.dsl.ui.tests;x-internal=true
 Bundle-Name: %pluginName
-Bundle-Version: 0.6.0
+Bundle-Version: 0.6.1
 Bundle-ClassPath: .
 Bundle-Localization: plugin

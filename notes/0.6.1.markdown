@@ -1,0 +1,73 @@
+gov.nasa.jpl.imce.oml.core addresses minor problems found in the 0.6.0 release
+
+Note: this list is preliminary; it will be finalized when 0.6.1 will be released.
+
+### New APIs
+
+- gov.nasa.jpl.imce.oml.model.extensions.OMLCatalog.getParsedCatalogs
+- gov.nasa.jpl.imce.oml.resolver.OMLOps.ModuleOps.boxStatements
+
+### Modified or Deleted APIs
+
+- None
+
+### Implementation fixes
+
+- gov.nasa.jpl.imce.oml.resolver.impl.Term.iri 
+
+In 0.6.0, this incorrectly returned the terminology box' IRI, not the term IRI.
+
+
+### Implementation changes
+
+Eclipse code generation changes does no always produce the same code given the same input models.
+
+- The '@Override' annotation may be added/removed
+
+  Example: gov.nasa.jpl.imce.oml.dsl.ide.OntologicalModelingLanguageIdeSetup.createInjector
+
+
+- Different syntax for anonymous functions
+
+  See: gov.nasa.jpl.imce.oml.dsl.tests (various Xtend unit tests)
+  See gov.nasa.jpl.imce.oml.generators (various Xtend code generators)
+
+  Example:
+  
+    ```java
+    final Consumer<Annotation> _function = (Annotation a) -> {
+        final AnnotationProperty a_prop = a.getProperty();
+        final Element a_subj = a.getSubject();
+        final String a_value = a.getValue();
+        Assert.assertTrue((a_value.equals("Performing Element") || a_value.equals("A performing element")));
+        Assert.assertSame(ap, a_prop);
+        Assert.assertSame(c, a_subj);
+      };
+    ```
+    
+    ```java
+      final Consumer<Annotation> _function = new Consumer<Annotation>() {
+        public void accept(final Annotation a) {
+          final AnnotationProperty a_prop = a.getProperty();
+          final Element a_subj = a.getSubject();
+          final String a_value = a.getValue();
+          Assert.assertTrue((a_value.equals("Performing Element") || a_value.equals("A performing element")));
+          Assert.assertSame(ap, a_prop);
+          Assert.assertSame(c, a_subj);
+        }
+      };
+    ```
+    
+- Different parameter names in generated methods/constructors
+
+  Example: gov.nasa.jpl.imce.oml.dsl.ui.OntologicalModelingLanguageUiModule
+
+  The generated constructor alternates between two different forms:
+  
+    ```java
+    public OntologicalModelingLanguageUiModule(final AbstractUIPlugin plugin)
+    ```
+    
+    ```java
+    public OntologicalModelingLanguageUiModule(final AbstractUIPlugin arg0)
+    ```
